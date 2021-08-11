@@ -11,7 +11,7 @@ export default {
       { name: 'format-detection', content: 'telephone=no' }
     ],
     link: [
-      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+      { rel: 'icon', type: 'image/x-icon', href: '/svg/color_logo-no_background.svg' }
     ]
   },
 
@@ -39,8 +39,19 @@ export default {
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
     // https://go.nuxtjs.dev/pwa
-    '@nuxtjs/pwa'
+    '@nuxtjs/pwa',
+    '@nuxtjs/auth-next'
   ],
+
+  auth: {
+    strategies: {
+      auth0: {
+        domain: 'sports-kernel.us.auth0.com',
+        clientId: 'YFF0nlkWCMbSDzWHiUxd7ZnHKlp9NUmD',
+        audience: 'https://sports-kernel.us.auth0.com/api/v2/'
+      }
+    }
+  },
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {},

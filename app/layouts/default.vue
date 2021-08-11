@@ -30,8 +30,17 @@
       app
     >
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-      <v-toolbar-title v-text="title" />
+      <v-toolbar-title v-text="title"  />
       <v-spacer />
+      <div v-if="$auth.loggedIn">
+        {{$auth.user.email}}
+<!--        Add Avitar-->
+        <v-btn @click="logout()">Logout</v-btn>
+      </div>
+      <div v-else>
+        <v-btn @click="login()" >Login/Register</v-btn>
+      </div>
+
       <v-btn
         icon
         @click.stop="rightDrawer = !rightDrawer"
@@ -96,6 +105,14 @@ export default {
       right: true,
       rightDrawer: false,
       title: 'Sports Kernel'
+    }
+  },
+  methods: {
+    logout: async function () {
+      await this.$auth.logout()
+    },
+    login: function () {
+      this.$auth.loginWith('auth0');
     }
   }
 }
