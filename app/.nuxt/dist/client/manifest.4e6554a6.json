@@ -1,0 +1,9 @@
+{
+  "name": "frontend",
+  "short_name": "frontend",
+  "icons": [],
+  "start_url": "/?standalone=true",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "lang": "en"
+}
