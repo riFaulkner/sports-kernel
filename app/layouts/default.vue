@@ -15,6 +15,9 @@
           router
           exact
         >
+          <v-list-item-action>
+            <v-icon>{{ item.icon }}</v-icon>
+          </v-list-item-action>
           <v-list-item-content>
             <v-list-item-title v-text="item.title" />
           </v-list-item-content>
@@ -37,7 +40,7 @@
         <v-btn @click="logout()">Logout</v-btn>
       </div>
       <div v-else>
-        <v-btn @click="login()" >Login/Register</v-btn>
+        <v-btn @click="login()">Login/Register</v-btn>
       </div>
 
 
