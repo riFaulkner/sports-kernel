@@ -15,9 +15,6 @@
           router
           exact
         >
-          <v-list-item-action>
-            <v-icon>{{ item.icon }}</v-icon>
-          </v-list-item-action>
           <v-list-item-content>
             <v-list-item-title v-text="item.title" />
           </v-list-item-content>
@@ -30,37 +27,27 @@
       app
     >
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-      <v-toolbar-title v-text="title" />
-      <v-spacer />
-      <v-btn
-        icon
-        @click.stop="rightDrawer = !rightDrawer"
-      >
-        <v-icon>mdi-menu</v-icon>
-      </v-btn>
+      <logo class="SiteHeaderLogo" />
+      <v-toolbar-title v-if="$vuetify.breakpoint.smAndUp" v-text="title" />
+
+        <v-spacer />
+      <div v-if="$auth.loggedIn">
+        {{$auth.user.email}}
+<!--        Add Avitar-->
+        <v-btn @click="logout()">Logout</v-btn>
+      </div>
+      <div v-else>
+        <v-btn @click="login()" >Login/Register</v-btn>
+      </div>
+
+
     </v-app-bar>
     <v-main>
       <v-container>
         <Nuxt />
       </v-container>
     </v-main>
-    <v-navigation-drawer
-      v-model="rightDrawer"
-      :right="right"
-      temporary
-      fixed
-    >
-      <v-list>
-        <v-list-item @click.native="right = !right">
-          <v-list-item-action>
-            <v-icon light>
-              mdi-repeat
-            </v-icon>
-          </v-list-item-action>
-          <v-list-item-title>Switch drawer (click me)</v-list-item-title>
-        </v-list-item>
-      </v-list>
-    </v-navigation-drawer>
+
     <v-footer
       :absolute=true
       app
@@ -97,6 +84,21 @@ export default {
       rightDrawer: false,
       title: 'Sports Kernel'
     }
+  },
+  methods: {
+    logout: async function () {
+      await this.$auth.logout()
+    },
+    login: function () {
+      this.$auth.loginWith('auth0');
+    }
   }
 }
 </script>
+<style scoped>
+  .SiteHeaderLogo {
+    margin-bottom: -10px;
+  }
+
+
+</style>
