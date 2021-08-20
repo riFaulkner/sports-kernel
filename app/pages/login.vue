@@ -5,7 +5,11 @@
 <script>
 export default {
   name: "login.vue",
-  middleware: 'auth'
+  mounted() {
+    if (!this.$auth.loggedIn) {
+      this.$auth.loginWith('auth0');
+    }
+  }
 }
 </script>
 

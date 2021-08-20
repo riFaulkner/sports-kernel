@@ -9,7 +9,7 @@
 <script>
 export default {
   name: "league-home.vue",
-  middleware: 'auth'
+  middleware: 'auth',
 }
 </script>
 
