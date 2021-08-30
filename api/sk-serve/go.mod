@@ -1,4 +1,4 @@
-module github.com/rifaulkner/sports-kernel/sports-kernel/api/sk-serve
+module github.com/rifaulkner/sports-kernel/api/sk-serve
 
 go 1.17
 

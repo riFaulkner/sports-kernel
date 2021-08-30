@@ -8,10 +8,10 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/riFaulkner/sports-kernel/sports-kernel/api/sk-serve/db"
-	"github.com/riFaulkner/sports-kernel/sports-kernel/api/sk-serve/firestore"
-	"github.com/riFaulkner/sports-kernel/sports-kernel/api/sk-serve/graph"
-	"github.com/riFaulkner/sports-kernel/sports-kernel/api/sk-serve/graph/generated"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/db"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/firestore"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/generated"
 )
 
 const defaultPort = "8080"

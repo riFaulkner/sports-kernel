@@ -16,7 +16,7 @@ type Client interface {
 // Use a service account
 func NewClient(ctx context.Context) (Client, error) {
 	//TODO: Replace the path below with the new location of the secret? Or change
-	sa := option.WithCredentialsFile("path/to/creds")
+	sa := option.WithCredentialsFile("C:\\Users\\Kyle Brogan\\Downloads\\sports-kernel-0c2221c75ac9.json")
 	app, err := firebase.NewApp(ctx, nil, sa)
 	if err != nil {
 		log.Fatalln(err)

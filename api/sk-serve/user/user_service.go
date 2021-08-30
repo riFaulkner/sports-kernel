@@ -3,7 +3,7 @@ package user
 import (
 	"context"
 
-	"github.com/riFaulkner/sports-kernel/sports-kernel/api/sk-serve/graph/model"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
 )
 
 type User interface {

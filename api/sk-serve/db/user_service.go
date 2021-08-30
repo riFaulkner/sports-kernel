@@ -3,8 +3,8 @@ package db
 import (
 	"context"
 
-	"github.com/riFaulkner/sports-kernel/api/sk-serve/firestore"
-	"github.com/riFaulkner/sports-kernel/api/sk-serve/graph/model"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/firestore"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
 )
 
 const collectionName = "users"

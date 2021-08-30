@@ -1,6 +1,6 @@
 package graph
 
-import "github.com/rifaulkner/sports-kernel/sports-kernel/api/sk-serve/user"
+import "github.com/rifaulkner/sports-kernel/api/sk-serve/user"
 
 // This file will not be regenerated automatically.
 //
