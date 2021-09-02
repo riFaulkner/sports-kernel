@@ -5,23 +5,17 @@ import (
 	"log"
 
 	"cloud.google.com/go/firestore"
-	firebase "firebase.google.com/go"
-	"google.golang.org/api/option"
 )
 
 type Client interface {
 	Collection(path string) *firestore.CollectionRef
 }
 
-// Use a service account
-func NewClient(ctx context.Context) (Client, error) {
-	//TODO: Replace the path below with the new location of the secret? Or change
-	sa := option.WithCredentialsFile("C:\\Users\\Kyle Brogan\\Downloads\\sports-kernel-0c2221c75ac9.json")
-	app, err := firebase.NewApp(ctx, nil, sa)
+func NewClient(ctx context.Context) *firestore.Client {
+	projectID := "sports-kernel"
+	client, err := firestore.NewClient(ctx, projectID)
 	if err != nil {
-		log.Fatalln(err)
-		return nil, err
+		log.Fatalf("Failed to create firestore client %s", err)
 	}
-	return app.Firestore(ctx)
-
+	return client
 }
