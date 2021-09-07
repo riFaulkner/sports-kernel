@@ -23,11 +23,7 @@ func main() {
 	}
 
 	ctx := context.Background()
-	client, err := firestore.NewClient(ctx)
-
-	if err != nil {
-		log.Fatalf("Error establishing Firestore Client...")
-	}
+	client := firestore.NewClient(ctx)
 
 	userService := &db.UserImpl{Client: client}
 
