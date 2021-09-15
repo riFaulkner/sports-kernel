@@ -2,8 +2,6 @@ package db
 
 import (
 	"context"
-	"log"
-
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/firestore"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
 )
@@ -33,7 +31,6 @@ func (u *UserImpl) GetAll(ctx context.Context) ([]*model.User, error) {
 			//err = Error("Document does not have an ID")
 			return nil, err
 		}
-		log.Printf("ID provided: %s", id)
 		user.ID = id
 		if err != nil {
 			return nil, err
