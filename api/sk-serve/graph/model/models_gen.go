@@ -2,10 +2,28 @@
 
 package model
 
+import (
+	"time"
+)
+
+type League struct {
+	ID         string    `json:"id"`
+	LeagueName string    `json:"leagueName"`
+	LogoURL    string    `json:"logoUrl"`
+	StartDate  time.Time `json:"startDate"`
+	Teams      []*Team   `json:"teams"`
+}
+
 type NewUser struct {
 	OwnerName string `json:"ownerName"`
 	Email     string `json:"email"`
 	Avatar    string `json:"avatar"`
+}
+
+type Team struct {
+	ID          string    `json:"id"`
+	FoundedDate time.Time `json:"foundedDate"`
+	TeamName    string    `json:"teamName"`
 }
 
 type User struct {

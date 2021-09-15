@@ -34,6 +34,24 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	return users, nil
 }
 
+func (r *queryResolver) Leagues(ctx context.Context) ([]*model.League, error) {
+	leagues, err := r.League.GetAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return leagues, nil
+}
+
+func (r *queryResolver) Teams(ctx context.Context, leagueID *string) ([]*model.Team, error) {
+	teams, err := r.Team.GetAll(ctx, *leagueID)
+	if err != nil {
+		return nil, err
+	}
+
+	return teams, nil
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 

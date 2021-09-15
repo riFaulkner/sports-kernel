@@ -30,6 +30,7 @@ func (u *UserImpl) GetAll(ctx context.Context) ([]*model.User, error) {
 		if err != nil {
 			return nil, err
 		}
+		user.ID = result.Ref.ID
 		users = append(users, user)
 	}
 	return users, nil

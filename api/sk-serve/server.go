@@ -26,9 +26,11 @@ func main() {
 	client := firestore.NewClient(ctx)
 
 	userService := &db.UserImpl{Client: client}
+	leagueService := &db.LeagueImpl{Client: client}
+	teamService := &db.TeamImpl{Client: client}
 
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{
-		User: userService,
+		User: userService, League: leagueService, Team: teamService,
 	}}))
 
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
