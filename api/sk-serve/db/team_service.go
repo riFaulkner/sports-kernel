@@ -18,7 +18,9 @@ type TeamImpl struct {
 func (u *TeamImpl) GetAll(ctx context.Context, leagueId string) ([]*model.Team, error) {
 	teams := make([]*model.Team, 0)
 
+
 	//Create Document Ref - There is no traffic associated with this...
+
 	league := u.Client.Collection("leagues").Doc(leagueId)
 
 	results, err := league.Collection("teams").Documents(ctx).GetAll()

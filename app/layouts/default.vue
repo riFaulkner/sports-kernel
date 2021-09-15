@@ -82,7 +82,7 @@
       </template>
       <template v-else>
         <v-toolbar-items>
-          <v-btn icon @click="login()"><v-icon>mdi-account</v-icon></v-btn>
+          <v-btn icon @click="login()"><v-icon>mdi-account-circle</v-icon></v-btn>
         </v-toolbar-items>
       </template>
 
