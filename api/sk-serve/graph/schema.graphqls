@@ -1,0 +1,42 @@
+#Data types and Queries
+
+type User {
+  id: ID!
+  ownerName: String!
+  email: String!
+  avatar: String!
+}
+
+type Team {
+  id: ID!
+  foundedDate: Time!
+  teamName: String!
+}
+
+scalar Time
+
+type League {
+  id: ID!
+  leagueName: String!
+  logoUrl: String!
+  startDate: Time!
+  teams: [Team!]
+}
+
+type Query {
+  users: [User]
+  leagues: [League]
+  teams(leagueId: ID): [Team!] 
+}
+
+#Mutations and Inputs
+
+input NewUser {
+  ownerName: String!
+  email: String!
+  avatar: String!
+}
+
+type Mutation {
+  createUser(input: NewUser!): User!
+}
