@@ -37,7 +37,7 @@
       <!--        {{$auth.user.email}}-->
       <!--        Add Avitar-->
       <template v-if="$auth.loggedIn">
-        <v-menu >
+        <v-menu>
           <template v-slot:activator="{on, attrs}">
             <v-toolbar-items>
               <v-btn
@@ -82,7 +82,7 @@
       </template>
       <template v-else>
         <v-toolbar-items>
-          <v-btn icon @click="login()"><v-icon>mdi-account</v-icon></v-btn>
+          <v-btn icon @click="login()"><v-icon>mdi-account-circle</v-icon></v-btn>
         </v-toolbar-items>
       </template>
 
