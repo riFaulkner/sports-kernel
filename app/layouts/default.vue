@@ -43,12 +43,12 @@
               <v-btn
                   v-bind="attrs"
                   v-on="on"
-              >{{leagues.activeLeague.leagueName}} <v-icon>mdi-chevron-down</v-icon></v-btn>
+              > {{activeLeague.leagueName}} <v-icon>mdi-chevron-down</v-icon></v-btn>
             </v-toolbar-items>
           </template>
           <v-list>
             <v-list-item
-              v-for="league in leagues.allLeagues"
+              v-for="league in leagues"
               :key="league.leagueId"
               @click="changeLeague(league)">
               <v-list-item-title>{{league.leagueName}}</v-list-item-title>
@@ -126,28 +126,19 @@ export default {
         },
       ],
       title: 'Sports Kernel',
-      leagues: {
-        activeLeague: {
-          leagueName: "Dev League",
-          leagueId: "asdfkldsfjdf"
-        },
-        allLeagues: [
-          {
-            leagueName: "Dev League",
-            leagueId: "asdfkldsfjdf"
-          },
-          {
-            leagueName: "Prod League",
-            leagueId: "onsdfoiun490cnavkl"
-          }
-        ]
-
-
-      },
       userAccountActions: [
         {name: "Preferences", icon: "mdi-account", action: () => {}},
         {name: "Logout", icon: "mdi-logout", action: () => {this.logout()}}
       ]
+    }
+  },
+  computed: {
+    leagues() {
+      return this.$store.state.user.allLeagues;
+    },
+    activeLeague() {
+      const activeLeague =  this.$store.getters["application/getActiveLeague"];
+      return activeLeague ? activeLeague : {leagueName: "Select a League"};
     }
   },
   methods: {
@@ -158,7 +149,7 @@ export default {
       this.$auth.loginWith('auth0');
     },
     changeLeague(league) {
-      this.leagues.activeLeague = league
+      this.$store.dispatch('application/updateActiveLeague', league);
     }
   }
 }
