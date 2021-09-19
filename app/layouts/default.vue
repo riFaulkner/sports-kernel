@@ -9,7 +9,7 @@
     >
       <v-list>
         <v-list-item
-            v-for="(item, i) in items"
+            v-for="(item, i) in menuItems"
             :key="i"
             :to="item.to"
             router
@@ -34,8 +34,6 @@
       <v-toolbar-title v-if="$vuetify.breakpoint.smAndUp" v-text="title"/>
 
       <v-spacer/>
-      <!--        {{$auth.user.email}}-->
-      <!--        Add Avitar-->
       <template v-if="$auth.loggedIn">
         <v-menu>
           <template v-slot:activator="{on, attrs}">
@@ -86,7 +84,21 @@
         </v-toolbar-items>
       </template>
 
+      <template v-if=submenu v-slot:extension>
+        <v-tabs
+            v-model="activeTab"
+            align-with-title
+        >
+          <v-tab
+            v-for="tab in submenu"
+            :key="tab"
+          >
+            {{tab}}
+          </v-tab>
+        </v-tabs>
+      </template>
     </v-app-bar>
+
     <v-main>
       <v-container>
         <Nuxt/>
@@ -97,7 +109,7 @@
         :absolute=true
         app
     >
-      <span>&copy; {{ new Date().getFullYear() }}</span>
+      <v-card-text class="text-center">&copy {{ new Date().getFullYear() }}</v-card-text>
     </v-footer>
   </v-app>
 </template>
@@ -108,7 +120,7 @@ export default {
     return {
       clipped: true,
       drawer: false,
-      items: [
+      menuItems: [
         {
           icon: 'mdi-account-group',
           title: "League Home",
@@ -129,16 +141,27 @@ export default {
       userAccountActions: [
         {name: "Preferences", icon: "mdi-account", action: () => {}},
         {name: "Logout", icon: "mdi-logout", action: () => {this.logout()}}
-      ]
+      ],
     }
   },
   computed: {
-    leagues() {
-      return this.$store.state.user.allLeagues;
-    },
     activeLeague() {
       const activeLeague =  this.$store.getters["application/getActiveLeague"];
       return activeLeague ? activeLeague : {leagueName: "Select a League"};
+    },
+    leagues() {
+      return this.$store.state.user.allLeagues;
+    },
+    submenu(){
+      return this.$store.state.application.submenu;
+    },
+    activeTab: {
+      get() {
+        return this.$store.state.application.activeTab;
+      },
+      set(newValue) {
+        this.$store.dispatch("application/updateActiveTab", newValue)
+      }
     }
   },
   methods: {
@@ -150,8 +173,8 @@ export default {
     },
     changeLeague(league) {
       this.$store.dispatch('application/updateActiveLeague', league);
-    }
-  }
+    },
+  },
 }
 </script>
 <style scoped>
