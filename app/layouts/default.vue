@@ -100,11 +100,12 @@
     </v-app-bar>
 
     <v-main>
-      <v-container>
+      <v-container
+        fluid
+      >
         <Nuxt/>
       </v-container>
     </v-main>
-
     <v-footer
         :absolute=true
         app
@@ -115,6 +116,8 @@
 </template>
 
 <script>
+import {USER_PREFERENCES_QUERY} from "@/graphql/queries/user/userGraphQl";
+
 export default {
   data() {
     return {
@@ -175,6 +178,15 @@ export default {
       this.$store.dispatch('application/updateActiveLeague', league);
     },
   },
+  apollo: {
+    userPreferences: {
+      prefetch: false,
+      query: USER_PREFERENCES_QUERY,
+      variables: {
+        userId: 'x3IOCU28HGe2GHAF4azJ' //this.$auth.user
+      }
+    }
+  }
 }
 </script>
 <style scoped>

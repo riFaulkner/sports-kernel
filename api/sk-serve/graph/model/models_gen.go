@@ -32,3 +32,10 @@ type User struct {
 	Email     string `json:"email"`
 	Avatar    string `json:"avatar"`
 }
+
+type UserPreferences struct {
+	ID                string    `json:"id"`
+	OwnerName         string    `json:"ownerName"`
+	PreferredLeagueID *string   `json:"preferredLeagueId"`
+	Leagues           []*League `json:"leagues"`
+}
