@@ -1,12 +1,4 @@
 #Data types and Queries
-
-type User {
-  id: ID!
-  ownerName: String!
-  email: String!
-  avatar: String!
-}
-
 type Team {
   id: ID!
   foundedDate: Time!
@@ -26,7 +18,8 @@ type League {
 type Query {
   users: [User]
   leagues: [League]
-  teams(leagueId: ID): [Team!] 
+  teams(leagueId: ID): [Team!]
+  UserPreferences(userId: ID): UserPreferencesa
 }
 
 #Mutations and Inputs

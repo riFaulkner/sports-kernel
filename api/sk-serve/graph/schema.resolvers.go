@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+	"log"
 
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/generated"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
@@ -50,6 +51,16 @@ func (r *queryResolver) Teams(ctx context.Context, leagueID *string) ([]*model.T
 	}
 
 	return teams, nil
+}
+
+func (r *queryResolver) UserPreferences(ctx context.Context, userID *string) (*model.UserPreferences, error) {
+	userPreferences, err := r.User.GetUserPreferences(ctx, *userID)
+	if err != nil {
+		log.Printf("Error attempting to resolve user preferences, %s", err)
+		return nil, err
+	}
+
+	return userPreferences, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

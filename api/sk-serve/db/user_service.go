@@ -45,3 +45,21 @@ func (u *UserImpl) Create(ctx context.Context, user model.User) error {
 	_, _, err := u.Client.Collection(collectionName).Add(ctx, user)
 	return err
 }
+
+func (u *UserImpl) GetUserPreferences(ctx context.Context, userId string) (*model.UserPreferences, error) {
+	result, err := u.Client.Collection(collectionName).Doc(userId).Get(ctx)
+	if err != nil {
+		return nil, err
+	}
+	println("document queried")
+
+	userPreferences := new(model.UserPreferences)
+	err = result.DataTo(&userPreferences)
+	id := result.Ref.ID
+	userPreferences.ID = id
+	if err != nil {
+		return nil, err
+	}
+
+	return userPreferences, nil
+}

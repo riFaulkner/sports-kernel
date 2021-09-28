@@ -56,9 +56,10 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Leagues func(childComplexity int) int
-		Teams   func(childComplexity int, leagueID *string) int
-		Users   func(childComplexity int) int
+		Leagues         func(childComplexity int) int
+		Teams           func(childComplexity int, leagueID *string) int
+		UserPreferences func(childComplexity int, userID *string) int
+		Users           func(childComplexity int) int
 	}
 
 	Team struct {
@@ -73,6 +74,13 @@ type ComplexityRoot struct {
 		ID        func(childComplexity int) int
 		OwnerName func(childComplexity int) int
 	}
+
+	UserPreferences struct {
+		ID                func(childComplexity int) int
+		Leagues           func(childComplexity int) int
+		OwnerName         func(childComplexity int) int
+		PreferredLeagueID func(childComplexity int) int
+	}
 }
 
 type MutationResolver interface {
@@ -82,6 +90,7 @@ type QueryResolver interface {
 	Users(ctx context.Context) ([]*model.User, error)
 	Leagues(ctx context.Context) ([]*model.League, error)
 	Teams(ctx context.Context, leagueID *string) ([]*model.Team, error)
+	UserPreferences(ctx context.Context, userID *string) (*model.UserPreferences, error)
 }
 
 type executableSchema struct {
@@ -165,6 +174,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Teams(childComplexity, args["leagueId"].(*string)), true
 
+	case "Query.UserPreferences":
+		if e.complexity.Query.UserPreferences == nil {
+			break
+		}
+
+		args, err := ec.field_Query_UserPreferences_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.UserPreferences(childComplexity, args["userId"].(*string)), true
+
 	case "Query.users":
 		if e.complexity.Query.Users == nil {
 			break
@@ -220,6 +241,34 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.OwnerName(childComplexity), true
+
+	case "UserPreferences.id":
+		if e.complexity.UserPreferences.ID == nil {
+			break
+		}
+
+		return e.complexity.UserPreferences.ID(childComplexity), true
+
+	case "UserPreferences.leagues":
+		if e.complexity.UserPreferences.Leagues == nil {
+			break
+		}
+
+		return e.complexity.UserPreferences.Leagues(childComplexity), true
+
+	case "UserPreferences.ownerName":
+		if e.complexity.UserPreferences.OwnerName == nil {
+			break
+		}
+
+		return e.complexity.UserPreferences.OwnerName(childComplexity), true
+
+	case "UserPreferences.preferredLeagueId":
+		if e.complexity.UserPreferences.PreferredLeagueID == nil {
+			break
+		}
+
+		return e.complexity.UserPreferences.PreferredLeagueID(childComplexity), true
 
 	}
 	return 0, false
@@ -285,15 +334,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "graph/schema.graphqls", Input: `#Data types and Queries
-
-type User {
-  id: ID!
-  ownerName: String!
-  email: String!
-  avatar: String!
-}
-
+	{Name: "graph/schema/schema.graphqls", Input: `#Data types and Queries
 type Team {
   id: ID!
   foundedDate: Time!
@@ -313,7 +354,8 @@ type League {
 type Query {
   users: [User]
   leagues: [League]
-  teams(leagueId: ID): [Team!] 
+  teams(leagueId: ID): [Team!]
+  UserPreferences(userId: ID): UserPreferences
 }
 
 #Mutations and Inputs
@@ -326,6 +368,19 @@ input NewUser {
 
 type Mutation {
   createUser(input: NewUser!): User!
+}`, BuiltIn: false},
+	{Name: "graph/schema/user/user.graphqls", Input: `type User {
+    id: ID!
+    ownerName: String!
+    email: String!
+    avatar: String!
+}
+
+type UserPreferences {
+    id: ID!
+    ownerName: String!
+    preferredLeagueId: String
+    leagues: [League!]!
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -346,6 +401,21 @@ func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, 
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_UserPreferences_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *string
+	if tmp, ok := rawArgs["userId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
+		arg0, err = ec.unmarshalOID2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["userId"] = arg0
 	return args, nil
 }
 
@@ -734,6 +804,45 @@ func (ec *executionContext) _Query_teams(ctx context.Context, field graphql.Coll
 	return ec.marshalOTeam2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐTeamᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_UserPreferences(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_UserPreferences_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().UserPreferences(rctx, args["userId"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.UserPreferences)
+	fc.Result = res
+	return ec.marshalOUserPreferences2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐUserPreferences(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1048,6 +1157,143 @@ func (ec *executionContext) _User_avatar(ctx context.Context, field graphql.Coll
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _UserPreferences_id(ctx context.Context, field graphql.CollectedField, obj *model.UserPreferences) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "UserPreferences",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _UserPreferences_ownerName(ctx context.Context, field graphql.CollectedField, obj *model.UserPreferences) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "UserPreferences",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.OwnerName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _UserPreferences_preferredLeagueId(ctx context.Context, field graphql.CollectedField, obj *model.UserPreferences) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "UserPreferences",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PreferredLeagueID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _UserPreferences_leagues(ctx context.Context, field graphql.CollectedField, obj *model.UserPreferences) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "UserPreferences",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Leagues, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.League)
+	fc.Result = res
+	return ec.marshalNLeague2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐLeagueᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -2304,6 +2550,17 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				res = ec._Query_teams(ctx, field)
 				return res
 			})
+		case "UserPreferences":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_UserPreferences(ctx, field)
+				return res
+			})
 		case "__type":
 			out.Values[i] = ec._Query___type(ctx, field)
 		case "__schema":
@@ -2384,6 +2641,45 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "avatar":
 			out.Values[i] = ec._User_avatar(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var userPreferencesImplementors = []string{"UserPreferences"}
+
+func (ec *executionContext) _UserPreferences(ctx context.Context, sel ast.SelectionSet, obj *model.UserPreferences) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, userPreferencesImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("UserPreferences")
+		case "id":
+			out.Values[i] = ec._UserPreferences_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "ownerName":
+			out.Values[i] = ec._UserPreferences_ownerName(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "preferredLeagueId":
+			out.Values[i] = ec._UserPreferences_preferredLeagueId(ctx, field, obj)
+		case "leagues":
+			out.Values[i] = ec._UserPreferences_leagues(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2671,6 +2967,53 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNLeague2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐLeagueᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.League) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNLeague2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐLeague(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalNLeague2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐLeague(ctx context.Context, sel ast.SelectionSet, v *model.League) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._League(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNNewUser2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐNewUser(ctx context.Context, v interface{}) (model.NewUser, error) {
@@ -3156,6 +3499,13 @@ func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋrifaulknerᚋsports�
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOUserPreferences2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐUserPreferences(ctx context.Context, sel ast.SelectionSet, v *model.UserPreferences) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._UserPreferences(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {
