@@ -1,5 +1,13 @@
 #Data types and Queries
 
+type Contract {
+  playerID: String!
+  teamID: String!
+  totalContractValue: Float!
+  contractLength: Int!
+  playerPosition: String!
+}
+
 type User {
   id: ID!
   ownerName: String!
@@ -11,6 +19,7 @@ type Team {
   id: ID!
   foundedDate: Time!
   teamName: String!
+  ownerID: String!
 }
 
 scalar Time
@@ -26,7 +35,8 @@ type League {
 type Query {
   users: [User]
   leagues: [League]
-  teams(leagueId: ID): [Team!] 
+  teams(leagueId: ID): [Team!]
+  contracts(leagueId: ID, teamId: ID): [Contract!]
 }
 
 #Mutations and Inputs
@@ -37,6 +47,12 @@ input NewUser {
   avatar: String!
 }
 
+input NewTeam {
+  teamName: String!
+  foundedDate: Time
+}
+
 type Mutation {
   createUser(input: NewUser!): User!
+  createTeam(leagueId: ID, input: NewTeam!): Team!
 }

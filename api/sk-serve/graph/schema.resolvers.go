@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+	"time"
 
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/generated"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
@@ -23,6 +24,20 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) 
 	}
 
 	return &user, nil
+}
+
+func (r *mutationResolver) CreateTeam(ctx context.Context, leagueID *string, input model.NewTeam) (*model.Team, error) {
+	team := model.Team{
+		TeamName:    input.TeamName,
+		FoundedDate: time.Now(),
+	}
+
+	err := r.Team.Create(ctx, *leagueID, team)
+	if err != nil {
+		return nil, err
+	}
+
+	return &team, nil
 }
 
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
@@ -50,6 +65,15 @@ func (r *queryResolver) Teams(ctx context.Context, leagueID *string) ([]*model.T
 	}
 
 	return teams, nil
+}
+
+func (r *queryResolver) Contracts(ctx context.Context, leagueID *string, teamID *string) ([]*model.Contract, error) {
+	contracts, err := r.Contract.GetAll(ctx, *leagueID, *teamID)
+	if err != nil {
+		return nil, err
+	}
+
+	return contracts, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

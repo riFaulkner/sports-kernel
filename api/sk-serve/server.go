@@ -8,8 +8,6 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/rifaulkner/sports-kernel/api/sk-serve/db"
-	"github.com/rifaulkner/sports-kernel/api/sk-serve/firestore"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/generated"
 )
@@ -23,15 +21,17 @@ func main() {
 	}
 
 	ctx := context.Background()
-	client := firestore.NewClient(ctx)
+	//client := firestore.NewClient(ctx)
+	//graph.Initialize(ctx)
 
-	userService := &db.UserImpl{Client: client}
-	leagueService := &db.LeagueImpl{Client: client}
-	teamService := &db.TeamImpl{Client: client}
+	//userService := &db.UserImpl{Client: client}
+	//leagueService := &db.LeagueImpl{Client: client}
+	//teamService := &db.TeamImpl{Client: client}
+	//contractService := &db.ContractImpl{Client: client}
 
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{
-		User: userService, League: leagueService, Team: teamService,
-	}}))
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(graph.Initialize(ctx))) //generated.Config{Resolvers: &graph.Resolver{
+	//User: userService, League: leagueService, Team: teamService, Contract: contractService,
+	//}}))
 
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	http.Handle("/query", srv)

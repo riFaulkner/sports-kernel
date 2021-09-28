@@ -6,12 +6,25 @@ import (
 	"time"
 )
 
+type Contract struct {
+	PlayerID           string  `json:"playerID"`
+	TeamID             string  `json:"teamID"`
+	TotalContractValue float64 `json:"totalContractValue"`
+	ContractLength     int     `json:"contractLength"`
+	PlayerPosition     string  `json:"playerPosition"`
+}
+
 type League struct {
 	ID         string    `json:"id"`
 	LeagueName string    `json:"leagueName"`
 	LogoURL    string    `json:"logoUrl"`
 	StartDate  time.Time `json:"startDate"`
 	Teams      []*Team   `json:"teams"`
+}
+
+type NewTeam struct {
+	TeamName    string     `json:"teamName"`
+	FoundedDate *time.Time `json:"foundedDate"`
 }
 
 type NewUser struct {
@@ -24,6 +37,7 @@ type Team struct {
 	ID          string    `json:"id"`
 	FoundedDate time.Time `json:"foundedDate"`
 	TeamName    string    `json:"teamName"`
+	OwnerID     string    `json:"ownerID"`
 }
 
 type User struct {
