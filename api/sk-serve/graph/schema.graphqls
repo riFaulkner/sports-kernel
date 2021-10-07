@@ -6,6 +6,17 @@ type Contract {
   totalContractValue: Float!
   contractLength: Int!
   playerPosition: String!
+  contractDetails: ContractDetail
+}
+
+type ContractDetail {
+  restructuredContract: Boolean!
+  totalRemainingValue: Float!
+  currentYearRemainingValue: Float!
+  year1value: Float!
+  year2value: Float!
+  year3Value: Float!
+  year4value: Float!
 }
 
 type User {

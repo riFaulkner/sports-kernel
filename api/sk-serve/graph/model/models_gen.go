@@ -7,11 +7,22 @@ import (
 )
 
 type Contract struct {
-	PlayerID           string  `json:"playerID"`
-	TeamID             string  `json:"teamID"`
-	TotalContractValue float64 `json:"totalContractValue"`
-	ContractLength     int     `json:"contractLength"`
-	PlayerPosition     string  `json:"playerPosition"`
+	PlayerID           string          `json:"playerID"`
+	TeamID             string          `json:"teamID"`
+	TotalContractValue float64         `json:"totalContractValue"`
+	ContractLength     int             `json:"contractLength"`
+	PlayerPosition     string          `json:"playerPosition"`
+	ContractDetails    *ContractDetail `json:"contractDetails"`
+}
+
+type ContractDetail struct {
+	RestructuredContract      bool    `json:"restructuredContract"`
+	TotalRemainingValue       float64 `json:"totalRemainingValue"`
+	CurrentYearRemainingValue float64 `json:"currentYearRemainingValue"`
+	Year1value                float64 `json:"year1value"`
+	Year2value                float64 `json:"year2value"`
+	Year3Value                float64 `json:"year3Value"`
+	Year4value                float64 `json:"year4value"`
 }
 
 type League struct {
