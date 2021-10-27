@@ -43,11 +43,21 @@ type League {
   teams: [Team!]
 }
 
+type PlayerNFL {
+  id: ID!
+  overallRank: Int!
+  playerName: String!
+  position: String!
+  positionRank: String!
+  teamNFL: String!  
+}
+
 type Query {
   users: [User]
   leagues: [League]
   teams(leagueId: ID): [Team!]
   contracts(leagueId: ID, teamId: ID): [Contract!]
+  players(numOfResults: Int): [PlayerNFL!]
 }
 
 #Mutations and Inputs

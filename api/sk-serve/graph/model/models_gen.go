@@ -44,6 +44,15 @@ type NewUser struct {
 	Avatar    string `json:"avatar"`
 }
 
+type PlayerNfl struct {
+	ID           string `json:"id"`
+	OverallRank  int    `json:"overallRank"`
+	PlayerName   string `json:"playerName"`
+	Position     string `json:"position"`
+	PositionRank string `json:"positionRank"`
+	TeamNfl      string `json:"teamNFL"`
+}
+
 type Team struct {
 	ID          string    `json:"id"`
 	FoundedDate time.Time `json:"foundedDate"`

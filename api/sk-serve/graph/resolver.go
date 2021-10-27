@@ -8,6 +8,7 @@ import (
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/firestore"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/generated"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/league"
+	playernfl "github.com/rifaulkner/sports-kernel/api/sk-serve/playerNFL"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/team"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/user"
 )
@@ -21,6 +22,7 @@ type Resolver struct {
 	League   league.League
 	Team     team.Team
 	Contract contract.Contract
+	Player   playernfl.PlayerNfl
 }
 
 func Initialize(ctx context.Context) generated.Config {
@@ -32,6 +34,7 @@ func Initialize(ctx context.Context) generated.Config {
 	r.League = &db.LeagueImpl{Client: client}
 	r.Team = &db.TeamImpl{Client: client}
 	r.User = &db.UserImpl{Client: client}
+	r.Player = &db.PlayerImpl{Client: client}
 
 	return generated.Config{
 		Resolvers: &r,

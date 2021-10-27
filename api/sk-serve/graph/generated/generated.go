@@ -75,9 +75,19 @@ type ComplexityRoot struct {
 		CreateUser func(childComplexity int, input model.NewUser) int
 	}
 
+	PlayerNfl struct {
+		ID           func(childComplexity int) int
+		OverallRank  func(childComplexity int) int
+		PlayerName   func(childComplexity int) int
+		Position     func(childComplexity int) int
+		PositionRank func(childComplexity int) int
+		TeamNfl      func(childComplexity int) int
+	}
+
 	Query struct {
 		Contracts func(childComplexity int, leagueID *string, teamID *string) int
 		Leagues   func(childComplexity int) int
+		Players   func(childComplexity int, numOfResults *int) int
 		Teams     func(childComplexity int, leagueID *string) int
 		Users     func(childComplexity int) int
 	}
@@ -106,6 +116,7 @@ type QueryResolver interface {
 	Leagues(ctx context.Context) ([]*model.League, error)
 	Teams(ctx context.Context, leagueID *string) ([]*model.Team, error)
 	Contracts(ctx context.Context, leagueID *string, teamID *string) ([]*model.Contract, error)
+	Players(ctx context.Context, numOfResults *int) ([]*model.PlayerNfl, error)
 }
 
 type executableSchema struct {
@@ -273,6 +284,48 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateUser(childComplexity, args["input"].(model.NewUser)), true
 
+	case "PlayerNFL.id":
+		if e.complexity.PlayerNfl.ID == nil {
+			break
+		}
+
+		return e.complexity.PlayerNfl.ID(childComplexity), true
+
+	case "PlayerNFL.overallRank":
+		if e.complexity.PlayerNfl.OverallRank == nil {
+			break
+		}
+
+		return e.complexity.PlayerNfl.OverallRank(childComplexity), true
+
+	case "PlayerNFL.playerName":
+		if e.complexity.PlayerNfl.PlayerName == nil {
+			break
+		}
+
+		return e.complexity.PlayerNfl.PlayerName(childComplexity), true
+
+	case "PlayerNFL.position":
+		if e.complexity.PlayerNfl.Position == nil {
+			break
+		}
+
+		return e.complexity.PlayerNfl.Position(childComplexity), true
+
+	case "PlayerNFL.positionRank":
+		if e.complexity.PlayerNfl.PositionRank == nil {
+			break
+		}
+
+		return e.complexity.PlayerNfl.PositionRank(childComplexity), true
+
+	case "PlayerNFL.teamNFL":
+		if e.complexity.PlayerNfl.TeamNfl == nil {
+			break
+		}
+
+		return e.complexity.PlayerNfl.TeamNfl(childComplexity), true
+
 	case "Query.contracts":
 		if e.complexity.Query.Contracts == nil {
 			break
@@ -291,6 +344,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Leagues(childComplexity), true
+
+	case "Query.players":
+		if e.complexity.Query.Players == nil {
+			break
+		}
+
+		args, err := ec.field_Query_players_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Players(childComplexity, args["numOfResults"].(*int)), true
 
 	case "Query.teams":
 		if e.complexity.Query.Teams == nil {
@@ -476,11 +541,21 @@ type League {
   teams: [Team!]
 }
 
+type PlayerNFL {
+  id: ID!
+  overallRank: Int!
+  playerName: String!
+  position: String!
+  positionRank: String!
+  teamNFL: String!  
+}
+
 type Query {
   users: [User]
   leagues: [League]
   teams(leagueId: ID): [Team!]
   contracts(leagueId: ID, teamId: ID): [Contract!]
+  players(numOfResults: Int): [PlayerNFL!]
 }
 
 #Mutations and Inputs
@@ -582,6 +657,21 @@ func (ec *executionContext) field_Query_contracts_args(ctx context.Context, rawA
 		}
 	}
 	args["teamId"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_players_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["numOfResults"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("numOfResults"))
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["numOfResults"] = arg0
 	return args, nil
 }
 
@@ -1346,6 +1436,216 @@ func (ec *executionContext) _Mutation_createTeam(ctx context.Context, field grap
 	return ec.marshalNTeam2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐTeam(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _PlayerNFL_id(ctx context.Context, field graphql.CollectedField, obj *model.PlayerNfl) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PlayerNFL",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PlayerNFL_overallRank(ctx context.Context, field graphql.CollectedField, obj *model.PlayerNfl) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PlayerNFL",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.OverallRank, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PlayerNFL_playerName(ctx context.Context, field graphql.CollectedField, obj *model.PlayerNfl) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PlayerNFL",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PlayerName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PlayerNFL_position(ctx context.Context, field graphql.CollectedField, obj *model.PlayerNfl) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PlayerNFL",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Position, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PlayerNFL_positionRank(ctx context.Context, field graphql.CollectedField, obj *model.PlayerNfl) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PlayerNFL",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PositionRank, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PlayerNFL_teamNFL(ctx context.Context, field graphql.CollectedField, obj *model.PlayerNfl) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PlayerNFL",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TeamNfl, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_users(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1486,6 +1786,45 @@ func (ec *executionContext) _Query_contracts(ctx context.Context, field graphql.
 	res := resTmp.([]*model.Contract)
 	fc.Result = res
 	return ec.marshalOContract2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐContractᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_players(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_players_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Players(rctx, args["numOfResults"].(*int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.PlayerNfl)
+	fc.Result = res
+	return ec.marshalOPlayerNFL2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐPlayerNflᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3184,6 +3523,58 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 	return out
 }
 
+var playerNFLImplementors = []string{"PlayerNFL"}
+
+func (ec *executionContext) _PlayerNFL(ctx context.Context, sel ast.SelectionSet, obj *model.PlayerNfl) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, playerNFLImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PlayerNFL")
+		case "id":
+			out.Values[i] = ec._PlayerNFL_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "overallRank":
+			out.Values[i] = ec._PlayerNFL_overallRank(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "playerName":
+			out.Values[i] = ec._PlayerNFL_playerName(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "position":
+			out.Values[i] = ec._PlayerNFL_position(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "positionRank":
+			out.Values[i] = ec._PlayerNFL_positionRank(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "teamNFL":
+			out.Values[i] = ec._PlayerNFL_teamNFL(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var queryImplementors = []string{"Query"}
 
 func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -3241,6 +3632,17 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_contracts(ctx, field)
+				return res
+			})
+		case "players":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_players(ctx, field)
 				return res
 			})
 		case "__type":
@@ -3667,6 +4069,16 @@ func (ec *executionContext) unmarshalNNewUser2githubᚗcomᚋrifaulknerᚋsports
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalNPlayerNFL2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐPlayerNfl(ctx context.Context, sel ast.SelectionSet, v *model.PlayerNfl) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._PlayerNFL(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4040,6 +4452,21 @@ func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.Se
 	return graphql.MarshalID(*v)
 }
 
+func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalInt(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return graphql.MarshalInt(*v)
+}
+
 func (ec *executionContext) marshalOLeague2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐLeague(ctx context.Context, sel ast.SelectionSet, v []*model.League) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -4085,6 +4512,46 @@ func (ec *executionContext) marshalOLeague2ᚖgithubᚗcomᚋrifaulknerᚋsports
 		return graphql.Null
 	}
 	return ec._League(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOPlayerNFL2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐPlayerNflᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.PlayerNfl) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNPlayerNFL2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐPlayerNfl(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {

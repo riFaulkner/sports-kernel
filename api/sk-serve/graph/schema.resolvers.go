@@ -76,6 +76,15 @@ func (r *queryResolver) Contracts(ctx context.Context, leagueID *string, teamID 
 	return contracts, nil
 }
 
+func (r *queryResolver) Players(ctx context.Context, numOfResults *int) ([]*model.PlayerNfl, error) {
+	players, err := r.Player.GetAll(ctx, numOfResults)
+	if err != nil {
+		return nil, err
+	}
+
+	return players, nil
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
