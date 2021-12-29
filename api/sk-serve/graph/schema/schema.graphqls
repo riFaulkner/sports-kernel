@@ -41,7 +41,7 @@ type PlayerNFL {
 type Query {
   users: [User]
   leagues: [League]
-  leagueById(leagueId: ID): League
+  league(leagueId: ID): League
   teams(leagueId: ID): [Team!]
   contracts(leagueId: ID, teamId: ID): [Contract!]
   players(numOfResults: Int): [PlayerNFL!]

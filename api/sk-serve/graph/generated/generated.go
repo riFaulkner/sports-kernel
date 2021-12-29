@@ -92,7 +92,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		Contracts       func(childComplexity int, leagueID *string, teamID *string) int
-		LeagueByID      func(childComplexity int, leagueID *string) int
+		League          func(childComplexity int, leagueID *string) int
 		Leagues         func(childComplexity int) int
 		Players         func(childComplexity int, numOfResults *int) int
 		Teams           func(childComplexity int, leagueID *string) int
@@ -129,7 +129,7 @@ type MutationResolver interface {
 type QueryResolver interface {
 	Users(ctx context.Context) ([]*model.User, error)
 	Leagues(ctx context.Context) ([]*model.League, error)
-	LeagueByID(ctx context.Context, leagueID *string) (*model.League, error)
+	League(ctx context.Context, leagueID *string) (*model.League, error)
 	Teams(ctx context.Context, leagueID *string) ([]*model.Team, error)
 	Contracts(ctx context.Context, leagueID *string, teamID *string) ([]*model.Contract, error)
 	Players(ctx context.Context, numOfResults *int) ([]*model.PlayerNfl, error)
@@ -376,17 +376,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Contracts(childComplexity, args["leagueId"].(*string), args["teamId"].(*string)), true
 
-	case "Query.leagueById":
-		if e.complexity.Query.LeagueByID == nil {
+	case "Query.league":
+		if e.complexity.Query.League == nil {
 			break
 		}
 
-		args, err := ec.field_Query_leagueById_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_league_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.LeagueByID(childComplexity, args["leagueId"].(*string)), true
+		return e.complexity.Query.League(childComplexity, args["leagueId"].(*string)), true
 
 	case "Query.leagues":
 		if e.complexity.Query.Leagues == nil {
@@ -642,7 +642,7 @@ type PlayerNFL {
 type Query {
   users: [User]
   leagues: [League]
-  leagueById(leagueId: ID): League
+  league(leagueId: ID): League
   teams(leagueId: ID): [Team!]
   contracts(leagueId: ID, teamId: ID): [Contract!]
   players(numOfResults: Int): [PlayerNFL!]
@@ -765,7 +765,7 @@ func (ec *executionContext) field_Query_contracts_args(ctx context.Context, rawA
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_leagueById_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_league_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *string
@@ -1944,7 +1944,7 @@ func (ec *executionContext) _Query_leagues(ctx context.Context, field graphql.Co
 	return ec.marshalOLeague2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐLeague(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_leagueById(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_league(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1961,7 +1961,7 @@ func (ec *executionContext) _Query_leagueById(ctx context.Context, field graphql
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_leagueById_args(ctx, rawArgs)
+	args, err := ec.field_Query_league_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -1969,7 +1969,7 @@ func (ec *executionContext) _Query_leagueById(ctx context.Context, field graphql
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().LeagueByID(rctx, args["leagueId"].(*string))
+		return ec.resolvers.Query().League(rctx, args["leagueId"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4092,7 +4092,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				res = ec._Query_leagues(ctx, field)
 				return res
 			})
-		case "leagueById":
+		case "league":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -4100,7 +4100,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_leagueById(ctx, field)
+				res = ec._Query_league(ctx, field)
 				return res
 			})
 		case "teams":
