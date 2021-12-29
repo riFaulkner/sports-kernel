@@ -25,12 +25,18 @@ type ContractDetail struct {
 	Year4value                float64 `json:"year4value"`
 }
 
+type Division struct {
+	DivisionName string `json:"divisionName"`
+	LeadingWins  *int   `json:"leadingWins"`
+}
+
 type League struct {
-	ID         string    `json:"id"`
-	LeagueName string    `json:"leagueName"`
-	LogoURL    string    `json:"logoUrl"`
-	StartDate  time.Time `json:"startDate"`
-	Teams      []*Team   `json:"teams"`
+	ID         string      `json:"id"`
+	LeagueName string      `json:"leagueName"`
+	LogoURL    string      `json:"logoUrl"`
+	StartDate  time.Time   `json:"startDate"`
+	Teams      []*Team     `json:"teams"`
+	Divisions  []*Division `json:"divisions"`
 }
 
 type NewTeam struct {

@@ -1,0 +1,13 @@
+type League {
+    id: ID!
+    leagueName: String!
+    logoUrl: String!
+    startDate: Time!
+    teams: [Team!]
+    divisions: [Division!]
+}
+
+type Division {
+    divisionName: String!
+    leadingWins: Int
+}

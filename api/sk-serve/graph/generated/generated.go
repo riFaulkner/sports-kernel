@@ -62,7 +62,13 @@ type ComplexityRoot struct {
 		Year4value                func(childComplexity int) int
 	}
 
+	Division struct {
+		DivisionName func(childComplexity int) int
+		LeadingWins  func(childComplexity int) int
+	}
+
 	League struct {
+		Divisions  func(childComplexity int) int
 		ID         func(childComplexity int) int
 		LeagueName func(childComplexity int) int
 		LogoURL    func(childComplexity int) int
@@ -86,6 +92,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		Contracts       func(childComplexity int, leagueID *string, teamID *string) int
+		LeagueByID      func(childComplexity int, leagueID *string) int
 		Leagues         func(childComplexity int) int
 		Players         func(childComplexity int, numOfResults *int) int
 		Teams           func(childComplexity int, leagueID *string) int
@@ -122,6 +129,7 @@ type MutationResolver interface {
 type QueryResolver interface {
 	Users(ctx context.Context) ([]*model.User, error)
 	Leagues(ctx context.Context) ([]*model.League, error)
+	LeagueByID(ctx context.Context, leagueID *string) (*model.League, error)
 	Teams(ctx context.Context, leagueID *string) ([]*model.Team, error)
 	Contracts(ctx context.Context, leagueID *string, teamID *string) ([]*model.Contract, error)
 	Players(ctx context.Context, numOfResults *int) ([]*model.PlayerNfl, error)
@@ -233,6 +241,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.ContractDetail.Year4value(childComplexity), true
+
+	case "Division.divisionName":
+		if e.complexity.Division.DivisionName == nil {
+			break
+		}
+
+		return e.complexity.Division.DivisionName(childComplexity), true
+
+	case "Division.leadingWins":
+		if e.complexity.Division.LeadingWins == nil {
+			break
+		}
+
+		return e.complexity.Division.LeadingWins(childComplexity), true
+
+	case "League.divisions":
+		if e.complexity.League.Divisions == nil {
+			break
+		}
+
+		return e.complexity.League.Divisions(childComplexity), true
 
 	case "League.id":
 		if e.complexity.League.ID == nil {
@@ -346,6 +375,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Contracts(childComplexity, args["leagueId"].(*string), args["teamId"].(*string)), true
+
+	case "Query.leagueById":
+		if e.complexity.Query.LeagueByID == nil {
+			break
+		}
+
+		args, err := ec.field_Query_leagueById_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.LeagueByID(childComplexity, args["leagueId"].(*string)), true
 
 	case "Query.leagues":
 		if e.complexity.Query.Leagues == nil {
@@ -545,6 +586,19 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
+	{Name: "graph/schema/league/league.graphqls", Input: `type League {
+    id: ID!
+    leagueName: String!
+    logoUrl: String!
+    startDate: Time!
+    teams: [Team!]
+    divisions: [Division!]
+}
+
+type Division {
+    divisionName: String!
+    leadingWins: Int
+}`, BuiltIn: false},
 	{Name: "graph/schema/schema.graphqls", Input: `#Data types and Queries
 type Contract {
 playerID: String!
@@ -565,8 +619,6 @@ year3Value: Float!
 year4value: Float!
 }
 
-
-
 type Team {
   id: ID!
   foundedDate: Time!
@@ -576,13 +628,7 @@ type Team {
 
 scalar Time
 
-type League {
-  id: ID!
-  leagueName: String!
-  logoUrl: String!
-  startDate: Time!
-  teams: [Team!]
-}
+
 
 type PlayerNFL {
   id: ID!
@@ -596,6 +642,7 @@ type PlayerNFL {
 type Query {
   users: [User]
   leagues: [League]
+  leagueById(leagueId: ID): League
   teams(leagueId: ID): [Team!]
   contracts(leagueId: ID, teamId: ID): [Contract!]
   players(numOfResults: Int): [PlayerNFL!]
@@ -715,6 +762,21 @@ func (ec *executionContext) field_Query_contracts_args(ctx context.Context, rawA
 		}
 	}
 	args["teamId"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_leagueById_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *string
+	if tmp, ok := rawArgs["leagueId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("leagueId"))
+		arg0, err = ec.unmarshalOID2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["leagueId"] = arg0
 	return args, nil
 }
 
@@ -1253,6 +1315,73 @@ func (ec *executionContext) _ContractDetail_year4value(ctx context.Context, fiel
 	return ec.marshalNFloat2float64(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Division_divisionName(ctx context.Context, field graphql.CollectedField, obj *model.Division) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Division",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DivisionName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Division_leadingWins(ctx context.Context, field graphql.CollectedField, obj *model.Division) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Division",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.LeadingWins, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _League_id(ctx context.Context, field graphql.CollectedField, obj *model.League) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1423,6 +1552,38 @@ func (ec *executionContext) _League_teams(ctx context.Context, field graphql.Col
 	res := resTmp.([]*model.Team)
 	fc.Result = res
 	return ec.marshalOTeam2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐTeamᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _League_divisions(ctx context.Context, field graphql.CollectedField, obj *model.League) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "League",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Divisions, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Division)
+	fc.Result = res
+	return ec.marshalODivision2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐDivisionᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1781,6 +1942,45 @@ func (ec *executionContext) _Query_leagues(ctx context.Context, field graphql.Co
 	res := resTmp.([]*model.League)
 	fc.Result = res
 	return ec.marshalOLeague2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐLeague(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_leagueById(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_leagueById_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().LeagueByID(rctx, args["leagueId"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.League)
+	fc.Result = res
+	return ec.marshalOLeague2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐLeague(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_teams(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3692,6 +3892,35 @@ func (ec *executionContext) _ContractDetail(ctx context.Context, sel ast.Selecti
 	return out
 }
 
+var divisionImplementors = []string{"Division"}
+
+func (ec *executionContext) _Division(ctx context.Context, sel ast.SelectionSet, obj *model.Division) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, divisionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Division")
+		case "divisionName":
+			out.Values[i] = ec._Division_divisionName(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "leadingWins":
+			out.Values[i] = ec._Division_leadingWins(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var leagueImplementors = []string{"League"}
 
 func (ec *executionContext) _League(ctx context.Context, sel ast.SelectionSet, obj *model.League) graphql.Marshaler {
@@ -3725,6 +3954,8 @@ func (ec *executionContext) _League(ctx context.Context, sel ast.SelectionSet, o
 			}
 		case "teams":
 			out.Values[i] = ec._League_teams(ctx, field, obj)
+		case "divisions":
+			out.Values[i] = ec._League_divisions(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3859,6 +4090,17 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_leagues(ctx, field)
+				return res
+			})
+		case "leagueById":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_leagueById(ctx, field)
 				return res
 			})
 		case "teams":
@@ -4311,6 +4553,16 @@ func (ec *executionContext) marshalNContract2ᚖgithubᚗcomᚋrifaulknerᚋspor
 		return graphql.Null
 	}
 	return ec._Contract(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNDivision2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐDivision(ctx context.Context, sel ast.SelectionSet, v *model.Division) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Division(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v interface{}) (float64, error) {
@@ -4781,6 +5033,46 @@ func (ec *executionContext) marshalOContractDetail2ᚖgithubᚗcomᚋrifaulkner�
 		return graphql.Null
 	}
 	return ec._ContractDetail(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalODivision2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐDivisionᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Division) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNDivision2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐDivision(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
 }
 
 func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v interface{}) (*string, error) {

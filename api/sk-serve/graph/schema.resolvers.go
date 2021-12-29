@@ -51,12 +51,21 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 }
 
 func (r *queryResolver) Leagues(ctx context.Context) ([]*model.League, error) {
-	leagues, err := r.League.GetAll(ctx)
+	leagues, err := r.Resolver.League.GetAll(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	return leagues, nil
+}
+
+func (r *queryResolver) LeagueByID(ctx context.Context, leagueID *string) (*model.League, error) {
+	league, err := r.Resolver.League.GetByLeagueId(ctx, *leagueID)
+	if err != nil {
+		return nil, err
+	}
+
+	return league, nil
 }
 
 func (r *queryResolver) Teams(ctx context.Context, leagueID *string) ([]*model.Team, error) {
@@ -104,3 +113,19 @@ func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *queryResolver) League(ctx context.Context, leagueID *string) (*model.League, error) {
+	//league, err := r.League.GetByLeagueId(ctx, leagueID)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//return league, nil
+	panic("help")
+}
