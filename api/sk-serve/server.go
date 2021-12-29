@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"github.com/go-chi/chi"
+	"github.com/rs/cors"
 	"log"
 	"net/http"
 	"os"
@@ -15,27 +17,68 @@ import (
 const defaultPort = "8080"
 
 func main() {
+
+	ctx := context.Background()
+
+	srv := configureGql(ctx)
+
+	router := configureRouter(srv)
+
+	startServer(router)
+}
+
+func configureGql(context context.Context) *handler.Server {
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(graph.Initialize(context)))
+
+	// placeholder, might try to use websockts at somepoint so I don't want to lose this config
+	//srv.AddTransport(&transport.Websocket{
+	//	Upgrader: websocket.Upgrader{
+	//		CheckOrigin: func(r *http.Request) bool {
+	//			// Check against desired domains
+	//			return r.Host == "sports-kernel.com"
+	//		},
+	//		ReadBufferSize:  1024,
+	//		WriteBufferSize: 1024,
+	//	},
+	//})
+
+	return srv
+}
+
+func configureRouter(server *handler.Server) *chi.Mux {
+	router := chi.NewRouter()
+	// Setting up cors config
+	router.Use(cors.New(cors.Options{
+		AllowedOrigins:   getAllowedHOrigins(),
+		AllowedHeaders:   []string{"Authorization", "Content-Type"},
+		AllowCredentials: true,
+		Debug:            true,
+	}).Handler)
+
+	router.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
+	router.Handle("/graphql", server)
+
+	return router
+}
+
+func getAllowedHOrigins() []string {
+	if os.Getenv("ENV") == "PROD" {
+		return []string{"https://api.sports-kernel.com"}
+	}
+	return []string{"http://localhost:3000"}
+}
+
+func startServer(router *chi.Mux) {
+	port := getPort()
+	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
+
+	log.Fatal(http.ListenAndServe(":"+port, router))
+}
+
+func getPort() string {
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort
 	}
-
-	ctx := context.Background()
-	//client := firestore.NewClient(ctx)
-	//graph.Initialize(ctx)
-
-	//userService := &db.UserImpl{Client: client}
-	//leagueService := &db.LeagueImpl{Client: client}
-	//teamService := &db.TeamImpl{Client: client}
-	//contractService := &db.ContractImpl{Client: client}
-
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(graph.Initialize(ctx))) //generated.Config{Resolvers: &graph.Resolver{
-	//User: userService, League: leagueService, Team: teamService, Contract: contractService,
-	//}}))
-
-	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	http.Handle("/query", srv)
-
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	return port
 }

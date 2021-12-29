@@ -1,0 +1,14 @@
+type User {
+    id: ID!
+    ownerName: String!
+    email: String!
+    avatar: String!
+}
+
+
+type UserPreferences {
+    id: ID!
+    ownerName: String!
+    preferredLeagueId: String
+    leagues: [League!]!
+}

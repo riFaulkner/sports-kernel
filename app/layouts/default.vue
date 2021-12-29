@@ -9,7 +9,7 @@
     >
       <v-list>
         <v-list-item
-            v-for="(item, i) in items"
+            v-for="(item, i) in menuItems"
             :key="i"
             :to="item.to"
             router
@@ -34,22 +34,35 @@
       <v-toolbar-title v-if="$vuetify.breakpoint.smAndUp" v-text="title"/>
 
       <v-spacer/>
-      <!--        {{$auth.user.email}}-->
-      <!--        Add Avitar-->
       <template v-if="$auth.loggedIn">
         <v-menu>
           <template v-slot:activator="{on, attrs}">
-            <v-toolbar-items>
+            <v-toolbar-items
+                v-if="isInitialized"
+            >
               <v-btn
                   v-bind="attrs"
                   v-on="on"
-              >{{leagues.activeLeague.leagueName}} <v-icon>mdi-chevron-down</v-icon></v-btn>
+              >
+                <template v-if="activeLeague">{{activeLeague.leagueName}}</template>
+                <template v-else>Select a League</template>
+              <v-icon>mdi-chevron-down</v-icon></v-btn>
             </v-toolbar-items>
+            <v-btn
+                v-else
+                color="primary"
+                medium
+                :loading="!isInitialized"
+            >
+              <span v-if="isInitialized">
+                Join League
+              </span>
+            </v-btn>
           </template>
-          <v-list>
+          <v-list v-if=leagues >
             <v-list-item
-              v-for="league in leagues.allLeagues"
-              :key="league.leagueId"
+              v-for="league in leagues"
+              :key="league.id"
               @click="changeLeague(league)">
               <v-list-item-title>{{league.leagueName}}</v-list-item-title>
             </v-list-item>
@@ -86,29 +99,45 @@
         </v-toolbar-items>
       </template>
 
+      <template v-if=submenu v-slot:extension>
+        <v-tabs
+            v-model="activeTab"
+            align-with-title
+        >
+          <v-tab
+            v-for="tab in submenu"
+            :key="tab"
+          >
+            {{tab}}
+          </v-tab>
+        </v-tabs>
+      </template>
     </v-app-bar>
+
     <v-main>
-      <v-container>
+      <v-container
+        fluid
+      >
         <Nuxt/>
       </v-container>
     </v-main>
-
     <v-footer
         :absolute=true
         app
     >
-      <span>&copy; {{ new Date().getFullYear() }}</span>
+      <v-card-text class="text-center">&copy {{ new Date().getFullYear() }}</v-card-text>
     </v-footer>
   </v-app>
 </template>
 
 <script>
+
 export default {
   data() {
     return {
       clipped: true,
       drawer: false,
-      items: [
+      menuItems: [
         {
           icon: 'mdi-account-group',
           title: "League Home",
@@ -126,29 +155,32 @@ export default {
         },
       ],
       title: 'Sports Kernel',
-      leagues: {
-        activeLeague: {
-          leagueName: "Dev League",
-          leagueId: "asdfkldsfjdf"
-        },
-        allLeagues: [
-          {
-            leagueName: "Dev League",
-            leagueId: "asdfkldsfjdf"
-          },
-          {
-            leagueName: "Prod League",
-            leagueId: "onsdfoiun490cnavkl"
-          }
-        ]
-
-
-      },
       userAccountActions: [
         {name: "Preferences", icon: "mdi-account", action: () => {}},
         {name: "Logout", icon: "mdi-logout", action: () => {this.logout()}}
-      ]
+      ],
+      isInitialized: false
     }
+  },
+  computed: {
+    activeLeague() {
+      return this.$store.getters["application/getActiveLeague"];
+    },
+    leagues() {
+      const leagues = this.$store.getters["user/getUserLeagues"];
+      return leagues ? leagues : [];
+    },
+    submenu(){
+      return this.$store.state.application.submenu;
+    },
+    activeTab: {
+      get() {
+        return this.$store.state.application.activeTab;
+      },
+      set(newValue) {
+        this.$store.dispatch("application/updateActiveTab", newValue)
+      }
+    },
   },
   methods: {
     logout: async function () {
@@ -158,8 +190,12 @@ export default {
       this.$auth.loginWith('auth0');
     },
     changeLeague(league) {
-      this.leagues.activeLeague = league
-    }
+      this.$store.dispatch('application/updateActiveLeague', league);
+    },
+  },
+  created() {
+      this.$store.dispatch('user/initializeUserPreferences', {apolloClient: this.$apollo})
+      this.isInitialized = true;
   }
 }
 </script>
@@ -167,6 +203,5 @@ export default {
 .SiteHeaderLogo {
   margin-bottom: -15px;
 }
-
 
 </style>

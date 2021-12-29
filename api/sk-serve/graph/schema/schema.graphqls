@@ -1,29 +1,21 @@
 #Data types and Queries
-
 type Contract {
-  playerID: String!
-  teamID: String!
-  totalContractValue: Float!
-  contractLength: Int!
-  playerPosition: String!
-  contractDetails: ContractDetail
+playerID: String!
+teamID: String!
+totalContractValue: Float!
+contractLength: Int!
+playerPosition: String!
+contractDetails: ContractDetail
 }
 
 type ContractDetail {
-  restructuredContract: Boolean!
-  totalRemainingValue: Float!
-  currentYearRemainingValue: Float!
-  year1value: Float!
-  year2value: Float!
-  year3Value: Float!
-  year4value: Float!
-}
-
-type User {
-  id: ID!
-  ownerName: String!
-  email: String!
-  avatar: String!
+restructuredContract: Boolean!
+totalRemainingValue: Float!
+currentYearRemainingValue: Float!
+year1value: Float!
+year2value: Float!
+year3Value: Float!
+year4value: Float!
 }
 
 type Team {
@@ -58,6 +50,7 @@ type Query {
   teams(leagueId: ID): [Team!]
   contracts(leagueId: ID, teamId: ID): [Contract!]
   players(numOfResults: Int): [PlayerNFL!]
+  userPreferences(userId: ID): UserPreferences
 }
 
 #Mutations and Inputs
