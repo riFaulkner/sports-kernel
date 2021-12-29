@@ -37,17 +37,32 @@
       <template v-if="$auth.loggedIn">
         <v-menu>
           <template v-slot:activator="{on, attrs}">
-            <v-toolbar-items>
+            <v-toolbar-items
+                v-if="isInitialized"
+            >
               <v-btn
                   v-bind="attrs"
                   v-on="on"
-              > {{activeLeague.leagueName}} <v-icon>mdi-chevron-down</v-icon></v-btn>
+              >
+                <template v-if="activeLeague">{{activeLeague.leagueName}}</template>
+                <template v-else>Select a League</template>
+              <v-icon>mdi-chevron-down</v-icon></v-btn>
             </v-toolbar-items>
+            <v-btn
+                v-else
+                color="primary"
+                medium
+                :loading="!isInitialized"
+            >
+              <span v-if="isInitialized">
+                Join League
+              </span>
+            </v-btn>
           </template>
-          <v-list>
+          <v-list v-if=leagues >
             <v-list-item
               v-for="league in leagues"
-              :key="league.leagueId"
+              :key="league.id"
               @click="changeLeague(league)">
               <v-list-item-title>{{league.leagueName}}</v-list-item-title>
             </v-list-item>
@@ -116,7 +131,6 @@
 </template>
 
 <script>
-import {USER_PREFERENCES_QUERY} from "@/graphql/queries/user/userGraphQl";
 
 export default {
   data() {
@@ -145,15 +159,16 @@ export default {
         {name: "Preferences", icon: "mdi-account", action: () => {}},
         {name: "Logout", icon: "mdi-logout", action: () => {this.logout()}}
       ],
+      isInitialized: false
     }
   },
   computed: {
     activeLeague() {
-      const activeLeague =  this.$store.getters["application/getActiveLeague"];
-      return activeLeague ? activeLeague : {leagueName: "Select a League"};
+      return this.$store.getters["application/getActiveLeague"];
     },
     leagues() {
-      return this.$store.state.user.allLeagues;
+      const leagues = this.$store.getters["user/getUserLeagues"];
+      return leagues ? leagues : [];
     },
     submenu(){
       return this.$store.state.application.submenu;
@@ -165,7 +180,7 @@ export default {
       set(newValue) {
         this.$store.dispatch("application/updateActiveTab", newValue)
       }
-    }
+    },
   },
   methods: {
     logout: async function () {
@@ -178,14 +193,9 @@ export default {
       this.$store.dispatch('application/updateActiveLeague', league);
     },
   },
-  apollo: {
-    userPreferences: {
-      prefetch: false,
-      query: USER_PREFERENCES_QUERY,
-      variables: {
-        userId: 'x3IOCU28HGe2GHAF4azJ' //this.$auth.user
-      }
-    }
+  created() {
+      this.$store.dispatch('user/initializeUserPreferences', {apolloClient: this.$apollo})
+      this.isInitialized = true;
   }
 }
 </script>
@@ -193,6 +203,5 @@ export default {
 .SiteHeaderLogo {
   margin-bottom: -15px;
 }
-
 
 </style>

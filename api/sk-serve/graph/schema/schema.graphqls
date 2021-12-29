@@ -1,8 +1,28 @@
 #Data types and Queries
+type Contract {
+playerID: String!
+teamID: String!
+totalContractValue: Float!
+contractLength: Int!
+playerPosition: String!
+contractDetails: ContractDetail
+}
+
+type ContractDetail {
+restructuredContract: Boolean!
+totalRemainingValue: Float!
+currentYearRemainingValue: Float!
+year1value: Float!
+year2value: Float!
+year3Value: Float!
+year4value: Float!
+}
+
 type Team {
   id: ID!
   foundedDate: Time!
   teamName: String!
+  ownerID: String!
 }
 
 scalar Time
@@ -15,11 +35,22 @@ type League {
   teams: [Team!]
 }
 
+type PlayerNFL {
+  id: ID!
+  overallRank: Int!
+  playerName: String!
+  position: String!
+  positionRank: String!
+  teamNFL: String!  
+}
+
 type Query {
   users: [User]
   leagues: [League]
   teams(leagueId: ID): [Team!]
-  UserPreferences(userId: ID): UserPreferencesa
+  contracts(leagueId: ID, teamId: ID): [Contract!]
+  players(numOfResults: Int): [PlayerNFL!]
+  userPreferences(userId: ID): UserPreferences
 }
 
 #Mutations and Inputs
@@ -30,6 +61,12 @@ input NewUser {
   avatar: String!
 }
 
+input NewTeam {
+  teamName: String!
+  foundedDate: Time
+}
+
 type Mutation {
   createUser(input: NewUser!): User!
+  createTeam(leagueId: ID, input: NewTeam!): Team!
 }

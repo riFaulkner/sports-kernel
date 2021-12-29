@@ -6,6 +6,25 @@ import (
 	"time"
 )
 
+type Contract struct {
+	PlayerID           string          `json:"playerID"`
+	TeamID             string          `json:"teamID"`
+	TotalContractValue float64         `json:"totalContractValue"`
+	ContractLength     int             `json:"contractLength"`
+	PlayerPosition     string          `json:"playerPosition"`
+	ContractDetails    *ContractDetail `json:"contractDetails"`
+}
+
+type ContractDetail struct {
+	RestructuredContract      bool    `json:"restructuredContract"`
+	TotalRemainingValue       float64 `json:"totalRemainingValue"`
+	CurrentYearRemainingValue float64 `json:"currentYearRemainingValue"`
+	Year1value                float64 `json:"year1value"`
+	Year2value                float64 `json:"year2value"`
+	Year3Value                float64 `json:"year3Value"`
+	Year4value                float64 `json:"year4value"`
+}
+
 type League struct {
 	ID         string    `json:"id"`
 	LeagueName string    `json:"leagueName"`
@@ -14,16 +33,31 @@ type League struct {
 	Teams      []*Team   `json:"teams"`
 }
 
+type NewTeam struct {
+	TeamName    string     `json:"teamName"`
+	FoundedDate *time.Time `json:"foundedDate"`
+}
+
 type NewUser struct {
 	OwnerName string `json:"ownerName"`
 	Email     string `json:"email"`
 	Avatar    string `json:"avatar"`
 }
 
+type PlayerNfl struct {
+	ID           string `json:"id"`
+	OverallRank  int    `json:"overallRank"`
+	PlayerName   string `json:"playerName"`
+	Position     string `json:"position"`
+	PositionRank string `json:"positionRank"`
+	TeamNfl      string `json:"teamNFL"`
+}
+
 type Team struct {
 	ID          string    `json:"id"`
 	FoundedDate time.Time `json:"foundedDate"`
 	TeamName    string    `json:"teamName"`
+	OwnerID     string    `json:"ownerID"`
 }
 
 type User struct {

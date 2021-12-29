@@ -5,6 +5,7 @@ type User {
     avatar: String!
 }
 
+
 type UserPreferences {
     id: ID!
     ownerName: String!

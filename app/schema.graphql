@@ -5,6 +5,25 @@ schema {
     mutation: Mutation
 }
 
+type Contract {
+    contractDetails: ContractDetail
+    contractLength: Int!
+    playerID: String!
+    playerPosition: String!
+    teamID: String!
+    totalContractValue: Float!
+}
+
+type ContractDetail {
+    currentYearRemainingValue: Float!
+    restructuredContract: Boolean!
+    totalRemainingValue: Float!
+    year1value: Float!
+    year2value: Float!
+    year3Value: Float!
+    year4value: Float!
+}
+
 type League {
     id: ID!
     leagueName: String!
@@ -14,19 +33,32 @@ type League {
 }
 
 type Mutation {
+    createTeam(input: NewTeam!, leagueId: ID): Team!
     createUser(input: NewUser!): User!
 }
 
+type PlayerNFL {
+    id: ID!
+    overallRank: Int!
+    playerName: String!
+    position: String!
+    positionRank: String!
+    teamNFL: String!
+}
+
 type Query {
-    UserPreferences(userId: ID): UserPreferences
+    contracts(leagueId: ID, teamId: ID): [Contract!]
     leagues: [League]
+    players(numOfResults: Int): [PlayerNFL!]
     teams(leagueId: ID): [Team!]
+    userPreferences(userId: ID): UserPreferences
     users: [User]
 }
 
 type Team {
     foundedDate: Time!
     id: ID!
+    ownerID: String!
     teamName: String!
 }
 
@@ -44,10 +76,16 @@ type UserPreferences {
     preferredLeagueId: String
 }
 
+input NewTeam {
+    foundedDate: Time
+    teamName: String!
+}
+
 input NewUser {
     avatar: String!
     email: String!
     ownerName: String!
 }
+
 
 scalar Time

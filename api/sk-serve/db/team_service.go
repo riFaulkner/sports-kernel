@@ -18,9 +18,7 @@ type TeamImpl struct {
 func (u *TeamImpl) GetAll(ctx context.Context, leagueId string) ([]*model.Team, error) {
 	teams := make([]*model.Team, 0)
 
-
 	//Create Document Ref - There is no traffic associated with this...
-
 	league := u.Client.Collection("leagues").Doc(leagueId)
 
 	results, err := league.Collection("teams").Documents(ctx).GetAll()
@@ -40,4 +38,11 @@ func (u *TeamImpl) GetAll(ctx context.Context, leagueId string) ([]*model.Team, 
 		teams = append(teams, team)
 	}
 	return teams, nil
+}
+
+func (t *TeamImpl) Create(ctx context.Context, leagueId string, team model.Team) error {
+	league := t.Client.Collection("leagues").Doc(leagueId)
+
+	_, _, err := league.Collection("teams").Add(ctx, team)
+	return err
 }

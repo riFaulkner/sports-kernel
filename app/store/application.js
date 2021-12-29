@@ -27,7 +27,7 @@ export const actions = {
     },
     updateSubmenu(context, payload) {
         context.commit("updateSubmenu", payload);
-    }
+    },
 }
 
 export const getters = {
@@ -39,4 +39,5 @@ export const getters = {
     getActiveTab(state) {
         return state.activeTab;
     }
+
 }
