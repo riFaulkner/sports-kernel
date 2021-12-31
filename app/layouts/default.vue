@@ -113,7 +113,6 @@
         </v-tabs>
       </template>
     </v-app-bar>
-
     <v-main>
       <v-container
         fluid
@@ -121,6 +120,24 @@
         <Nuxt/>
       </v-container>
     </v-main>
+    <v-snackbar
+      v-model="globalAlert.alert"
+      text
+      :timeout="globalAlert.alertPayload.timeout"
+      disabled="true"
+      :color="globalAlert.alertPayload.color"
+    > {{globalAlert.alertPayload.message}}
+      <template v-slot:action="{ attrs }">
+        <v-btn
+            :color="globalAlert.alertPayload.color"
+            text
+            v-bind="attrs"
+            @click="dismissAlert"
+        >
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
     <v-footer
         :absolute=true
         app
@@ -132,16 +149,21 @@
 
 <script>
 
+import {LEAGUE_BY_ID_QUERY} from "@/graphql/queries/league/leagueGraphQL";
+
 export default {
   data() {
     return {
+      alert: false,
+      alertPayload: {
+      },
       clipped: true,
       drawer: false,
       menuItems: [
         {
           icon: 'mdi-account-group',
           title: "League Home",
-          to: '/league-home'
+          to: '/league'
         },
         {
           icon: 'mdi-progress-wrench',
@@ -166,6 +188,9 @@ export default {
     activeLeague() {
       return this.$store.getters["application/getActiveLeague"];
     },
+    globalAlert() {
+      return this.$store.state.application.alert;
+    },
     leagues() {
       const leagues = this.$store.getters["user/getUserLeagues"];
       return leagues ? leagues : [];
@@ -178,11 +203,14 @@ export default {
         return this.$store.state.application.activeTab;
       },
       set(newValue) {
-        this.$store.dispatch("application/updateActiveTab", newValue)
+        this.$store.dispatch("application/updateActiveTab", newValue);
       }
     },
   },
   methods: {
+    dismissAlert() {
+      this.$store.dispatch('application/alertDismiss');
+    },
     logout: async function () {
       await this.$auth.logout()
     },
@@ -190,7 +218,25 @@ export default {
       this.$auth.loginWith('auth0');
     },
     changeLeague(league) {
-      this.$store.dispatch('application/updateActiveLeague', league);
+      this.isInitialized = false; // Set so the spinner will run
+      this.$apollo.query(
+          {
+            query: LEAGUE_BY_ID_QUERY,
+            variables: {
+              leagueId: league.id
+            }
+          }
+          // query for the full league info
+      ).then((response) => {
+        this.$store.dispatch('application/updateActiveLeague', response.data.league);
+        this.$store.dispatch('application/alertSuccess', {message: "Successfully switched active league."});
+      })
+      .catch((error) => {
+        this.$store.dispatch('application/alertError',"Unable to switch active league, try again later.");
+        console.error("Failed to update the users league, server response: ", error);
+      });
+
+      this.isInitialized = true;
     },
   },
   created() {

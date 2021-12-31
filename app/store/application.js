@@ -2,7 +2,15 @@ export const state = () => ({
     isInitialized: false,
     activeLeague: null,
     submenu: null,
-    activeTab: null
+    activeTab: null,
+    alert: {
+        alert: false,
+        alertPayload: {
+            color: "primary",
+            timeout: -1,
+            message: ""
+        }
+    }
 });
 
 export const mutations = {
@@ -14,6 +22,9 @@ export const mutations = {
     },
     updateSubmenu(state, payload) {
         state.submenu = payload;
+    },
+    UPDATE_ALERT(state, payload) {
+        state.alert = payload;
     }
 }
 
@@ -28,6 +39,50 @@ export const actions = {
     updateSubmenu(context, payload) {
         context.commit("updateSubmenu", payload);
     },
+    alertDismiss(context) {
+        const dismissAlert ={
+            alert: false,
+            alertPayload: {
+                color: "primary",
+                timeout: -1,
+                message: ""
+            }
+        };
+        context.commit("UPDATE_ALERT", dismissAlert);
+    },
+    alertSuccess(context, payload) {
+        const successAlert = {
+            alert: true,
+            alertPayload: {
+                color: "success",
+                timeout: -1,
+                message: payload.message
+            }
+        }
+        context.commit("UPDATE_ALERT", successAlert);
+    },
+    alertInfo(context, payload) {
+        const infoAlert = {
+            alert: true,
+            alertPayload: {
+                color: "info",
+                timeout: -1,
+                message: payload.message
+            }
+        }
+        context.commit("UPDATE_ALERT", infoAlert);
+    },
+    alertError(context, payload) {
+        const errorAlert = {
+            alert: true,
+            alertPayload: {
+                color: "error",
+                timeout: -1,
+                message: payload.message
+            }
+        }
+        context.commit("UPDATE_ALERT", errorAlert);
+    }
 }
 
 export const getters = {

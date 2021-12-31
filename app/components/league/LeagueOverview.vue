@@ -9,12 +9,14 @@
       <template v-slot:item.record="{item}">
         {{item.outcomes.wins}}-{{item.outcomes.losses}}-{{item.outcomes.ties}}
       </template>
-
       <template v-slot:item.winPct="{item}">
         {{getWinPercentage(item.outcomes)}}
       </template>
       <template v-slot:item.gamesBack="{item}">
         {{getGamesBack(item)}}
+      </template>
+      <template v-slot:item.streak="{item}">
+        {{getStreakDisplay(item.currentStreak)}}
       </template>
     </v-data-table>
   </v-card>
@@ -28,20 +30,22 @@ export default {
       type: Object,
       require: true,
       validator: function(value) {
-        Object.values(value).includes("divisions")
+        // Object.values(value).includes("divisions")
+        return true
       }
     }
   },
   data: function() {
     return {
       headers: [
-          {text:'Team', value: 'teamName'},
-          {text:'Record', value: 'record'},
-          {text:'Win Percentage', value: 'winPct'},
-          {text:'GB', value: 'gamesBack'},
-          {text:'PF', value: 'pointsFor'},
-          {text:'PA', value: 'pointsAgainst'},
-          {text:'Streak', value: 'currentStreak', sortable:false},
+        {text:'Division', value: 'divisionName'},
+        {text:'Team', value: 'teamName'},
+        {text:'Record', value: 'record'},
+        {text:'Win Percentage', value: 'winPct'},
+        {text:'GB', value: 'gamesBack'},
+        {text:'PF', value: 'pointsFor'},
+        {text:'PA', value: 'pointsAgainst'},
+        {text:'Streak', value: 'streak', sortable:false},
       ],
       items: [
         {
@@ -102,11 +106,15 @@ export default {
       return (teamRecord.wins + teamRecord.losses + teamRecord.ties);
     },
     getGamesBack(teamData){
-      console.info("League Info: ")
-      const division = this.leagueInfo.divisions; //.find(it => it.divisionName === teamData.divisionName)
-      console.log("division: ",division);
-      // return division.leadingWins - teamData.wins;
-      return -teamData.wins;
+      const division = this.leagueInfo.divisions?.find(it => it.divisionName === teamData.divisionName)
+
+      return division ? division.leadingWins-teamData.outcomes.wins : "";
+    },
+    getStreakDisplay(currentStreak) {
+      if(currentStreak >= 0) {
+        return currentStreak + "W";
+      }
+      return Math.abs(currentStreak) + "L";
     }
   }
 }
