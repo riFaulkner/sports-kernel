@@ -24,7 +24,13 @@ type ContractDetail {
     year4value: Float!
 }
 
+type Division {
+    divisionName: String!
+    leadingWins: Int
+}
+
 type League {
+    divisions: [Division!]
     id: ID!
     leagueName: String!
     logoUrl: String!
@@ -48,6 +54,7 @@ type PlayerNFL {
 
 type Query {
     contracts(leagueId: ID, teamId: ID): [Contract!]
+    league(leagueId: ID): League
     leagues: [League]
     players(numOfResults: Int): [PlayerNFL!]
     teams(leagueId: ID): [Team!]

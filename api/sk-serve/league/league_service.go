@@ -8,4 +8,5 @@ import (
 
 type League interface {
 	GetAll(ctx context.Context) ([]*model.League, error)
+	GetByLeagueId(ctx context.Context, leagueId string) (*model.League, error)
 }

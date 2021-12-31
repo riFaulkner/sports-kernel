@@ -51,12 +51,21 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 }
 
 func (r *queryResolver) Leagues(ctx context.Context) ([]*model.League, error) {
-	leagues, err := r.League.GetAll(ctx)
+	leagues, err := r.Resolver.League.GetAll(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	return leagues, nil
+}
+
+func (r *queryResolver) League(ctx context.Context, leagueID *string) (*model.League, error) {
+	league, err := r.Resolver.League.GetByLeagueId(ctx, *leagueID)
+	if err != nil {
+		return nil, err
+	}
+
+	return league, nil
 }
 
 func (r *queryResolver) Teams(ctx context.Context, leagueID *string) ([]*model.Team, error) {

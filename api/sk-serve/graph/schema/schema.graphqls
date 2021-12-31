@@ -27,13 +27,7 @@ type Team {
 
 scalar Time
 
-type League {
-  id: ID!
-  leagueName: String!
-  logoUrl: String!
-  startDate: Time!
-  teams: [Team!]
-}
+
 
 type PlayerNFL {
   id: ID!
@@ -47,6 +41,7 @@ type PlayerNFL {
 type Query {
   users: [User]
   leagues: [League]
+  league(leagueId: ID): League
   teams(leagueId: ID): [Team!]
   contracts(leagueId: ID, teamId: ID): [Contract!]
   players(numOfResults: Int): [PlayerNFL!]

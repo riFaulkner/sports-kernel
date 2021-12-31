@@ -14,7 +14,7 @@
           <v-btn
             color="primary"
             nuxt
-            to="/league-home"
+            to="/league"
           >
             Continue to League
           </v-btn>

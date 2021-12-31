@@ -1,9 +1,0 @@
-query users {
-    users {
-        id
-        ownerName
-        email
-        avatar
-    }
-}
-

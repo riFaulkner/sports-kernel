@@ -51,7 +51,6 @@ func (u *UserImpl) GetUserPreferences(ctx context.Context, userId string) (*mode
 	if err != nil {
 		return nil, err
 	}
-	println("document queried")
 
 	userPreferences := new(model.UserPreferences)
 	err = result.DataTo(&userPreferences)

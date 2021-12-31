@@ -36,3 +36,19 @@ func (u *LeagueImpl) GetAll(ctx context.Context) ([]*model.League, error) {
 	}
 	return leagues, nil
 }
+
+func (u *LeagueImpl) GetByLeagueId(ctx context.Context, leagueId string) (*model.League, error) {
+	result, err := u.Client.Collection(collectionLeague).Doc(leagueId).Get(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	league := new(model.League)
+	err = result.DataTo(&league)
+	id := result.Ref.ID
+	league.ID = id
+	if err != nil {
+		return nil, err
+	}
+	return league, nil
+}
