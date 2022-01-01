@@ -49,7 +49,7 @@ func configureRouter(server *handler.Server) *chi.Mux {
 	router := chi.NewRouter()
 	// Setting up cors config
 	router.Use(cors.New(cors.Options{
-		AllowedOrigins:   getAllowedHOrigins(),
+		AllowedOrigins:   getAllowedOrigins(),
 		AllowedHeaders:   []string{"Authorization", "Content-Type"},
 		AllowCredentials: true,
 		Debug:            true,
@@ -61,9 +61,9 @@ func configureRouter(server *handler.Server) *chi.Mux {
 	return router
 }
 
-func getAllowedHOrigins() []string {
+func getAllowedOrigins() []string {
 	if os.Getenv("ENV") == "PROD" {
-		return []string{"https://api.sports-kernel.com"}
+		return []string{"https://sports-kernel.com", "https://api.sports-kernel.com "}
 	}
 	return []string{"http://localhost:3000"}
 }
