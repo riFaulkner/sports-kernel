@@ -1,23 +1,29 @@
 <template v-slot:extension>
 
   <v-tabs-items v-model="tab" v-if=league>
-
     <v-tab-item>
-      <league-overview
+      <league-standings
           :league-info=league
       />
     </v-tab-item>
     <v-tab-item>
       <v-card>
         <v-card-text>
-          Hello! this is the Teams tab!
+          Match up tab!
         </v-card-text>
       </v-card>
     </v-tab-item>
     <v-tab-item >
       <v-card>
         <v-card-text>
-          Hello! this is the match up tab!
+          Contracts Overview
+        </v-card-text>
+      </v-card>
+    </v-tab-item>
+    <v-tab-item>
+      <v-card>
+        <v-card-text>
+          Trade Center
         </v-card-text>
       </v-card>
     </v-tab-item>
@@ -36,7 +42,6 @@ export default {
   middleware: 'auth',
   data: function () {
     return {
-      text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
     }
   },
   computed: {
@@ -52,7 +57,7 @@ export default {
   },
   created() {
     this.$store.dispatch("application/updateSubmenu", [
-      'League Home', 'Teams', 'Match up',
+      'Standings', 'Match up', 'Contracts Overview', 'Trade Center'
     ]);
   },
   destroyed() {

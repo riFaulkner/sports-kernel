@@ -14,6 +14,13 @@ export default {
         ]
     },
 
+    publicRuntimeConfig: {
+        // graphQLBase: process.env.NODE_ENV === 'production' ? 'https://api.sports-kernel.com/graphql' : 'http://localhost:8080/graphql'
+    },
+    privateRuntimeConfig: {
+
+    },
+
     css: [],
 
     plugins: [],
@@ -47,7 +54,6 @@ export default {
         common: {
             'Access-Control-Allow-Origin': '*'
         }
-        // Access-Control-Allow-Origin: *
     },
 
     apollo: {
@@ -63,8 +69,8 @@ export default {
         // errorHandler: "@/apollo/errorHandler.js",
         clientConfigs: {
             default: {
-                // httpEndpoint: process.env.GRAPHQL_BASE
-                httpEndpoint: 'http://localhost:8080/graphql',
+                httpEndpoint: process.env.NODE_ENV === 'production' ? 'https://api.sports-kernel.com/graphql' : 'http://localhost:8080/graphql',
+                // httpEndpoint: 'http://localhost:8080/graphql',
                 httpLinkOptions: {
                     credentials: 'same-origin'
                 },

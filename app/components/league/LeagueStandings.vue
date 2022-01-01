@@ -24,7 +24,7 @@
 
 <script>
 export default {
-  name: "LeagueOverview.vue",
+  name: "LeagueStandings.vue",
   props: {
     leagueInfo: {
       type: Object,
