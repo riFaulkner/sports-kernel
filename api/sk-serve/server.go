@@ -63,7 +63,7 @@ func configureRouter(server *handler.Server) *chi.Mux {
 
 func getAllowedOrigins() []string {
 	if os.Getenv("ENV") == "PROD" {
-		return []string{"https://sports-kernel.com", "https://api.sports-kernel.com "}
+		return []string{"https://sports-kernel.com", "https://api.sports-kernel.com"}
 	}
 	return []string{"http://localhost:3000"}
 }

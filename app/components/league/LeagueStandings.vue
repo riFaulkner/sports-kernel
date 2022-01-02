@@ -1,22 +1,32 @@
 <template>
   <v-card>
-    <v-card-title class="justify-center" > {{leagueInfo.leagueName}} Standings</v-card-title>
+    <v-card-title class="justify-center"> {{ leagueInfo.leagueName }} Standings</v-card-title>
     <v-data-table
-      :headers=headers
-      :items=items
-      hide-default-footer
+        :headers=headers
+        :items=items
+        group-by="divisionName"
+        hide-default-footer
     >
+      <template v-slot:group.header="{items, isOpen, toggle}">
+        <th colspan="100%">
+          <v-icon @click="toggle" small
+          >{{ isOpen ? 'mdi-minus' : 'mdi-plus' }}
+          </v-icon>
+          {{ items[0].divisionName }}
+        </th>
+      </template>
+
       <template v-slot:item.record="{item}">
-        {{item.outcomes.wins}}-{{item.outcomes.losses}}-{{item.outcomes.ties}}
+        {{ item.outcomes.wins }}-{{ item.outcomes.losses }}-{{ item.outcomes.ties }}
       </template>
       <template v-slot:item.winPct="{item}">
-        {{getWinPercentage(item.outcomes)}}
+        {{ getWinPercentage(item.outcomes) }}
       </template>
       <template v-slot:item.gamesBack="{item}">
-        {{getGamesBack(item)}}
+        {{ getGamesBack(item) }}
       </template>
       <template v-slot:item.streak="{item}">
-        {{getStreakDisplay(item.currentStreak)}}
+        {{ getStreakDisplay(item.currentStreak) }}
       </template>
     </v-data-table>
   </v-card>
@@ -29,23 +39,23 @@ export default {
     leagueInfo: {
       type: Object,
       require: true,
-      validator: function(value) {
+      validator: function (value) {
         // Object.values(value).includes("divisions")
         return true
       }
     }
   },
-  data: function() {
+  data: function () {
     return {
       headers: [
-        {text:'Division', value: 'divisionName'},
-        {text:'Team', value: 'teamName'},
-        {text:'Record', value: 'record'},
-        {text:'Win Percentage', value: 'winPct'},
-        {text:'GB', value: 'gamesBack'},
-        {text:'PF', value: 'pointsFor'},
-        {text:'PA', value: 'pointsAgainst'},
-        {text:'Streak', value: 'streak', sortable:false},
+        {text: 'Division', value: 'divisionName', groupable: true},
+        {text: 'Team', value: 'teamName'},
+        {text: 'Record', value: 'record'},
+        {text: 'Win Percentage', value: 'winPct'},
+        {text: 'GB', value: 'gamesBack'},
+        {text: 'PF', value: 'pointsFor'},
+        {text: 'PA', value: 'pointsAgainst'},
+        {text: 'Streak', value: 'streak', sortable: false},
       ],
       items: [
         {
@@ -59,7 +69,7 @@ export default {
           pointsFor: 1234,
           pointsAgainst: 1200,
           currentStreak: 8,
-        },{
+        }, {
           teamName: "Jeff's team",
           outcomes: {
             wins: 9,
@@ -100,18 +110,18 @@ export default {
   },
   methods: {
     getWinPercentage(teamOutcomes) {
-      return (teamOutcomes.wins/this.getTotalGamesPlayed(teamOutcomes)).toPrecision(3);
+      return (teamOutcomes.wins / this.getTotalGamesPlayed(teamOutcomes)).toPrecision(3);
     },
     getTotalGamesPlayed(teamRecord) {
       return (teamRecord.wins + teamRecord.losses + teamRecord.ties);
     },
-    getGamesBack(teamData){
+    getGamesBack(teamData) {
       const division = this.leagueInfo.divisions?.find(it => it.divisionName === teamData.divisionName)
 
-      return division ? division.leadingWins-teamData.outcomes.wins : "";
+      return division ? division.leadingWins - teamData.outcomes.wins : "";
     },
     getStreakDisplay(currentStreak) {
-      if(currentStreak >= 0) {
+      if (currentStreak >= 0) {
         return currentStreak + "W";
       }
       return Math.abs(currentStreak) + "L";

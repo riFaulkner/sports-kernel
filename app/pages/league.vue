@@ -16,7 +16,10 @@
     <v-tab-item >
       <v-card>
         <v-card-text>
-          Contracts Overview
+          loading
+          <contracts-overview
+            :league-info=league
+          ></contracts-overview>
         </v-card-text>
       </v-card>
     </v-tab-item>
@@ -37,8 +40,11 @@
 </template>
 
 <script>
+import ContractsOverview from "@/components/league/ContractsOverview";
+
 export default {
   name: "league-home.vue",
+  components: {ContractsOverview},
   middleware: 'auth',
   data: function () {
     return {
