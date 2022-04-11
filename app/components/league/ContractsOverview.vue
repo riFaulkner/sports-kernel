@@ -1,42 +1,54 @@
 <template>
   <v-card>
-    <v-card-title class="justify-center"> {{ leagueInfo.leagueName }}</v-card-title>
+    <v-card-title class="justify-center"> {{ leagueInfo.leagueName }}  </v-card-title>
     <v-data-table
         :headers=headers
-        :items=items
+        :items=teams
+        :expanded.sync="expanded"
+        item-key="teamName"
         hide-default-footer
+        show-expand
     >
 
-      <template v-slot:item.totalUtilizedCap="{item}">
-        ${{ item.totalUtilizedCap }}
+      <template v-slot:item.currentContractsMetadata.totalUtilizedCap="{item}">
+        ${{ item.currentContractsMetadata.totalUtilizedCap.toLocaleString() }}
       </template>
-      <template v-slot:item.totalAvailableCap="{ item }">
+      <template v-slot:item.currentContractsMetadata.totalAvailableCap="{ item }">
         <v-chip
-            :color="getColor(item.totalAvailableCap)"
+            :color="getColor(item.currentContractsMetadata.totalAvailableCap)"
             dark
         >
-          ${{ item.totalAvailableCap }}
+          ${{ item.currentContractsMetadata.totalAvailableCap.toLocaleString() }}
         </v-chip>
       </template>
-      <template v-slot:item.qbUtilizedCap="{ item }">
-        ${{ item.qbUtilizedCap.capUtilization }} ({{ item.qbUtilizedCap.numContracts }})
+      <template v-slot:item.currentContractsMetadata.qbUtilizedCap="{ item }">
+        ${{ item.currentContractsMetadata.qbUtilizedCap.capUtilization.toLocaleString() }} ({{ item.currentContractsMetadata.qbUtilizedCap.numContracts }})
       </template>
-      <template v-slot:item.rbUtilizedCap="{ item }">
-        ${{ item.rbUtilizedCap.capUtilization }} ({{ item.rbUtilizedCap.numContracts }})
+      <template v-slot:item.currentContractsMetadata.rbUtilizedCap="{ item }">
+        ${{ item.currentContractsMetadata.rbUtilizedCap.capUtilization.toLocaleString() }} ({{ item.currentContractsMetadata.rbUtilizedCap.numContracts }})
       </template>
-      <template v-slot:item.wrUtilizedCap="{ item }">
-        ${{ item.wrUtilizedCap.capUtilization }} ({{ item.wrUtilizedCap.numContracts }})
+      <template v-slot:item.currentContractsMetadata.wrUtilizedCap="{ item }">
+        ${{ item.currentContractsMetadata.wrUtilizedCap.capUtilization.toLocaleString() }} ({{ item.currentContractsMetadata.wrUtilizedCap.numContracts }})
       </template>
-      <template v-slot:item.teUtilizedCap="{ item }">
-        ${{ item.teUtilizedCap.capUtilization }} ({{ item.teUtilizedCap.numContracts }})
+      <template v-slot:item.currentContractsMetadata.teUtilizedCap="{ item }">
+        ${{ item.currentContractsMetadata.teUtilizedCap.capUtilization.toLocaleString() }} ({{ item.currentContractsMetadata.teUtilizedCap.numContracts }})
+      </template>
+      <template v-slot:expanded-item="{ headers, item }" v-slot:>
+        <td :colspan="headers.length">
+          <team-assets-breakdown :team-id="item.id" :league-id="leagueInfo.id" />
+        </td>
       </template>
     </v-data-table>
   </v-card>
 </template>
 
 <script>
+import TeamAssetsBreakdown from "~/components/league/TeamAssetsBreakdown";
+import {LEAGUE_TEAMS_BY_LEAGUE_ID} from "~/graphql/queries/league/leagueGraphQL";
+
 export default {
   name: "ContractsOverview.vue",
+  components: {TeamAssetsBreakdown},
   props: {
     leagueInfo: {
       type: Object,
@@ -49,72 +61,41 @@ export default {
   },
   data: function () {
     return {
+      expanded: [],
       headers: [
         {text: 'Team', value: 'teamName', width: 200},
-        {text: 'Total Cap Utilization', value: 'totalUtilizedCap', width: 105},
-        {text: 'Available Cap', value: 'totalAvailableCap', align: 'start', divider: true, width: 75},
+        {text: 'Total Cap Utilization', value: 'currentContractsMetadata.totalUtilizedCap', width: 105},
+        {text: 'Available Cap', value: 'currentContractsMetadata.totalAvailableCap', align: 'start', divider: true, width: 75},
         {
           text: 'QB Value (# Contracts)',
-          value: 'qbUtilizedCap',
+          value: 'currentContractsMetadata.qbUtilizedCap',
           align: 'center',
           sort: (a, b) => (a.capUtilization - b.capUtilization)
         },
         {
           text: 'RB Value (# Contracts)',
-          value: 'rbUtilizedCap',
+          value: 'currentContractsMetadata.rbUtilizedCap',
           align: 'center',
           sort: (a, b) => (a.capUtilization - b.capUtilization)
         },
         {
           text: 'WR Value (# Contracts)',
-          value: 'wrUtilizedCap',
+          value: 'currentContractsMetadata.wrUtilizedCap',
           align: 'center',
           sort: (a, b) => (a.capUtilization - b.capUtilization)
         },
         {
           text: 'TE Value (# Contracts)',
-          value: 'teUtilizedCap',
+          value: 'currentContractsMetadata.teUtilizedCap',
           align: 'center',
           sort: (a, b) => (a.capUtilization - b.capUtilization)
         },
-      ],
-      items: [
         {
-          teamName: "Rick's team",
-          totalUtilizedCap: 180,
-          totalAvailableCap: 20,
-          qbUtilizedCap: {capUtilization: 10, numContracts: 3},
-          rbUtilizedCap: {capUtilization: 10, numContracts: 3},
-          wrUtilizedCap: {capUtilization: 10, numContracts: 3},
-          teUtilizedCap: {capUtilization: 10, numContracts: 3},
-        }, {
-          teamName: "Jeff's team",
-          totalUtilizedCap: 199,
-          totalAvailableCap: 1,
-          qbUtilizedCap: {capUtilization: 20, numContracts: 3},
-          rbUtilizedCap: {capUtilization: 20, numContracts: 3},
-          wrUtilizedCap: {capUtilization: 20, numContracts: 3},
-          teUtilizedCap: {capUtilization: 20, numContracts: 3},
-        },
-        {
-          teamName: "Kyle's team",
-          totalUtilizedCap: 190,
-          totalAvailableCap: 10,
-          qbUtilizedCap: {capUtilization: 30, numContracts: 3},
-          rbUtilizedCap: {capUtilization: 30, numContracts: 3},
-          wrUtilizedCap: {capUtilization: 30, numContracts: 3},
-          teUtilizedCap: {capUtilization: 30, numContracts: 3},
-        },
-        {
-          teamName: "Ramzi's team",
-          totalUtilizedCap: 195,
-          totalAvailableCap: 5,
-          qbUtilizedCap: {capUtilization: 40, numContracts: 3},
-          rbUtilizedCap: {capUtilization: 40, numContracts: 3},
-          wrUtilizedCap: {capUtilization: 40, numContracts: 3},
-          teUtilizedCap: {capUtilization: 40, numContracts: 3},
+          text: "",
+          value: 'data-table-expand'
         }
-      ]
+      ],
+      teams: [],
     }
   },
   methods: {
@@ -126,6 +107,14 @@ export default {
         return 'warning'
       }
       return 'success';
+    }
+  },
+  apollo: {
+    teams: {
+      query: LEAGUE_TEAMS_BY_LEAGUE_ID,
+      variables() {
+        return {leagueId: this.leagueInfo.id}
+      }
     }
   }
 }

@@ -1,33 +1,5 @@
 #Data types and Queries
-type Contract {
-playerID: String!
-teamID: String!
-totalContractValue: Float!
-contractLength: Int!
-playerPosition: String!
-contractDetails: ContractDetail
-}
-
-type ContractDetail {
-restructuredContract: Boolean!
-totalRemainingValue: Float!
-currentYearRemainingValue: Float!
-year1value: Float!
-year2value: Float!
-year3Value: Float!
-year4value: Float!
-}
-
-type Team {
-  id: ID!
-  foundedDate: Time!
-  teamName: String!
-  ownerID: String!
-}
-
 scalar Time
-
-
 
 type PlayerNFL {
   id: ID!
@@ -43,25 +15,21 @@ type Query {
   leagues: [League]
   league(leagueId: ID): League
   teams(leagueId: ID): [Team!]
-  contracts(leagueId: ID, teamId: ID): [Contract!]
+  teamContracts(leagueId: ID, teamId: ID): [Contract!]
   players(numOfResults: Int): [PlayerNFL!]
+  player(playerId: ID): PlayerNFL!
   userPreferences(userId: ID): UserPreferences
 }
 
 #Mutations and Inputs
-
 input NewUser {
   ownerName: String!
   email: String!
   avatar: String!
 }
 
-input NewTeam {
-  teamName: String!
-  foundedDate: Time
-}
-
 type Mutation {
   createUser(input: NewUser!): User!
   createTeam(leagueId: ID, input: NewTeam!): Team!
+  createContract(leagueId: ID, input: ContractInput): Contract!
 }

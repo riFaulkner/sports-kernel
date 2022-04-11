@@ -17,7 +17,6 @@ import (
 const defaultPort = "8080"
 
 func main() {
-
 	ctx := context.Background()
 
 	srv := configureGql(ctx)
@@ -52,7 +51,7 @@ func configureRouter(server *handler.Server) *chi.Mux {
 		AllowedOrigins:   getAllowedOrigins(),
 		AllowedHeaders:   []string{"Authorization", "Content-Type"},
 		AllowCredentials: true,
-		Debug:            true,
+		Debug:            false,
 	}).Handler)
 
 	router.Handle("/", playground.Handler("GraphQL playground", "/graphql"))

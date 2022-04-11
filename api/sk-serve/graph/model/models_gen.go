@@ -3,16 +3,29 @@
 package model
 
 import (
+	"fmt"
+	"io"
+	"strconv"
 	"time"
 )
 
+type CapUtilizationSummary struct {
+	CapUtilization int `json:"capUtilization"`
+	NumContracts   int `json:"numContracts"`
+}
+
 type Contract struct {
-	PlayerID           string          `json:"playerID"`
-	TeamID             string          `json:"teamID"`
-	TotalContractValue float64         `json:"totalContractValue"`
-	ContractLength     int             `json:"contractLength"`
-	PlayerPosition     string          `json:"playerPosition"`
-	ContractDetails    *ContractDetail `json:"contractDetails"`
+	ID                  string                    `json:"id"`
+	PlayerID            string                    `json:"playerId"`
+	Player              *PlayerNfl                `json:"player"`
+	TeamID              string                    `json:"teamId"`
+	CurrentYear         int                       `json:"currentYear"`
+	RestructureStatus   ContractRestructureStatus `json:"restructureStatus"`
+	TotalContractValue  float64                   `json:"totalContractValue"`
+	TotalRemainingValue float64                   `json:"totalRemainingValue"`
+	ContractLength      int                       `json:"contractLength"`
+	PlayerPosition      *string                   `json:"playerPosition"`
+	ContractDetails     []*ContractYear           `json:"contractDetails"`
 }
 
 type ContractDetail struct {
@@ -23,6 +36,41 @@ type ContractDetail struct {
 	Year2value                float64 `json:"year2value"`
 	Year3Value                float64 `json:"year3Value"`
 	Year4value                float64 `json:"year4value"`
+}
+
+type ContractInput struct {
+	PlayerID            string                    `json:"playerId"`
+	TeamID              string                    `json:"teamId"`
+	CurrentYear         int                       `json:"currentYear"`
+	RestructureStatus   ContractRestructureStatus `json:"restructureStatus"`
+	TotalContractValue  *float64                  `json:"totalContractValue"`
+	TotalRemainingValue *float64                  `json:"totalRemainingValue"`
+	ContractLength      *int                      `json:"contractLength"`
+	PlayerPosition      *string                   `json:"playerPosition"`
+	ContractDetails     []*ContractYearInput      `json:"contractDetails"`
+}
+
+type ContractYear struct {
+	Year             int     `json:"year"`
+	TotalAmount      int     `json:"totalAmount"`
+	PaidAmount       int     `json:"paidAmount"`
+	GuaranteedAmount float64 `json:"guaranteedAmount"`
+}
+
+type ContractYearInput struct {
+	Year             int     `json:"year"`
+	TotalAmount      float64 `json:"totalAmount"`
+	PaidAmount       float64 `json:"paidAmount"`
+	GuaranteedAmount float64 `json:"guaranteedAmount"`
+}
+
+type ContractsMetadata struct {
+	TotalUtilizedCap  int                    `json:"totalUtilizedCap"`
+	TotalAvailableCap int                    `json:"totalAvailableCap"`
+	QbUtilizedCap     *CapUtilizationSummary `json:"qbUtilizedCap"`
+	RbUtilizedCap     *CapUtilizationSummary `json:"rbUtilizedCap"`
+	WrUtilizedCap     *CapUtilizationSummary `json:"wrUtilizedCap"`
+	TeUtilizedCap     *CapUtilizationSummary `json:"teUtilizedCap"`
 }
 
 type Division struct {
@@ -60,10 +108,11 @@ type PlayerNfl struct {
 }
 
 type Team struct {
-	ID          string    `json:"id"`
-	FoundedDate time.Time `json:"foundedDate"`
-	TeamName    string    `json:"teamName"`
-	OwnerID     string    `json:"ownerID"`
+	ID                       string             `json:"id"`
+	FoundedDate              time.Time          `json:"foundedDate"`
+	TeamName                 string             `json:"teamName"`
+	OwnerID                  string             `json:"ownerID"`
+	CurrentContractsMetadata *ContractsMetadata `json:"currentContractsMetadata"`
 }
 
 type User struct {
@@ -78,4 +127,47 @@ type UserPreferences struct {
 	OwnerName         string    `json:"ownerName"`
 	PreferredLeagueID *string   `json:"preferredLeagueId"`
 	Leagues           []*League `json:"leagues"`
+}
+
+type ContractRestructureStatus string
+
+const (
+	ContractRestructureStatusEligible               ContractRestructureStatus = "ELIGIBLE"
+	ContractRestructureStatusIneligible             ContractRestructureStatus = "INELIGIBLE"
+	ContractRestructureStatusPreviouslyRestructured ContractRestructureStatus = "PREVIOUSLY_RESTRUCTURED"
+)
+
+var AllContractRestructureStatus = []ContractRestructureStatus{
+	ContractRestructureStatusEligible,
+	ContractRestructureStatusIneligible,
+	ContractRestructureStatusPreviouslyRestructured,
+}
+
+func (e ContractRestructureStatus) IsValid() bool {
+	switch e {
+	case ContractRestructureStatusEligible, ContractRestructureStatusIneligible, ContractRestructureStatusPreviouslyRestructured:
+		return true
+	}
+	return false
+}
+
+func (e ContractRestructureStatus) String() string {
+	return string(e)
+}
+
+func (e *ContractRestructureStatus) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ContractRestructureStatus(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ContractRestructureStatus", str)
+	}
+	return nil
+}
+
+func (e ContractRestructureStatus) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }

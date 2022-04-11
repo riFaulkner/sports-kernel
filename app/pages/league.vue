@@ -16,7 +16,6 @@
     <v-tab-item >
       <v-card>
         <v-card-text>
-          loading
           <contracts-overview
             :league-info=league
           ></contracts-overview>

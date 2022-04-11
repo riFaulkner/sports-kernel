@@ -8,7 +8,7 @@ import (
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/firestore"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/generated"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/league"
-	playernfl "github.com/rifaulkner/sports-kernel/api/sk-serve/playerNFL"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/playerNFL"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/team"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/user"
 )
@@ -18,11 +18,11 @@ import (
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	User     user.User
-	League   league.League
-	Team     team.Team
-	Contract contract.Contract
-	Player   playernfl.PlayerNfl
+	UserResolver     user.User
+	LeagueResolver   league.League
+	TeamResolver     team.Team
+	ContractResolver contract.Contract
+	PlayerResolver   playernfl.PlayerNfl
 }
 
 func Initialize(ctx context.Context) generated.Config {
@@ -30,11 +30,11 @@ func Initialize(ctx context.Context) generated.Config {
 	client := firestore.NewClient(ctx)
 
 	r := Resolver{}
-	r.Contract = &db.ContractImpl{Client: client}
-	r.League = &db.LeagueImpl{Client: client}
-	r.Team = &db.TeamImpl{Client: client}
-	r.User = &db.UserImpl{Client: client}
-	r.Player = &db.PlayerImpl{Client: client}
+	r.ContractResolver = &db.ContractImpl{Client: client}
+	r.LeagueResolver = &db.LeagueImpl{Client: client}
+	r.TeamResolver = &db.TeamImpl{Client: client}
+	r.UserResolver = &db.UserImpl{Client: client}
+	r.PlayerResolver = &db.PlayerImpl{Client: client}
 
 	return generated.Config{
 		Resolvers: &r,

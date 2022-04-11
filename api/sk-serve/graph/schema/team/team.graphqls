@@ -1,0 +1,84 @@
+# Team types and inputs
+type Team {
+    id: ID!
+    foundedDate: Time!
+    teamName: String!
+    ownerID: String!
+    currentContractsMetadata: ContractsMetadata
+}
+
+input NewTeam {
+    teamName: String!
+    foundedDate: Time
+}
+
+type ContractsMetadata {
+    totalUtilizedCap: Int!
+    totalAvailableCap: Int!
+    qbUtilizedCap: CapUtilizationSummary!
+    rbUtilizedCap: CapUtilizationSummary!
+    wrUtilizedCap: CapUtilizationSummary!
+    teUtilizedCap: CapUtilizationSummary!
+}
+
+type CapUtilizationSummary {
+    capUtilization: Int!
+    numContracts: Int!
+}
+
+# Contract types and inputs
+type Contract {
+    id: ID!
+    playerId: String!
+    player: PlayerNFL!
+    teamId: String!
+    currentYear: Int!
+    restructureStatus: ContractRestructureStatus!
+    totalContractValue: Float!
+    totalRemainingValue: Float!
+    contractLength: Int!
+    playerPosition: String
+    contractDetails: [ContractYear!]!
+}
+
+type ContractYear {
+    year: Int!
+    totalAmount: Int!
+    paidAmount: Int!
+    guaranteedAmount: Float!
+}
+
+enum ContractRestructureStatus {
+    ELIGIBLE,
+    INELIGIBLE,
+    PREVIOUSLY_RESTRUCTURED
+}
+
+type ContractDetail {
+    restructuredContract: Boolean!
+    totalRemainingValue: Float!
+    currentYearRemainingValue: Float!
+    year1value: Float!
+    year2value: Float!
+    year3Value: Float!
+    year4value: Float!
+}
+
+input ContractInput {
+    playerId: String!
+    teamId: String!
+    currentYear: Int!
+    restructureStatus: ContractRestructureStatus!
+    totalContractValue: Float
+    totalRemainingValue: Float
+    contractLength: Int
+    playerPosition: String!
+    contractDetails: [ContractYearInput!]!
+}
+
+input ContractYearInput {
+    year: Int!
+    totalAmount: Float!
+    paidAmount: Float!
+    guaranteedAmount: Float!
+}
