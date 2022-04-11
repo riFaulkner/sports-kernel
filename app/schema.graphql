@@ -5,13 +5,23 @@ schema {
     mutation: Mutation
 }
 
+type CapUtilizationSummary {
+    capUtilization: Int!
+    numContracts: Int!
+}
+
 type Contract {
-    contractDetails: ContractDetail
+    contractDetails: [ContractYear!]!
     contractLength: Int!
-    playerID: String!
-    playerPosition: String!
-    teamID: String!
+    currentYear: Int!
+    id: ID!
+    player: PlayerNFL!
+    playerId: String!
+    playerPosition: String
+    restructureStatus: ContractRestructureStatus!
+    teamId: String!
     totalContractValue: Float!
+    totalRemainingValue: Float!
 }
 
 type ContractDetail {
@@ -22,6 +32,22 @@ type ContractDetail {
     year2value: Float!
     year3Value: Float!
     year4value: Float!
+}
+
+type ContractYear {
+    guaranteedAmount: Float!
+    paidAmount: Float!
+    totalAmount: Float!
+    year: Int!
+}
+
+type ContractsMetadata {
+    qbUtilizedCap: CapUtilizationSummary!
+    rbUtilizedCap: CapUtilizationSummary!
+    teUtilizedCap: CapUtilizationSummary!
+    totalAvailableCap: Int!
+    totalUtilizedCap: Int!
+    wrUtilizedCap: CapUtilizationSummary!
 }
 
 type Division {
@@ -39,6 +65,7 @@ type League {
 }
 
 type Mutation {
+    createContract(input: ContractInput, leagueId: ID): Contract!
     createTeam(input: NewTeam!, leagueId: ID): Team!
     createUser(input: NewUser!): User!
 }
@@ -53,16 +80,18 @@ type PlayerNFL {
 }
 
 type Query {
-    contracts(leagueId: ID, teamId: ID): [Contract!]
     league(leagueId: ID): League
     leagues: [League]
+    player(playerId: ID): PlayerNFL!
     players(numOfResults: Int): [PlayerNFL!]
+    teamContracts(leagueId: ID, teamId: ID): [Contract!]
     teams(leagueId: ID): [Team!]
     userPreferences(userId: ID): UserPreferences
     users: [User]
 }
 
 type Team {
+    currentContractsMetadata: ContractsMetadata
     foundedDate: Time!
     id: ID!
     ownerID: String!
@@ -81,6 +110,31 @@ type UserPreferences {
     leagues: [League!]!
     ownerName: String!
     preferredLeagueId: String
+}
+
+enum ContractRestructureStatus {
+    ELIGIBLE
+    INELIGIBLE
+    PREVIOUSLY_RESTRUCTURED
+}
+
+input ContractInput {
+    contractDetails: [ContractYearInput!]!
+    contractLength: Int
+    currentYear: Int!
+    playerId: String!
+    playerPosition: String
+    restructureStatus: ContractRestructureStatus!
+    teamId: String!
+    totalContractValue: Float
+    totalRemainingValue: Float
+}
+
+input ContractYearInput {
+    guaranteedAmount: Float!
+    paidAmount: Float!
+    totalAmount: Float!
+    year: Int!
 }
 
 input NewTeam {

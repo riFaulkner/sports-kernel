@@ -8,4 +8,5 @@ import (
 
 type PlayerNfl interface {
 	GetAll(ctx context.Context, numberOfResults *int) ([]*model.PlayerNfl, error)
+	GetPlayerById(ctx context.Context, playerId *string) (*model.PlayerNfl, error)
 }

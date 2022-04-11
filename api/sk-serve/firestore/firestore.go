@@ -15,7 +15,7 @@ func NewClient(ctx context.Context) *firestore.Client {
 	projectID := "sports-kernel"
 	client, err := firestore.NewClient(ctx, projectID)
 	if err != nil {
-		log.Fatalf("Failed to create firestore client %s", err)
+		log.Fatalf("Failed to create firestore client %v", err)
 	}
 	return client
 }

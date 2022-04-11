@@ -8,4 +8,5 @@ import (
 
 type Contract interface {
 	GetAll(ctx context.Context, leagueID string, teamID string) ([]*model.Contract, error)
+	CreateContract(ctx context.Context, leagueId string, input *model.ContractInput) (*model.Contract, error)
 }

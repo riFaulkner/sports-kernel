@@ -35,3 +35,19 @@ func (p *PlayerImpl) GetAll(ctx context.Context, numberOfResults *int) ([]*model
 	}
 	return players, nil
 }
+
+func (p *PlayerImpl) GetPlayerById(ctx context.Context, playerId *string) (*model.PlayerNfl, error) {
+	result, err := p.Client.Collection(collectionPlayers).Doc(*playerId).Get(ctx)
+	if err != nil {
+		return nil, err
+	}
+	player := new(model.PlayerNfl)
+	err = result.DataTo(&player)
+	id := result.Ref.ID
+	player.ID = id
+	if err != nil {
+		return nil, err
+	}
+
+	return player, nil
+}
