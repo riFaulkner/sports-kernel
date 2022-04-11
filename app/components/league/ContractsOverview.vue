@@ -11,27 +11,27 @@
     >
 
       <template v-slot:item.currentContractsMetadata.totalUtilizedCap="{item}">
-        ${{ item.currentContractsMetadata.totalUtilizedCap }}
+        ${{ item.currentContractsMetadata.totalUtilizedCap.toLocaleString() }}
       </template>
       <template v-slot:item.currentContractsMetadata.totalAvailableCap="{ item }">
         <v-chip
             :color="getColor(item.currentContractsMetadata.totalAvailableCap)"
             dark
         >
-          ${{ item.currentContractsMetadata.totalAvailableCap }}
+          ${{ item.currentContractsMetadata.totalAvailableCap.toLocaleString() }}
         </v-chip>
       </template>
       <template v-slot:item.currentContractsMetadata.qbUtilizedCap="{ item }">
-        ${{ item.currentContractsMetadata.qbUtilizedCap.capUtilization }} ({{ item.currentContractsMetadata.qbUtilizedCap.numContracts }})
+        ${{ item.currentContractsMetadata.qbUtilizedCap.capUtilization.toLocaleString() }} ({{ item.currentContractsMetadata.qbUtilizedCap.numContracts }})
       </template>
       <template v-slot:item.currentContractsMetadata.rbUtilizedCap="{ item }">
-        ${{ item.currentContractsMetadata.rbUtilizedCap.capUtilization }} ({{ item.currentContractsMetadata.rbUtilizedCap.numContracts }})
+        ${{ item.currentContractsMetadata.rbUtilizedCap.capUtilization.toLocaleString() }} ({{ item.currentContractsMetadata.rbUtilizedCap.numContracts }})
       </template>
       <template v-slot:item.currentContractsMetadata.wrUtilizedCap="{ item }">
-        ${{ item.currentContractsMetadata.wrUtilizedCap.capUtilization }} ({{ item.currentContractsMetadata.wrUtilizedCap.numContracts }})
+        ${{ item.currentContractsMetadata.wrUtilizedCap.capUtilization.toLocaleString() }} ({{ item.currentContractsMetadata.wrUtilizedCap.numContracts }})
       </template>
       <template v-slot:item.currentContractsMetadata.teUtilizedCap="{ item }">
-        ${{ item.currentContractsMetadata.teUtilizedCap.capUtilization }} ({{ item.currentContractsMetadata.teUtilizedCap.numContracts }})
+        ${{ item.currentContractsMetadata.teUtilizedCap.capUtilization.toLocaleString() }} ({{ item.currentContractsMetadata.teUtilizedCap.numContracts }})
       </template>
       <template v-slot:expanded-item="{ headers, item }" v-slot:>
         <td :colspan="headers.length">

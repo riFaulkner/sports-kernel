@@ -7,6 +7,9 @@ import (
 	"cloud.google.com/go/firestore"
 )
 
+const LEAGUES_COLLECTION = "leagues"
+const PLAYER_CONTRACTS_COLLECTION_ = "playerContracts"
+
 type Client interface {
 	Collection(path string) *firestore.CollectionRef
 }
