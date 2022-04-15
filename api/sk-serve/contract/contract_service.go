@@ -2,7 +2,6 @@ package contract
 
 import (
 	"context"
-
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
 )
 

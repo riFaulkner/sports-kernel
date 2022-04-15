@@ -15,6 +15,7 @@ type Query {
   leagues: [League]
   league(leagueId: ID): League
   teams(leagueId: ID): [Team!]
+  teamById(leagueId: ID!, teamId: ID!): Team
   teamContracts(leagueId: ID, teamId: ID): [Contract!]
   players(numOfResults: Int): [PlayerNFL!]
   player(playerId: ID): PlayerNFL!
@@ -31,5 +32,6 @@ input NewUser {
 type Mutation {
   createUser(input: NewUser!): User!
   createTeam(leagueId: ID, input: NewTeam!): Team!
+  updateTeamMetaData(leagueId: ID!, teamId: ID!): Team!
   createContract(leagueId: ID, input: ContractInput): Contract!
 }

@@ -46,7 +46,7 @@ type ContractInput struct {
 	TotalContractValue  *float64                  `json:"totalContractValue"`
 	TotalRemainingValue *float64                  `json:"totalRemainingValue"`
 	ContractLength      *int                      `json:"contractLength"`
-	PlayerPosition      *string                   `json:"playerPosition"`
+	PlayerPosition      string                    `json:"playerPosition"`
 	ContractDetails     []*ContractYearInput      `json:"contractDetails"`
 }
 
@@ -88,6 +88,7 @@ type League struct {
 }
 
 type NewTeam struct {
+	ID          string     `json:"id"`
 	TeamName    string     `json:"teamName"`
 	FoundedDate *time.Time `json:"foundedDate"`
 }

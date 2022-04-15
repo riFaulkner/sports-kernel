@@ -8,6 +8,7 @@ type Team {
 }
 
 input NewTeam {
+    id: ID!
     teamName: String!
     foundedDate: Time
 }

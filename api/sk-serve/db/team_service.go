@@ -64,7 +64,7 @@ func (u *TeamImpl) GetTeamById(ctx context.Context, leagueId string, teamId stri
 func (u *TeamImpl) Create(ctx context.Context, leagueId string, team model.Team) error {
 	league := u.Client.Collection("leagues").Doc(leagueId)
 
-	_, _, err := league.Collection("teams").Add(ctx, team)
+	_, err := league.Collection("teams").Doc(team.ID).Set(ctx, team)
 	return err
 }
 

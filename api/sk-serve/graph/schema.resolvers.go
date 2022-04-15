@@ -51,6 +51,7 @@ func (r *mutationResolver) CreateTeam(ctx context.Context, leagueID *string, inp
 		},
 	}
 	team := model.Team{
+		ID:                       input.ID,
 		TeamName:                 input.TeamName,
 		FoundedDate:              time.Now(),
 		CurrentContractsMetadata: &currentContractsMetadataDefault,
@@ -62,6 +63,25 @@ func (r *mutationResolver) CreateTeam(ctx context.Context, leagueID *string, inp
 	}
 
 	return &team, nil
+}
+
+func (r *mutationResolver) UpdateTeamMetaData(ctx context.Context, leagueID string, teamID string) (*model.Team, error) {
+	contracts, err := r.ContractResolver.GetAll(ctx, leagueID, teamID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = r.TeamResolver.UpdateTeamContractMetaData(ctx, leagueID, contracts)
+	if err != nil {
+		return nil, err
+	}
+
+	team, err := r.TeamResolver.GetTeamById(ctx, leagueID, teamID)
+	if err != nil {
+		return nil, err
+	}
+
+	return team, nil
 }
 
 func (r *mutationResolver) CreateContract(ctx context.Context, leagueID *string, input *model.ContractInput) (*model.Contract, error) {
@@ -115,6 +135,14 @@ func (r *queryResolver) Teams(ctx context.Context, leagueID *string) ([]*model.T
 	}
 
 	return teams, nil
+}
+
+func (r *queryResolver) TeamByID(ctx context.Context, leagueId string, teamId string) (*model.Team, error) {
+	team, err := r.TeamResolver.GetTeamById(ctx, leagueId, teamId)
+	if err != nil {
+		return nil, err
+	}
+	return team, nil
 }
 
 func (r *queryResolver) TeamContracts(ctx context.Context, leagueID *string, teamID *string) ([]*model.Contract, error) {
