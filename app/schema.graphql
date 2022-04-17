@@ -36,8 +36,8 @@ type ContractDetail {
 
 type ContractYear {
     guaranteedAmount: Float!
-    paidAmount: Float!
-    totalAmount: Float!
+    paidAmount: Int!
+    totalAmount: Int!
     year: Int!
 }
 
@@ -55,6 +55,16 @@ type Division {
     leadingWins: Int
 }
 
+type DraftPick {
+    round: Int!
+    value: Int
+}
+
+type DraftYear {
+    picks: [DraftPick]!
+    year: Int!
+}
+
 type League {
     divisions: [Division!]
     id: ID!
@@ -68,6 +78,7 @@ type Mutation {
     createContract(input: ContractInput, leagueId: ID): Contract!
     createTeam(input: NewTeam!, leagueId: ID): Team!
     createUser(input: NewUser!): User!
+    updateTeamMetaData(leagueId: ID!, teamId: ID!): Team!
 }
 
 type PlayerNFL {
@@ -84,6 +95,7 @@ type Query {
     leagues: [League]
     player(playerId: ID): PlayerNFL!
     players(numOfResults: Int): [PlayerNFL!]
+    teamById(leagueId: ID!, teamId: ID!): Team
     teamContracts(leagueId: ID, teamId: ID): [Contract!]
     teams(leagueId: ID): [Team!]
     userPreferences(userId: ID): UserPreferences
@@ -92,10 +104,16 @@ type Query {
 
 type Team {
     currentContractsMetadata: ContractsMetadata
+    division: String
     foundedDate: Time!
     id: ID!
     ownerID: String!
+    teamAssets: TeamAssets
     teamName: String!
+}
+
+type TeamAssets {
+    draftPicks: [DraftYear]!
 }
 
 type User {
@@ -123,7 +141,7 @@ input ContractInput {
     contractLength: Int
     currentYear: Int!
     playerId: String!
-    playerPosition: String
+    playerPosition: String!
     restructureStatus: ContractRestructureStatus!
     teamId: String!
     totalContractValue: Float
@@ -138,7 +156,9 @@ input ContractYearInput {
 }
 
 input NewTeam {
+    division: String
     foundedDate: Time
+    id: ID!
     teamName: String!
 }
 

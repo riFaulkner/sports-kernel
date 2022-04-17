@@ -94,6 +94,16 @@ type ComplexityRoot struct {
 		LeadingWins  func(childComplexity int) int
 	}
 
+	DraftPick struct {
+		Round func(childComplexity int) int
+		Value func(childComplexity int) int
+	}
+
+	DraftYear struct {
+		Picks func(childComplexity int) int
+		Year  func(childComplexity int) int
+	}
+
 	League struct {
 		Divisions  func(childComplexity int) int
 		ID         func(childComplexity int) int
@@ -133,10 +143,16 @@ type ComplexityRoot struct {
 
 	Team struct {
 		CurrentContractsMetadata func(childComplexity int) int
+		Division                 func(childComplexity int) int
 		FoundedDate              func(childComplexity int) int
 		ID                       func(childComplexity int) int
 		OwnerID                  func(childComplexity int) int
+		TeamAssets               func(childComplexity int) int
 		TeamName                 func(childComplexity int) int
+	}
+
+	TeamAssets struct {
+		DraftPicks func(childComplexity int) int
 	}
 
 	User struct {
@@ -411,6 +427,34 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Division.LeadingWins(childComplexity), true
 
+	case "DraftPick.round":
+		if e.complexity.DraftPick.Round == nil {
+			break
+		}
+
+		return e.complexity.DraftPick.Round(childComplexity), true
+
+	case "DraftPick.value":
+		if e.complexity.DraftPick.Value == nil {
+			break
+		}
+
+		return e.complexity.DraftPick.Value(childComplexity), true
+
+	case "DraftYear.picks":
+		if e.complexity.DraftYear.Picks == nil {
+			break
+		}
+
+		return e.complexity.DraftYear.Picks(childComplexity), true
+
+	case "DraftYear.year":
+		if e.complexity.DraftYear.Year == nil {
+			break
+		}
+
+		return e.complexity.DraftYear.Year(childComplexity), true
+
 	case "League.divisions":
 		if e.complexity.League.Divisions == nil {
 			break
@@ -648,6 +692,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Team.CurrentContractsMetadata(childComplexity), true
 
+	case "Team.division":
+		if e.complexity.Team.Division == nil {
+			break
+		}
+
+		return e.complexity.Team.Division(childComplexity), true
+
 	case "Team.foundedDate":
 		if e.complexity.Team.FoundedDate == nil {
 			break
@@ -669,12 +720,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Team.OwnerID(childComplexity), true
 
+	case "Team.teamAssets":
+		if e.complexity.Team.TeamAssets == nil {
+			break
+		}
+
+		return e.complexity.Team.TeamAssets(childComplexity), true
+
 	case "Team.teamName":
 		if e.complexity.Team.TeamName == nil {
 			break
 		}
 
 		return e.complexity.Team.TeamName(childComplexity), true
+
+	case "TeamAssets.draftPicks":
+		if e.complexity.TeamAssets.DraftPicks == nil {
+			break
+		}
+
+		return e.complexity.TeamAssets.DraftPicks(childComplexity), true
 
 	case "User.avatar":
 		if e.complexity.User.Avatar == nil {
@@ -852,12 +917,15 @@ type Team {
     foundedDate: Time!
     teamName: String!
     ownerID: String!
+    division: String
     currentContractsMetadata: ContractsMetadata
+    teamAssets: TeamAssets
 }
 
 input NewTeam {
     id: ID!
     teamName: String!
+    division: String
     foundedDate: Time
 }
 
@@ -869,6 +937,21 @@ type ContractsMetadata {
     wrUtilizedCap: CapUtilizationSummary!
     teUtilizedCap: CapUtilizationSummary!
 }
+
+type TeamAssets {
+    draftPicks: [DraftYear]!
+}
+
+type DraftYear {
+    year: Int!
+    picks: [DraftPick]!
+}
+
+type DraftPick {
+    round: Int!
+    value: Int
+}
+
 
 type CapUtilizationSummary {
     capUtilization: Int!
@@ -2329,6 +2412,143 @@ func (ec *executionContext) _Division_leadingWins(ctx context.Context, field gra
 	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _DraftPick_round(ctx context.Context, field graphql.CollectedField, obj *model.DraftPick) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DraftPick",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Round, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DraftPick_value(ctx context.Context, field graphql.CollectedField, obj *model.DraftPick) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DraftPick",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Value, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DraftYear_year(ctx context.Context, field graphql.CollectedField, obj *model.DraftYear) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DraftYear",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Year, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DraftYear_picks(ctx context.Context, field graphql.CollectedField, obj *model.DraftYear) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DraftYear",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Picks, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.DraftPick)
+	fc.Result = res
+	return ec.marshalNDraftPick2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐDraftPick(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _League_id(ctx context.Context, field graphql.CollectedField, obj *model.League) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -3462,6 +3682,38 @@ func (ec *executionContext) _Team_ownerID(ctx context.Context, field graphql.Col
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Team_division(ctx context.Context, field graphql.CollectedField, obj *model.Team) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Team",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Division, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Team_currentContractsMetadata(ctx context.Context, field graphql.CollectedField, obj *model.Team) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -3492,6 +3744,73 @@ func (ec *executionContext) _Team_currentContractsMetadata(ctx context.Context, 
 	res := resTmp.(*model.ContractsMetadata)
 	fc.Result = res
 	return ec.marshalOContractsMetadata2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐContractsMetadata(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Team_teamAssets(ctx context.Context, field graphql.CollectedField, obj *model.Team) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Team",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TeamAssets, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.TeamAssets)
+	fc.Result = res
+	return ec.marshalOTeamAssets2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐTeamAssets(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TeamAssets_draftPicks(ctx context.Context, field graphql.CollectedField, obj *model.TeamAssets) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "TeamAssets",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DraftPicks, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.DraftYear)
+	fc.Result = res
+	return ec.marshalNDraftYear2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐDraftYear(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
@@ -5008,6 +5327,14 @@ func (ec *executionContext) unmarshalInputNewTeam(ctx context.Context, obj inter
 			if err != nil {
 				return it, err
 			}
+		case "division":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("division"))
+			it.Division, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "foundedDate":
 			var err error
 
@@ -5352,6 +5679,67 @@ func (ec *executionContext) _Division(ctx context.Context, sel ast.SelectionSet,
 	return out
 }
 
+var draftPickImplementors = []string{"DraftPick"}
+
+func (ec *executionContext) _DraftPick(ctx context.Context, sel ast.SelectionSet, obj *model.DraftPick) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, draftPickImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DraftPick")
+		case "round":
+			out.Values[i] = ec._DraftPick_round(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "value":
+			out.Values[i] = ec._DraftPick_value(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var draftYearImplementors = []string{"DraftYear"}
+
+func (ec *executionContext) _DraftYear(ctx context.Context, sel ast.SelectionSet, obj *model.DraftYear) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, draftYearImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DraftYear")
+		case "year":
+			out.Values[i] = ec._DraftYear_year(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "picks":
+			out.Values[i] = ec._DraftYear_picks(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var leagueImplementors = []string{"League"}
 
 func (ec *executionContext) _League(ctx context.Context, sel ast.SelectionSet, obj *model.League) graphql.Marshaler {
@@ -5659,8 +6047,39 @@ func (ec *executionContext) _Team(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "division":
+			out.Values[i] = ec._Team_division(ctx, field, obj)
 		case "currentContractsMetadata":
 			out.Values[i] = ec._Team_currentContractsMetadata(ctx, field, obj)
+		case "teamAssets":
+			out.Values[i] = ec._Team_teamAssets(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var teamAssetsImplementors = []string{"TeamAssets"}
+
+func (ec *executionContext) _TeamAssets(ctx context.Context, sel ast.SelectionSet, obj *model.TeamAssets) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, teamAssetsImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TeamAssets")
+		case "draftPicks":
+			out.Values[i] = ec._TeamAssets_draftPicks(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6128,6 +6547,80 @@ func (ec *executionContext) marshalNDivision2ᚖgithubᚗcomᚋrifaulknerᚋspor
 		return graphql.Null
 	}
 	return ec._Division(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNDraftPick2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐDraftPick(ctx context.Context, sel ast.SelectionSet, v []*model.DraftPick) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalODraftPick2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐDraftPick(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalNDraftYear2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐDraftYear(ctx context.Context, sel ast.SelectionSet, v []*model.DraftYear) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalODraftYear2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐDraftYear(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
 }
 
 func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v interface{}) (float64, error) {
@@ -6652,6 +7145,20 @@ func (ec *executionContext) marshalODivision2ᚕᚖgithubᚗcomᚋrifaulknerᚋs
 	return ret
 }
 
+func (ec *executionContext) marshalODraftPick2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐDraftPick(ctx context.Context, sel ast.SelectionSet, v *model.DraftPick) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._DraftPick(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalODraftYear2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐDraftYear(ctx context.Context, sel ast.SelectionSet, v *model.DraftYear) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._DraftYear(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalOFloat2ᚖfloat64(ctx context.Context, v interface{}) (*float64, error) {
 	if v == nil {
 		return nil, nil
@@ -6853,6 +7360,13 @@ func (ec *executionContext) marshalOTeam2ᚖgithubᚗcomᚋrifaulknerᚋsports�
 		return graphql.Null
 	}
 	return ec._Team(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOTeamAssets2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐTeamAssets(ctx context.Context, sel ast.SelectionSet, v *model.TeamAssets) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._TeamAssets(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOTime2ᚖtimeᚐTime(ctx context.Context, v interface{}) (*time.Time, error) {

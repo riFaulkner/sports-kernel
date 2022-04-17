@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/generated"
@@ -30,39 +29,12 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) 
 }
 
 func (r *mutationResolver) CreateTeam(ctx context.Context, leagueID *string, input model.NewTeam) (*model.Team, error) {
-	currentContractsMetadataDefault := model.ContractsMetadata{
-		TotalUtilizedCap:  0,
-		TotalAvailableCap: 200000000,
-		QbUtilizedCap: &model.CapUtilizationSummary{
-			CapUtilization: 0,
-			NumContracts:   0,
-		},
-		RbUtilizedCap: &model.CapUtilizationSummary{
-			CapUtilization: 0,
-			NumContracts:   0,
-		},
-		WrUtilizedCap: &model.CapUtilizationSummary{
-			CapUtilization: 0,
-			NumContracts:   0,
-		},
-		TeUtilizedCap: &model.CapUtilizationSummary{
-			CapUtilization: 0,
-			NumContracts:   0,
-		},
-	}
-	team := model.Team{
-		ID:                       input.ID,
-		TeamName:                 input.TeamName,
-		FoundedDate:              time.Now(),
-		CurrentContractsMetadata: &currentContractsMetadataDefault,
-	}
-
-	err := r.TeamResolver.Create(ctx, *leagueID, team)
+	team, err := r.TeamResolver.Create(ctx, *leagueID, input)
 	if err != nil {
 		return nil, err
 	}
 
-	return &team, nil
+	return team, nil
 }
 
 func (r *mutationResolver) UpdateTeamMetaData(ctx context.Context, leagueID string, teamID string) (*model.Team, error) {
@@ -137,8 +109,8 @@ func (r *queryResolver) Teams(ctx context.Context, leagueID *string) ([]*model.T
 	return teams, nil
 }
 
-func (r *queryResolver) TeamByID(ctx context.Context, leagueId string, teamId string) (*model.Team, error) {
-	team, err := r.TeamResolver.GetTeamById(ctx, leagueId, teamId)
+func (r *queryResolver) TeamByID(ctx context.Context, leagueID string, teamID string) (*model.Team, error) {
+	team, err := r.TeamResolver.GetTeamById(ctx, leagueID, teamID)
 	if err != nil {
 		return nil, err
 	}

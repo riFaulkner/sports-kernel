@@ -100,10 +100,10 @@ export default {
   },
   methods: {
     getColor(capRemaining) {
-      if (capRemaining < 5) {
+      if (capRemaining < 5000000) {
         return 'error';
       }
-      if (capRemaining < 10) {
+      if (capRemaining < 10000000) {
         return 'warning'
       }
       return 'success';

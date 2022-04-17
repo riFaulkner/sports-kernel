@@ -4,12 +4,15 @@ type Team {
     foundedDate: Time!
     teamName: String!
     ownerID: String!
+    division: String
     currentContractsMetadata: ContractsMetadata
+    teamAssets: TeamAssets
 }
 
 input NewTeam {
     id: ID!
     teamName: String!
+    division: String
     foundedDate: Time
 }
 
@@ -21,6 +24,21 @@ type ContractsMetadata {
     wrUtilizedCap: CapUtilizationSummary!
     teUtilizedCap: CapUtilizationSummary!
 }
+
+type TeamAssets {
+    draftPicks: [DraftYear]!
+}
+
+type DraftYear {
+    year: Int!
+    picks: [DraftPick]!
+}
+
+type DraftPick {
+    round: Int!
+    value: Int
+}
+
 
 type CapUtilizationSummary {
     capUtilization: Int!
