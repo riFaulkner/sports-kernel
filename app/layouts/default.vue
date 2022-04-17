@@ -175,6 +175,11 @@ export default {
           title: 'Strategy',
           to: '/strategy'
         },
+        {
+          icon: 'mdi-account-wrench',
+          title: 'Admin',
+          to: '/admin'
+        },
       ],
       title: 'Sports Kernel',
       userAccountActions: [

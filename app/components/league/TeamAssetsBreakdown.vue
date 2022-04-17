@@ -19,7 +19,7 @@
       <v-row>
         <v-data-table
             :headers="assets.draftPicksHeaders"
-            :items="draftPicks"
+            :items="processedDraftPicks"
             item-key="title"
             hide-default-footer
         >
@@ -53,7 +53,7 @@
 <script>
 import DraftBreakDownList from "~/components/league/DraftBreakDownList";
 import TeamContractsBreakdown from "~/components/league/TeamContractsBreakdown";
-import {TEAM_CONTRACTS} from "~/graphql/queries/team/teamGraphQL";
+import {TEAM_CONTRACTS, TEAM_DRAFT_PICKS} from "~/graphql/queries/team/teamGraphQL";
 export default {
   name: "TeamAssetsBreakdown",
   components: {TeamContractsBreakdown, DraftBreakDownList},
@@ -71,51 +71,7 @@ export default {
     return {
       contracts: [],
       teamAssets: {
-        draftPicks: [
-          {
-            year: 2022,
-            picks: [
-              {round:1, pickValue: 1},
-              {round:1, pickValue: 15},
-              {round:2, pickValue: 33},
-              {round:3, pickValue: 65},
-            ]
-          },
-          {
-            year: 2023,
-            picks: [
-              {round:1, pickValue: 1},
-              {round:2, pickValue: 33},
-              {round:3, pickValue: 65},
-            ]
-          },
-          {
-            year: 2024,
-            picks: [
-              {round:1, pickValue: null},
-              {round:2, pickValue: null},
-              {round:3, pickValue: null},
-            ]
-          },
-          {
-            year: 2025,
-            picks: [
-              {round:1, pickValue: null},
-              {round:2, pickValue: null},
-              {round:3, pickValue: null},
-              {round:4, pickValue: null},
-            ]
-          },
-          {
-            year: 2026,
-            picks: [
-              {round:1, pickValue: null},
-              {round:2, pickValue: null},
-              {round:3, pickValue: null},
-              {round:4, pickValue: null},
-            ]
-          }
-        ]
+        draftPicks: []
       },
       assets: {
         draftPicksTitle: "Draft Picks",
@@ -135,10 +91,14 @@ export default {
     }
   },
   computed: {
-    draftPicks: function() {
+    processedDraftPicks: function() {
+      if (this.teamAssets === null || this.teamAssets.draftPicks === null) {
+        return [];
+      }
+
       let tableObject = [];
 
-      for (let roundNum = 0; roundNum < 4; roundNum++) {
+      for (let roundNum = 0; roundNum < 5; roundNum++) {
         let roundDataList = [];
         const roundNumber = roundNum+1;
 
@@ -179,6 +139,16 @@ export default {
         }
       },
       update: data => data.teamContracts,
+    },
+    teamAssets: {
+      query: TEAM_DRAFT_PICKS,
+      variables() {
+        return {
+          leagueId: this.leagueId,
+          teamId: this.teamId
+        }
+      },
+      update: data => data.teamById.teamAssets,
     }
   }
 }

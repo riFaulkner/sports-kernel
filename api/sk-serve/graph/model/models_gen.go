@@ -78,6 +78,16 @@ type Division struct {
 	LeadingWins  *int   `json:"leadingWins"`
 }
 
+type DraftPick struct {
+	Round int  `json:"round"`
+	Value *int `json:"value"`
+}
+
+type DraftYear struct {
+	Year  int          `json:"year"`
+	Picks []*DraftPick `json:"picks"`
+}
+
 type League struct {
 	ID         string      `json:"id"`
 	LeagueName string      `json:"leagueName"`
@@ -90,6 +100,7 @@ type League struct {
 type NewTeam struct {
 	ID          string     `json:"id"`
 	TeamName    string     `json:"teamName"`
+	Division    *string    `json:"division"`
 	FoundedDate *time.Time `json:"foundedDate"`
 }
 
@@ -113,7 +124,13 @@ type Team struct {
 	FoundedDate              time.Time          `json:"foundedDate"`
 	TeamName                 string             `json:"teamName"`
 	OwnerID                  string             `json:"ownerID"`
+	Division                 *string            `json:"division"`
 	CurrentContractsMetadata *ContractsMetadata `json:"currentContractsMetadata"`
+	TeamAssets               *TeamAssets        `json:"teamAssets"`
+}
+
+type TeamAssets struct {
+	DraftPicks []*DraftYear `json:"draftPicks"`
 }
 
 type User struct {

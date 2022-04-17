@@ -24,3 +24,19 @@ export const TEAM_CONTRACTS = gql`
         }
     }
 `
+
+export const TEAM_DRAFT_PICKS = gql`
+    query getTeamById($leagueId:ID!, $teamId: ID!) {
+        teamById(leagueId: $leagueId, teamId:$teamId) {
+            teamAssets{
+                draftPicks{
+                    year
+                    picks{
+                        round
+                        value
+                    }
+                }
+            }
+        }
+    }
+`

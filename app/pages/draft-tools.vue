@@ -11,7 +11,8 @@
 
 <script>
 export default {
-  name: "draft-tools.vue"
+  name: "draft-tools.vue",
+  middleware: 'auth',
 }
 </script>
 
