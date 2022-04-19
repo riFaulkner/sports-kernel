@@ -2,6 +2,7 @@
   <v-tabs-items v-model="tab">
     <v-tab-item>
       <h1>Manage leagues</h1>
+      {{$auth.user}}
     </v-tab-item>
     <v-tab-item>
       <h1>Contracts</h1>
