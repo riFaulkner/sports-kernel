@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"github.com/go-chi/chi"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/auth"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/firestore"
 	"github.com/rs/cors"
 	"log"
 	"net/http"
@@ -19,33 +21,24 @@ const defaultPort = "8080"
 func main() {
 	ctx := context.Background()
 
-	srv := configureGql(ctx)
+	firestoreClient := firestore.NewClient(ctx)
 
-	router := configureRouter(srv)
+	srv := configureGql(firestoreClient)
+
+	router := configureRouter(srv, firestoreClient)
 
 	startServer(router)
 }
 
-func configureGql(context context.Context) *handler.Server {
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(graph.Initialize(context)))
-
-	// placeholder, might try to use websockts at somepoint so I don't want to lose this config
-	//srv.AddTransport(&transport.Websocket{
-	//	Upgrader: websocket.Upgrader{
-	//		CheckOrigin: func(r *http.Request) bool {
-	//			// Check against desired domains
-	//			return r.Host == "sports-kernel.com"
-	//		},
-	//		ReadBufferSize:  1024,
-	//		WriteBufferSize: 1024,
-	//	},
-	//})
+func configureGql(client firestore.Client) *handler.Server {
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(graph.Initialize(client)))
 
 	return srv
 }
 
-func configureRouter(server *handler.Server) *chi.Mux {
+func configureRouter(server *handler.Server, client firestore.Client) *chi.Mux {
 	router := chi.NewRouter()
+
 	// Setting up cors config
 	router.Use(cors.New(cors.Options{
 		AllowedOrigins:   getAllowedOrigins(),
@@ -53,6 +46,8 @@ func configureRouter(server *handler.Server) *chi.Mux {
 		AllowCredentials: true,
 		Debug:            false,
 	}).Handler)
+
+	router.Use(auth.Middleware(client))
 
 	router.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
 	router.Handle("/graphql", server)
