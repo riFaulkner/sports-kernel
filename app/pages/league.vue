@@ -1,6 +1,10 @@
 <template v-slot:extension>
 
-  <v-tabs-items v-model="tab" v-if=league>
+  <v-tabs-items
+      v-model="tab"
+      v-if=league
+      touchless
+  >
     <v-tab-item>
       <league-standings
           :league-info=league

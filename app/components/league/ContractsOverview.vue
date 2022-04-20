@@ -6,6 +6,7 @@
         :items=teams
         :expanded.sync="expanded"
         item-key="teamName"
+        items-per-page=15
         hide-default-footer
         show-expand
     >
