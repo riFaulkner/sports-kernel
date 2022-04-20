@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/go-chi/chi"
+	"github.com/joho/godotenv"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/auth"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/firestore"
 	"github.com/rs/cors"
@@ -19,6 +20,10 @@ import (
 const defaultPort = "8080"
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		log.Fatalf("Error loading the .env file: %v", err)
+	}
+
 	ctx := context.Background()
 
 	firestoreClient := firestore.NewClient(ctx)
@@ -47,6 +52,7 @@ func configureRouter(server *handler.Server, client firestore.Client) *chi.Mux {
 		Debug:            false,
 	}).Handler)
 
+	router.Use(auth.EnsureValidToken())
 	router.Use(auth.Middleware(client))
 
 	router.Handle("/", playground.Handler("GraphQL playground", "/graphql"))

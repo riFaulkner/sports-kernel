@@ -44,7 +44,11 @@ export default {
             auth0: {
                 domain: 'sports-kernel.us.auth0.com',
                 clientId: 'YFF0nlkWCMbSDzWHiUxd7ZnHKlp9NUmD',
-                audience: 'https://sports-kernel.us.auth0.com/api/v2/'
+                audience: 'https://api.sports-kernel.com',
+                scope: ['openid', 'profile', 'email', 'offline_access', 'leagueManager:VNTYeMgCM54o7zlzX41T'],
+                responseType: 'code',
+                grantType: 'authorization_code',
+                codeChallengeMethod: 'S256',
             }
         }
     },
@@ -58,6 +62,7 @@ export default {
 
     apollo: {
         tokenName: "auth._token.auth0", // specify token name
+        authenticationType: '',
         // defaultOptions: {
         //     $query: {
         //         fetchPolicy: "network-only",
@@ -70,7 +75,6 @@ export default {
         clientConfigs: {
             default: {
                 httpEndpoint: process.env.NODE_ENV === 'production' ? 'https://api.sports-kernel.com/graphql' : 'http://localhost:8080/graphql',
-                // httpEndpoint: 'http://localhost:8080/graphql',
                 httpLinkOptions: {
                     credentials: 'same-origin'
                 },

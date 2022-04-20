@@ -6,11 +6,13 @@ package graph
 import (
 	"context"
 	"fmt"
-	"log"
-
 	"github.com/99designs/gqlgen/graphql"
+	jwtmiddleware "github.com/auth0/go-jwt-middleware/v2"
+	"github.com/auth0/go-jwt-middleware/v2/validator"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/auth"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/generated"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
+	"log"
 )
 
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*model.User, error) {
@@ -110,6 +112,14 @@ func (r *queryResolver) Teams(ctx context.Context, leagueID *string) ([]*model.T
 }
 
 func (r *queryResolver) TeamByID(ctx context.Context, leagueID string, teamID string) (*model.Team, error) {
+	// Validate that a user has the correct permissions
+	token := ctx.Value(jwtmiddleware.ContextKey{}).(*validator.ValidatedClaims)
+
+	claims := token.CustomClaims.(*auth.CustomClaims)
+	if !claims.HasScope("leagueManager:VNTYeMgCM54o7zlzX41T==") {
+		log.Fatalf("Correct permissions not granted")
+	}
+
 	team, err := r.TeamResolver.GetTeamById(ctx, leagueID, teamID)
 	if err != nil {
 		return nil, err
