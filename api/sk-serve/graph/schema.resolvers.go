@@ -6,13 +6,14 @@ package graph
 import (
 	"context"
 	"fmt"
+	"log"
+
 	"github.com/99designs/gqlgen/graphql"
 	jwtmiddleware "github.com/auth0/go-jwt-middleware/v2"
 	"github.com/auth0/go-jwt-middleware/v2/validator"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/auth"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/generated"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
-	"log"
 )
 
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*model.User, error) {
