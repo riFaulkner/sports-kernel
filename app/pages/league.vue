@@ -67,6 +67,7 @@ export default {
   },
   destroyed() {
     this.$store.dispatch("application/updateSubmenu", null);
+    this.$store.dispatch("application/updateActiveTab", null);
   }
 }
 </script>
