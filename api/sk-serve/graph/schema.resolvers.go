@@ -73,6 +73,15 @@ func (r *mutationResolver) CreateContract(ctx context.Context, leagueID *string,
 	return document, nil
 }
 
+func (r *mutationResolver) CreatePlayer(ctx context.Context, input model.NewPlayerNfl) (*model.PlayerNfl, error) {
+	player, err := r.PlayerResolver.Create(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	return player, nil
+}
+
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	users, err := r.UserResolver.GetAll(ctx)
 	if err != nil {
