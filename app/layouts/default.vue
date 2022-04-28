@@ -10,6 +10,7 @@
       <v-list>
         <v-list-item
             v-for="(item, i) in menuItems"
+            v-if="item.adminOnly === false || isUserAdmin"
             :key="i"
             :to="item.to"
             router
@@ -163,22 +164,27 @@ export default {
         {
           icon: 'mdi-account-group',
           title: "League Home",
-          to: '/league'
+          to: '/league',
+          adminOnly: false,
         },
         {
           icon: 'mdi-progress-wrench',
           title: "Draft Tools",
-          to: '/draft-tools'
+          to: '/draft-tools',
+          adminOnly: false,
         },
         {
           icon: 'mdi-chart-bubble',
           title: 'Strategy',
-          to: '/strategy'
+          to: '/strategy',
+          adminOnly: false,
+
         },
         {
           icon: 'mdi-account-wrench',
           title: 'Admin',
-          to: '/admin'
+          to: '/admin',
+          adminOnly: true,
         },
       ],
       title: 'Sports Kernel',
@@ -195,6 +201,10 @@ export default {
     },
     globalAlert() {
       return this.$store.state.application.alert;
+    },
+    isUserAdmin() {
+      const isAdmin = this.$store.getters["user/getIsUserAdmin"];
+      return isAdmin !== null ? isAdmin : false;
     },
     leagues() {
       const leagues = this.$store.getters["user/getUserLeagues"];
@@ -245,7 +255,9 @@ export default {
     },
   },
   created() {
-      this.$store.dispatch('user/initializeUserPreferences', {apolloClient: this.$apollo})
+    if(this.$auth.loggedIn) {
+      this.$store.dispatch('user/initializeUserPreferences', {apolloClient: this.$apollo, userId: this.$auth.user.sub})
+    }
       this.isInitialized = true;
   }
 }

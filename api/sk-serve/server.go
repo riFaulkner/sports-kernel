@@ -51,9 +51,9 @@ func configureRouter(server *handler.Server, client firestore.Client) *chi.Mux {
 		AllowCredentials: true,
 		Debug:            false,
 	}).Handler)
-
-	router.Use(auth.EnsureValidToken())
-	router.Use(auth.Middleware(client))
+	if os.Getenv("ENV") == "PROD" {
+		router.Use(auth.EnsureValidToken())
+	}
 
 	router.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
 	router.Handle("/graphql", server)

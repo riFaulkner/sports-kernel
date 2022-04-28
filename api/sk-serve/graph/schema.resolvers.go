@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 
@@ -104,6 +105,16 @@ func (r *queryResolver) League(ctx context.Context, leagueID *string) (*model.Le
 }
 
 func (r *queryResolver) Teams(ctx context.Context, leagueID *string) ([]*model.Team, error) {
+	// Validate that a user has the correct permissions
+	token := ctx.Value(jwtmiddleware.ContextKey{}).(*validator.ValidatedClaims)
+
+	claims := token.CustomClaims.(*auth.CustomClaims)
+	if !claims.HasScope("leagueManager:VNTYeMgCM54o7zlzX41T") {
+		log.Println("Correct permissions not granted") // This should throw an error
+		graphql.ErrorResponse(ctx, "Correct permissions not granted to this")
+		return nil, errors.New("Correct permissions not found")
+	}
+
 	teams, err := r.TeamResolver.GetAll(ctx, *leagueID)
 	if err != nil {
 		return nil, err
@@ -117,8 +128,10 @@ func (r *queryResolver) TeamByID(ctx context.Context, leagueID string, teamID st
 	token := ctx.Value(jwtmiddleware.ContextKey{}).(*validator.ValidatedClaims)
 
 	claims := token.CustomClaims.(*auth.CustomClaims)
-	if !claims.HasScope("leagueManager:VNTYeMgCM54o7zlzX41T==") {
-		log.Fatalf("Correct permissions not granted")
+	if !claims.HasScope("leagueManager:VNTYeMgCM54o7zlzX41T") {
+		log.Println("Correct permissions not granted") // This should throw an error
+		graphql.ErrorResponse(ctx, "Correct permissions not granted to this")
+		return nil, errors.New("Correct permissions not found")
 	}
 
 	team, err := r.TeamResolver.GetTeamById(ctx, leagueID, teamID)

@@ -45,7 +45,7 @@ export default {
                 domain: 'sports-kernel.us.auth0.com',
                 clientId: 'YFF0nlkWCMbSDzWHiUxd7ZnHKlp9NUmD',
                 audience: 'https://api.sports-kernel.com',
-                scope: ['openid', 'profile', 'email', 'offline_access', 'leagueManager:VNTYeMgCM54o7zlzX41T'],
+                scope: ['openid', 'profile', 'email', 'offline_access'],
                 responseType: 'code',
                 grantType: 'authorization_code',
                 codeChallengeMethod: 'S256',
