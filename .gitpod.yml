@@ -10,3 +10,9 @@ tasks:
     before:  cd /workspace/sports-kernel/app
     init: npm install
     command: npm run dev
+
+ports:
+  - port: 8080
+    onOpen: ignore
+  - port: 3000
+    onOpen: notify
