@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/base64"
-	"fmt"
 
 	firestore "cloud.google.com/go/firestore"
 	appFirestore "github.com/rifaulkner/sports-kernel/api/sk-serve/firestore"
@@ -71,12 +70,10 @@ func (p *PlayerImpl) Create(ctx context.Context, playerInput model.NewPlayerNfl)
 		Avatar:       "",
 	}
 
-	result, err := players.Doc(newPlayer.ID).Set(ctx, newPlayer)
+	_, err := players.Doc(newPlayer.ID).Set(ctx, newPlayer)
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println(result.UpdateTime.Day())
 
 	return &newPlayer, nil
 }
