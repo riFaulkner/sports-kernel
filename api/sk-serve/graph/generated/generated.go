@@ -115,12 +115,15 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		CreateContract     func(childComplexity int, leagueID *string, input *model.ContractInput) int
+		CreatePlayer       func(childComplexity int, input model.NewPlayerNfl) int
 		CreateTeam         func(childComplexity int, leagueID *string, input model.NewTeam) int
 		CreateUser         func(childComplexity int, input model.NewUser) int
 		UpdateTeamMetaData func(childComplexity int, leagueID string, teamID string) int
 	}
 
 	PlayerNfl struct {
+		Avatar       func(childComplexity int) int
+		Birthday     func(childComplexity int) int
 		ID           func(childComplexity int) int
 		OverallRank  func(childComplexity int) int
 		PlayerName   func(childComplexity int) int
@@ -175,6 +178,7 @@ type MutationResolver interface {
 	CreateTeam(ctx context.Context, leagueID *string, input model.NewTeam) (*model.Team, error)
 	UpdateTeamMetaData(ctx context.Context, leagueID string, teamID string) (*model.Team, error)
 	CreateContract(ctx context.Context, leagueID *string, input *model.ContractInput) (*model.Contract, error)
+	CreatePlayer(ctx context.Context, input model.NewPlayerNfl) (*model.PlayerNfl, error)
 }
 type QueryResolver interface {
 	Users(ctx context.Context) ([]*model.User, error)
@@ -509,6 +513,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateContract(childComplexity, args["leagueId"].(*string), args["input"].(*model.ContractInput)), true
 
+	case "Mutation.createPlayer":
+		if e.complexity.Mutation.CreatePlayer == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createPlayer_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreatePlayer(childComplexity, args["input"].(model.NewPlayerNfl)), true
+
 	case "Mutation.createTeam":
 		if e.complexity.Mutation.CreateTeam == nil {
 			break
@@ -544,6 +560,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdateTeamMetaData(childComplexity, args["leagueId"].(string), args["teamId"].(string)), true
+
+	case "PlayerNFL.avatar":
+		if e.complexity.PlayerNfl.Avatar == nil {
+			break
+		}
+
+		return e.complexity.PlayerNfl.Avatar(childComplexity), true
+
+	case "PlayerNFL.birthday":
+		if e.complexity.PlayerNfl.Birthday == nil {
+			break
+		}
+
+		return e.complexity.PlayerNfl.Birthday(childComplexity), true
 
 	case "PlayerNFL.id":
 		if e.complexity.PlayerNfl.ID == nil {
@@ -882,8 +912,10 @@ type PlayerNFL {
   overallRank: Int!
   playerName: String!
   position: String!
-  positionRank: String!
+  positionRank: Int!
   teamNFL: String!  
+  birthday: String!
+  avatar: String!
 }
 
 type Query {
@@ -905,11 +937,22 @@ input NewUser {
   avatar: String!
 }
 
+input NewPlayerNFL {
+  playerName: String!
+  position: String!
+  positionRank: Int
+  teamNFL: String
+  birthday: String
+  avatar: String
+  overallRank: Int
+}
+
 type Mutation {
   createUser(input: NewUser!): User!
   createTeam(leagueId: ID, input: NewTeam!): Team!
   updateTeamMetaData(leagueId: ID!, teamId: ID!): Team!
   createContract(leagueId: ID, input: ContractInput): Contract!
+  createPlayer(input: NewPlayerNFL!): PlayerNFL!
 }`, BuiltIn: false},
 	{Name: "graph/schema/team/team.graphqls", Input: `# Team types and inputs
 type Team {
@@ -1056,6 +1099,21 @@ func (ec *executionContext) field_Mutation_createContract_args(ctx context.Conte
 		}
 	}
 	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createPlayer_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.NewPlayerNfl
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNNewPlayerNFL2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐNewPlayerNfl(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -2921,6 +2979,48 @@ func (ec *executionContext) _Mutation_createContract(ctx context.Context, field 
 	return ec.marshalNContract2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐContract(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_createPlayer(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createPlayer_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreatePlayer(rctx, args["input"].(model.NewPlayerNfl))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.PlayerNfl)
+	fc.Result = res
+	return ec.marshalNPlayerNFL2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐPlayerNfl(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _PlayerNFL_id(ctx context.Context, field graphql.CollectedField, obj *model.PlayerNfl) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -3091,9 +3191,9 @@ func (ec *executionContext) _PlayerNFL_positionRank(ctx context.Context, field g
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _PlayerNFL_teamNFL(ctx context.Context, field graphql.CollectedField, obj *model.PlayerNfl) (ret graphql.Marshaler) {
@@ -3115,6 +3215,76 @@ func (ec *executionContext) _PlayerNFL_teamNFL(ctx context.Context, field graphq
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.TeamNfl, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PlayerNFL_birthday(ctx context.Context, field graphql.CollectedField, obj *model.PlayerNfl) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PlayerNFL",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Birthday, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PlayerNFL_avatar(ctx context.Context, field graphql.CollectedField, obj *model.PlayerNfl) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PlayerNFL",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Avatar, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5305,6 +5475,74 @@ func (ec *executionContext) unmarshalInputContractYearInput(ctx context.Context,
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputNewPlayerNFL(ctx context.Context, obj interface{}) (model.NewPlayerNfl, error) {
+	var it model.NewPlayerNfl
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "playerName":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("playerName"))
+			it.PlayerName, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "position":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("position"))
+			it.Position, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "positionRank":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("positionRank"))
+			it.PositionRank, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "teamNFL":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("teamNFL"))
+			it.TeamNfl, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "birthday":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("birthday"))
+			it.Birthday, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "avatar":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("avatar"))
+			it.Avatar, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "overallRank":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("overallRank"))
+			it.OverallRank, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputNewTeam(ctx context.Context, obj interface{}) (model.NewTeam, error) {
 	var it model.NewTeam
 	var asMap = obj.(map[string]interface{})
@@ -5821,6 +6059,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "createPlayer":
+			out.Values[i] = ec._Mutation_createPlayer(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5870,6 +6113,16 @@ func (ec *executionContext) _PlayerNFL(ctx context.Context, sel ast.SelectionSet
 			}
 		case "teamNFL":
 			out.Values[i] = ec._PlayerNFL_teamNFL(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "birthday":
+			out.Values[i] = ec._PlayerNFL_birthday(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "avatar":
+			out.Values[i] = ec._PlayerNFL_avatar(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -6713,6 +6966,11 @@ func (ec *executionContext) marshalNLeague2ᚖgithubᚗcomᚋrifaulknerᚋsports
 		return graphql.Null
 	}
 	return ec._League(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNNewPlayerNFL2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐNewPlayerNfl(ctx context.Context, v interface{}) (model.NewPlayerNfl, error) {
+	res, err := ec.unmarshalInputNewPlayerNFL(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNNewTeam2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐNewTeam(ctx context.Context, v interface{}) (model.NewTeam, error) {
