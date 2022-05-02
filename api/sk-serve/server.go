@@ -54,7 +54,6 @@ func main() {
 func configureGql(client firestore.Client) *handler.Server {
 	graphConfig := graph.Initialize(client)
 	graphConfig.Directives.HasRole = func(ctx context.Context, obj interface{}, next graphql.Resolver, role model.Role) (res interface{}, err error) {
-		// TODO: Find a way yo get the leagueID and or the teamID from the obj or ctx
 		if !auth.GetUserRolesFromContext(ctx).ContainsRole(role, ctx) {
 			// block calling the next resolver
 			return nil, fmt.Errorf("Access denied")
@@ -62,7 +61,6 @@ func configureGql(client firestore.Client) *handler.Server {
 
 		// or let it pass through
 		return next(ctx)
-
 	}
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(graphConfig))
 
@@ -79,10 +77,6 @@ func configureRouter(server *handler.Server, client firestore.Client) *chi.Mux {
 		AllowCredentials: true,
 		Debug:            false,
 	}).Handler)
-
-	//if os.Getenv("ENV") == "PROD" {
-	//router.Use(auth.EnsureValidToken())
-	//}
 
 	issuerURL, err := url.Parse("https://" + os.Getenv("AUTH0_DOMAIN") + "/")
 	if err != nil {

@@ -148,10 +148,10 @@ func getAcceptableRoleStrings(role model.Role, leagueID string, teamID string) [
 	acceptableRoles := make([]*string, 0)
 	acceptableRoles = append(acceptableRoles, getLeagueManagerRole(leagueID))
 
-	if strings.Contains(strings.ToLower(role.String()), "league") {
+	if leagueID != "" && strings.Contains(strings.ToLower(role.String()), "league") {
 		acceptableRoles = append(acceptableRoles, getLeagueMemberRole(leagueID))
 	}
-	if strings.Contains(strings.ToLower(role.String()), "team") {
+	if teamID != "" && strings.Contains(strings.ToLower(role.String()), "team") {
 		acceptableRoles = append(acceptableRoles, getTeamManagerRole(teamID))
 	}
 

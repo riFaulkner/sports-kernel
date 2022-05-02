@@ -991,7 +991,7 @@ type Mutation {
   createTeam(leagueId: ID, input: NewTeam!): Team!
   updateTeamMetaData(leagueId: ID!, teamId: ID!): Team!
   createContract(leagueId: ID, input: ContractInput): Contract!
-  createUserRole(leagueId: ID, newUserRole: NewUserRole): UserRoles! @hasRole(role: LEAGUE_MANAGER)
+  createUserRole(leagueId: ID, newUserRole: NewUserRole): UserRoles!
 }`, BuiltIn: false},
 	{Name: "graph/schema/team/team.graphqls", Input: `# Team types and inputs
 type Team {
@@ -3655,32 +3655,8 @@ func (ec *executionContext) _Mutation_createUserRole(ctx context.Context, field 
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		directive0 := func(rctx context.Context) (interface{}, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().CreateUserRole(rctx, fc.Args["leagueId"].(*string), fc.Args["newUserRole"].(*model.NewUserRole))
-		}
-		directive1 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalNRole2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐRole(ctx, "LEAGUE_MANAGER")
-			if err != nil {
-				return nil, err
-			}
-			if ec.directives.HasRole == nil {
-				return nil, errors.New("directive hasRole is not implemented")
-			}
-			return ec.directives.HasRole(ctx, nil, directive0, role)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(*model.UserRoles); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model.UserRoles`, tmp)
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateUserRole(rctx, fc.Args["leagueId"].(*string), fc.Args["newUserRole"].(*model.NewUserRole))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

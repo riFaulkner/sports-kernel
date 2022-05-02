@@ -247,7 +247,7 @@ export default {
         this.$store.dispatch('application/alertSuccess', {message: "Successfully switched active league."});
       })
       .catch((error) => {
-        this.$store.dispatch('application/alertError',"Unable to switch active league, try again later.");
+        this.$store.dispatch('application/alertError',{message: "Unable to switch active league, try again later."});
         console.error("Failed to update the users league, server response: ", error);
       });
 

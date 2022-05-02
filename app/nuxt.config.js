@@ -71,7 +71,7 @@ export default {
         // },
 
         // watchLoading: "@/apollo/loadingHandler.js",
-        // errorHandler: "@/apollo/errorHandler.js",
+        errorHandler: "@/graphql/config/errorHandler.js",
         clientConfigs: {
             default: {
                 httpEndpoint: process.env.NODE_ENV === 'production' ? 'https://api.sports-kernel.com/graphql' : 'http://localhost:8080/graphql',

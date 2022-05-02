@@ -44,5 +44,5 @@ type Mutation {
   createTeam(leagueId: ID, input: NewTeam!): Team!
   updateTeamMetaData(leagueId: ID!, teamId: ID!): Team!
   createContract(leagueId: ID, input: ContractInput): Contract!
-  createUserRole(leagueId: ID, newUserRole: NewUserRole): UserRoles! @hasRole(role: LEAGUE_MANAGER)
+  createUserRole(leagueId: ID, newUserRole: NewUserRole): UserRoles!
 }
