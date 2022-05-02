@@ -10,16 +10,26 @@ type PlayerNFL {
   teamNFL: String!  
 }
 
+directive @hasRole(role: Role!) on FIELD_DEFINITION
+
+enum Role {
+  ADMIN
+  LEAGUE_MANAGER
+  LEAGUE_MEMBER
+  TEAM_OWNER
+}
+
 type Query {
   users: [User]
   leagues: [League]
   league(leagueId: ID): League
-  teams(leagueId: ID): [Team!]
-  teamById(leagueId: ID!, teamId: ID!): Team
+  teams(leagueId: ID): [Team!] @hasRole(role: LEAGUE_MEMBER)
+  teamById(leagueId: ID!, teamId: ID!): Team @hasRole(role: LEAGUE_MEMBER)
   teamContracts(leagueId: ID, teamId: ID): [Contract!]
   players(numOfResults: Int): [PlayerNFL!]
   player(playerId: ID): PlayerNFL!
   userPreferences(userId: ID): UserPreferences
+  getUserRoles(userId:ID): [UserRoles]
 }
 
 #Mutations and Inputs
@@ -34,4 +44,5 @@ type Mutation {
   createTeam(leagueId: ID, input: NewTeam!): Team!
   updateTeamMetaData(leagueId: ID!, teamId: ID!): Team!
   createContract(leagueId: ID, input: ContractInput): Contract!
+  createUserRole(leagueId: ID, newUserRole: NewUserRole): UserRoles! @hasRole(role: LEAGUE_MANAGER)
 }

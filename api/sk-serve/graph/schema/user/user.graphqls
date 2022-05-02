@@ -13,3 +13,9 @@ type UserPreferences {
     isAdmin: Boolean
     leagues: [League!]!
 }
+
+type UserRoles {
+    id: ID!
+    userId: ID!
+    role: String!
+}

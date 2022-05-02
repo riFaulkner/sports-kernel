@@ -7,12 +7,6 @@ type League {
     divisions: [Division!]!
 }
 
-type LeagueRoles {
-    id: ID!
-    userId: ID!
-    role: String!
-}
-
 input NewUserRole {
     userId: ID!
     role: String!
@@ -21,8 +15,4 @@ input NewUserRole {
 type Division {
     divisionName: String!
     leadingWins: Int
-}
-
-type LeagueMutations {
-    createUserRole(newUserRole: NewUserRole): LeagueRoles
 }

@@ -3,27 +3,25 @@ package auth
 import (
 	"context"
 	"fmt"
+	"github.com/99designs/gqlgen/graphql"
 	jwtmiddleware "github.com/auth0/go-jwt-middleware/v2"
-	"github.com/auth0/go-jwt-middleware/v2/jwks"
 	"github.com/auth0/go-jwt-middleware/v2/validator"
-	"github.com/golang-jwt/jwt"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/firestore"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
 	"log"
 	"net/http"
-	"net/url"
-	"os"
 	"strings"
-	"time"
 )
 
 // A private key for context that only this package can access. This is important
 // to prevent collisions between different context uses
-var userCtxKey = &contextKey{"user"}
+var userCtxKey = &contextKey{"user_roles"}
 
 type contextKey struct {
 	name string
 }
+
+type UserRoles []*model.UserRoles
 
 // CustomClaims contains custom data we want from the token.
 type CustomClaims struct {
@@ -37,127 +35,140 @@ func (c CustomClaims) Validate(ctx context.Context) error {
 }
 
 // EnsureValidToken is a middleware that will check the validity of our JWT.
-func EnsureValidToken() func(next http.Handler) http.Handler {
-	issuerURL, err := url.Parse("https://" + os.Getenv("AUTH0_DOMAIN") + "/")
-	if err != nil {
-		log.Fatalf("Failed to parse the issuer url: %v", err)
-	}
+//func EnsureValidToken() func(next http.Handler) http.Handler {
+//	issuerURL, err := url.Parse("https://" + os.Getenv("AUTH0_DOMAIN") + "/")
+//	if err != nil {
+//		log.Fatalf("Failed to parse the issuer url: %v", err)
+//	}
+//
+//	provider := jwks.NewCachingProvider(issuerURL, 5*time.Minute)
+//
+//	jwtValidator, err := validator.New(
+//		provider.KeyFunc,
+//		validator.RS256,
+//		issuerURL.String(),
+//		[]string{os.Getenv("AUTH0_AUDIENCE")},
+//		validator.WithCustomClaims(
+//			func() validator.CustomClaims {
+//				return &CustomClaims{}
+//			},
+//		),
+//		validator.WithAllowedClockSkew(time.Minute),
+//	)
+//	if err != nil {
+//		log.Fatalf("Failed to set up the jwt validator")
+//	}
+//
+//	errorHandler := func(w http.ResponseWriter, r *http.Request, err error) {
+//		log.Printf("Encountered error while validating JWT: %v", err)
+//
+//		w.Header().Set("Content-Type", "application/json")
+//		w.WriteHeader(http.StatusUnauthorized)
+//		w.Write([]byte(`{"message":"Failed to validate JWT."}`))
+//	}
+//
+//	middleware := jwtmiddleware.New(
+//		jwtValidator.ValidateToken,
+//		jwtmiddleware.WithErrorHandler(errorHandler),
+//	)
+//
+//	return func(next http.Handler) http.Handler {
+//		return middleware.CheckJWT(next)
+//	}
+//}
 
-	provider := jwks.NewCachingProvider(issuerURL, 5*time.Minute)
+func LoadUserRoles(client firestore.Client, next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		token := r.Context().Value(jwtmiddleware.ContextKey{}).(*validator.ValidatedClaims)
+		userId := token.RegisteredClaims.Subject
 
-	jwtValidator, err := validator.New(
-		provider.KeyFunc,
-		validator.RS256,
-		issuerURL.String(),
-		[]string{os.Getenv("AUTH0_AUDIENCE")},
-		validator.WithCustomClaims(
-			func() validator.CustomClaims {
-				return &CustomClaims{}
-			},
-		),
-		validator.WithAllowedClockSkew(time.Minute),
-	)
-	if err != nil {
-		log.Fatalf("Failed to set up the jwt validator")
-	}
+		userRoles, err := getUserRolesByID(r.Context(), client, userId)
+		if err != nil {
+			// return and don't let it go any further, they don't have any roles. or something bad happened
+		}
 
-	errorHandler := func(w http.ResponseWriter, r *http.Request, err error) {
-		log.Printf("Encountered error while validating JWT: %v", err)
+		// put it in context
+		ctx := context.WithValue(r.Context(), userCtxKey, userRoles)
 
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusUnauthorized)
-		w.Write([]byte(`{"message":"Failed to validate JWT."}`))
-	}
+		// and call the next with our new context
+		r = r.WithContext(ctx)
+		next.ServeHTTP(w, r)
+	})
 
-	middleware := jwtmiddleware.New(
-		jwtValidator.ValidateToken,
-		jwtmiddleware.WithErrorHandler(errorHandler),
-	)
-
-	return func(next http.Handler) http.Handler {
-		return middleware.CheckJWT(next)
-	}
 }
 
-// HasScope checks whether our claims have a specific scope.
-func (c CustomClaims) HasScope(expectedScope string) bool {
-	result := strings.Split(c.Scope, " ")
-	for i := range result {
-		if result[i] == expectedScope {
-			return true
+func GetUserRolesFromContext(ctx context.Context) UserRoles {
+	raw, _ := ctx.Value(userCtxKey).([]*model.UserRoles)
+	if raw == nil {
+		return make([]*model.UserRoles, 0)
+	}
+	return raw
+}
+
+func (r UserRoles) ContainsRole(role model.Role, ctx context.Context) bool {
+	graphVariables := graphql.GetOperationContext(ctx).Variables
+	leagueID := fmt.Sprintf("%s", graphVariables["leagueId"])
+	teamID := fmt.Sprintf("%s", graphVariables["teamId"])
+	acceptableRoles := getAcceptableRoleStrings(role, leagueID, teamID)
+	for _, item := range r {
+		for _, role := range acceptableRoles {
+			if *role == item.Role {
+				return true
+			}
 		}
 	}
 
 	return false
 }
 
-// Middleware decodes the share session cookie and packs the session into context
-func Middleware(client firestore.Client) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			token := r.Header.Get("Authorization")
+func getUserRolesByID(cxt context.Context, client firestore.Client, userId string) ([]*model.UserRoles, error) {
+	results, err := client.Collection(firestore.UsersCollection).
+		Doc(userId).Collection(firestore.UserRolesCollection).Documents(cxt).GetAll()
 
-			// Allow unauthenticated users in
-			if token == "" {
-				http.Error(w, "User unauthenticated", http.StatusForbidden)
-				return
-				//next.ServeHTTP(w, r)
-			}
-
-			userId, err := validateAndGetUserID(token)
-
-			if err != nil {
-				http.Error(w, "Invalid cookie", http.StatusForbidden)
-				return
-			}
-
-			// get the user from the database
-			user := getUserByID(client, userId)
-
-			// put it in context
-			ctx := context.WithValue(r.Context(), userCtxKey, user)
-
-			// and call the next with our new context
-			r = r.WithContext(ctx)
-			next.ServeHTTP(w, r)
-		})
+	if err != nil {
+		return nil, err
 	}
-}
+	userRoles := make([]*model.UserRoles, 0)
 
-// ForContext finds the user from the context. REQUIRES Middleware to have run.
-func ForContext(ctx context.Context) *model.User {
-	raw, _ := ctx.Value(userCtxKey).(*model.User)
-	return raw
-}
-
-func validateAndGetUserID(tokenString string) (string, error) {
-	tokenHeaderStrings := strings.Split(tokenString, " ")
-	tokenString = tokenHeaderStrings[len(tokenHeaderStrings)-1]
-
-	// Parse takes the token string and a function for looking up the key. The latter is especially
-	// useful if you use multiple keys for your application.  The standard is to use 'kid' in the
-	// head of the token to identify which key to use, but the parsed token (head and claims) is provided
-	// to the callback, providing flexibility.
-	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		// Don't forget to validate the alg is what you expect:
-		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+	for _, result := range results {
+		role := new(model.UserRoles)
+		err = result.DataTo(&role)
+		id := result.Ref.ID
+		role.ID = id
+		if err != nil {
+			log.Printf("Error getting all user roles together: %v", err)
 		}
 
-		return token.Header["kid"], nil
-	})
-
-	log.Printf("token %v", token)
-	//token.Claims
-
-	//jwt.MapClaims{}
-	return "", nil
+		userRoles = append(userRoles, role)
+	}
+	return userRoles, nil
 }
 
-func getUserByID(client firestore.Client, userId string) *model.User {
-	return &model.User{
-		ID:        userId,
-		OwnerName: "rick",
-		Email:     "ktarfum@gmail.com",
+func getAcceptableRoleStrings(role model.Role, leagueID string, teamID string) []*string {
+	acceptableRoles := make([]*string, 0)
+	acceptableRoles = append(acceptableRoles, getLeagueManagerRole(leagueID))
+
+	if strings.Contains(strings.ToLower(role.String()), "league") {
+		acceptableRoles = append(acceptableRoles, getLeagueMemberRole(leagueID))
 	}
+	if strings.Contains(strings.ToLower(role.String()), "team") {
+		acceptableRoles = append(acceptableRoles, getTeamManagerRole(teamID))
+	}
+
+	return acceptableRoles
+}
+
+func getTeamManagerRole(teamID string) *string {
+	role := fmt.Sprintf("teamOwner:%s", teamID)
+	return &role
+}
+
+func getLeagueMemberRole(leagueID string) *string {
+	role := fmt.Sprintf("leagueMember:%s", leagueID)
+	return &role
+}
+
+func getLeagueManagerRole(leagueID string) *string {
+	role := fmt.Sprintf("leagueManager:%s", leagueID)
+	return &role
 }

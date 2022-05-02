@@ -5,14 +5,10 @@ package graph
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 
 	"github.com/99designs/gqlgen/graphql"
-	jwtmiddleware "github.com/auth0/go-jwt-middleware/v2"
-	"github.com/auth0/go-jwt-middleware/v2/validator"
-	"github.com/rifaulkner/sports-kernel/api/sk-serve/auth"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/generated"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
 )
@@ -77,6 +73,10 @@ func (r *mutationResolver) CreateContract(ctx context.Context, leagueID *string,
 	return document, nil
 }
 
+func (r *mutationResolver) CreateUserRole(ctx context.Context, leagueID *string, newUserRole *model.NewUserRole) (*model.UserRoles, error) {
+	return r.UserResolver.CreateUserRole(ctx, newUserRole)
+}
+
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	users, err := r.UserResolver.GetAll(ctx)
 	if err != nil {
@@ -105,16 +105,6 @@ func (r *queryResolver) League(ctx context.Context, leagueID *string) (*model.Le
 }
 
 func (r *queryResolver) Teams(ctx context.Context, leagueID *string) ([]*model.Team, error) {
-	// Validate that a user has the correct permissions
-	token := ctx.Value(jwtmiddleware.ContextKey{}).(*validator.ValidatedClaims)
-
-	claims := token.CustomClaims.(*auth.CustomClaims)
-	if !claims.HasScope("leagueManager:VNTYeMgCM54o7zlzX41T") {
-		log.Println("Correct permissions not granted") // This should throw an error
-		graphql.ErrorResponse(ctx, "Correct permissions not granted to this")
-		return nil, errors.New("Correct permissions not found")
-	}
-
 	teams, err := r.TeamResolver.GetAll(ctx, *leagueID)
 	if err != nil {
 		return nil, err
@@ -124,16 +114,6 @@ func (r *queryResolver) Teams(ctx context.Context, leagueID *string) ([]*model.T
 }
 
 func (r *queryResolver) TeamByID(ctx context.Context, leagueID string, teamID string) (*model.Team, error) {
-	// Validate that a user has the correct permissions
-	token := ctx.Value(jwtmiddleware.ContextKey{}).(*validator.ValidatedClaims)
-
-	claims := token.CustomClaims.(*auth.CustomClaims)
-	if !claims.HasScope("leagueManager:VNTYeMgCM54o7zlzX41T") {
-		log.Println("Correct permissions not granted") // This should throw an error
-		graphql.ErrorResponse(ctx, "Correct permissions not granted to this")
-		return nil, errors.New("Correct permissions not found")
-	}
-
 	team, err := r.TeamResolver.GetTeamById(ctx, leagueID, teamID)
 	if err != nil {
 		return nil, err
@@ -184,6 +164,10 @@ func (r *queryResolver) UserPreferences(ctx context.Context, userID *string) (*m
 	}
 
 	return userPreferences, nil
+}
+
+func (r *queryResolver) GetUserRoles(ctx context.Context, userID *string) ([]*model.UserRoles, error) {
+	return r.UserResolver.GetUserRoles(ctx, userID)
 }
 
 // Mutation returns generated.MutationResolver implementation.

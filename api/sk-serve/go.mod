@@ -7,11 +7,11 @@ require (
 	github.com/99designs/gqlgen v0.17.3
 	github.com/auth0/go-jwt-middleware/v2 v2.0.1
 	github.com/go-chi/chi v4.1.2+incompatible
-	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/joho/godotenv v1.4.0
 	github.com/pkg/errors v0.9.1
 	github.com/rs/cors v1.6.0
 	github.com/vektah/gqlparser/v2 v2.4.2
+	google.golang.org/api v0.54.0
 	google.golang.org/grpc v1.39.1
 )
 
@@ -40,7 +40,6 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.9 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
-	google.golang.org/api v0.54.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20210805201207-89edb61ffb67 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect

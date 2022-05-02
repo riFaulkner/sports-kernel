@@ -21,9 +21,9 @@ func (u *ContractImpl) GetAll(ctx context.Context, leagueID string, teamID strin
 	contracts := make([]*model.Contract, 0)
 
 	//Create Document Ref - There is no traffic associated with this...
-	league := u.Client.Collection(firestore.LEAGUES_COLLECTION).Doc(leagueID)
+	league := u.Client.Collection(firestore.LeaguesCollection).Doc(leagueID)
 
-	results, err := league.Collection(firestore.PLAYER_CONTRACTS_COLLECTION_).Where("TeamID", "==", teamID).Documents(ctx).GetAll()
+	results, err := league.Collection(firestore.PlayerContractsCollection).Where("TeamID", "==", teamID).Documents(ctx).GetAll()
 
 	if err != nil {
 		graphql.AddError(ctx, gqlerror.Errorf("Error fetching teams from league")) //TODO (@kbthree13): This doesn't seem to be sending the error to the client
@@ -49,7 +49,7 @@ func (u *ContractImpl) GetAll(ctx context.Context, leagueID string, teamID strin
 
 func (u *ContractImpl) GetContractByLeagueAndPlayerId(ctx context.Context, leagueId string, playerId string) (*model.Contract, error) {
 	// Todo add a filter for active filters
-	result, err := u.Client.Collection(firestore.LEAGUES_COLLECTION).Doc(leagueId).Collection(firestore.PLAYER_CONTRACTS_COLLECTION_).Doc(playerId).Get(ctx)
+	result, err := u.Client.Collection(firestore.LeaguesCollection).Doc(leagueId).Collection(firestore.PlayerContractsCollection).Doc(playerId).Get(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +69,7 @@ func (u *ContractImpl) CreateContract(ctx context.Context, leagueId string, cont
 		return nil, graphql.GetErrors(ctx)
 	}
 
-	u.Client.Collection(firestore.LEAGUES_COLLECTION)
+	u.Client.Collection(firestore.LeaguesCollection)
 
 	playerContractsCollection := u.Client.Collection("leagues").Doc(leagueId).Collection("playerContracts")
 	add, _, err := playerContractsCollection.Add(ctx, contractInput)
