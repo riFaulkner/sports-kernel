@@ -113,9 +113,20 @@ type ComplexityRoot struct {
 		Teams      func(childComplexity int) int
 	}
 
+	LeaguePost struct {
+		Author   func(childComplexity int) int
+		Comments func(childComplexity int) int
+		Content  func(childComplexity int) int
+		ID       func(childComplexity int) int
+		PostDate func(childComplexity int) int
+		Title    func(childComplexity int) int
+	}
+
 	Mutation struct {
+		AddComment         func(childComplexity int, leagueID string, postID string, input *model.NewPostComment) int
 		CreateContract     func(childComplexity int, leagueID *string, input *model.ContractInput) int
 		CreatePlayer       func(childComplexity int, input model.NewPlayerNfl) int
+		CreatePost         func(childComplexity int, leagueID string, input *model.NewLeaguePost) int
 		CreateTeam         func(childComplexity int, leagueID *string, input model.NewTeam) int
 		CreateUser         func(childComplexity int, input model.NewUser) int
 		UpdateTeamMetaData func(childComplexity int, leagueID string, teamID string) int
@@ -132,11 +143,20 @@ type ComplexityRoot struct {
 		TeamNfl      func(childComplexity int) int
 	}
 
+	PostComment struct {
+		Author      func(childComplexity int) int
+		CommentDate func(childComplexity int) int
+		Content     func(childComplexity int) int
+		ID          func(childComplexity int) int
+	}
+
 	Query struct {
+		Comments        func(childComplexity int, leagueID string, postID string) int
 		League          func(childComplexity int, leagueID *string) int
 		Leagues         func(childComplexity int) int
 		Player          func(childComplexity int, playerID *string) int
 		Players         func(childComplexity int, numOfResults *int) int
+		Posts           func(childComplexity int, leagueID string, numOfResults *int) int
 		TeamByID        func(childComplexity int, leagueID string, teamID string) int
 		TeamContracts   func(childComplexity int, leagueID *string, teamID *string) int
 		Teams           func(childComplexity int, leagueID *string) int
@@ -179,6 +199,8 @@ type MutationResolver interface {
 	UpdateTeamMetaData(ctx context.Context, leagueID string, teamID string) (*model.Team, error)
 	CreateContract(ctx context.Context, leagueID *string, input *model.ContractInput) (*model.Contract, error)
 	CreatePlayer(ctx context.Context, input model.NewPlayerNfl) (*model.PlayerNfl, error)
+	CreatePost(ctx context.Context, leagueID string, input *model.NewLeaguePost) (*model.LeaguePost, error)
+	AddComment(ctx context.Context, leagueID string, postID string, input *model.NewPostComment) (*model.PostComment, error)
 }
 type QueryResolver interface {
 	Users(ctx context.Context) ([]*model.User, error)
@@ -189,6 +211,8 @@ type QueryResolver interface {
 	TeamContracts(ctx context.Context, leagueID *string, teamID *string) ([]*model.Contract, error)
 	Players(ctx context.Context, numOfResults *int) ([]*model.PlayerNfl, error)
 	Player(ctx context.Context, playerID *string) (*model.PlayerNfl, error)
+	Posts(ctx context.Context, leagueID string, numOfResults *int) ([]*model.LeaguePost, error)
+	Comments(ctx context.Context, leagueID string, postID string) ([]*model.PostComment, error)
 	UserPreferences(ctx context.Context, userID *string) (*model.UserPreferences, error)
 }
 
@@ -501,6 +525,60 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.League.Teams(childComplexity), true
 
+	case "LeaguePost.author":
+		if e.complexity.LeaguePost.Author == nil {
+			break
+		}
+
+		return e.complexity.LeaguePost.Author(childComplexity), true
+
+	case "LeaguePost.comments":
+		if e.complexity.LeaguePost.Comments == nil {
+			break
+		}
+
+		return e.complexity.LeaguePost.Comments(childComplexity), true
+
+	case "LeaguePost.content":
+		if e.complexity.LeaguePost.Content == nil {
+			break
+		}
+
+		return e.complexity.LeaguePost.Content(childComplexity), true
+
+	case "LeaguePost.id":
+		if e.complexity.LeaguePost.ID == nil {
+			break
+		}
+
+		return e.complexity.LeaguePost.ID(childComplexity), true
+
+	case "LeaguePost.postDate":
+		if e.complexity.LeaguePost.PostDate == nil {
+			break
+		}
+
+		return e.complexity.LeaguePost.PostDate(childComplexity), true
+
+	case "LeaguePost.title":
+		if e.complexity.LeaguePost.Title == nil {
+			break
+		}
+
+		return e.complexity.LeaguePost.Title(childComplexity), true
+
+	case "Mutation.addComment":
+		if e.complexity.Mutation.AddComment == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_addComment_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AddComment(childComplexity, args["leagueId"].(string), args["postId"].(string), args["input"].(*model.NewPostComment)), true
+
 	case "Mutation.createContract":
 		if e.complexity.Mutation.CreateContract == nil {
 			break
@@ -524,6 +602,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreatePlayer(childComplexity, args["input"].(model.NewPlayerNfl)), true
+
+	case "Mutation.createPost":
+		if e.complexity.Mutation.CreatePost == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createPost_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreatePost(childComplexity, args["leagueId"].(string), args["input"].(*model.NewLeaguePost)), true
 
 	case "Mutation.createTeam":
 		if e.complexity.Mutation.CreateTeam == nil {
@@ -617,6 +707,46 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PlayerNfl.TeamNfl(childComplexity), true
 
+	case "PostComment.author":
+		if e.complexity.PostComment.Author == nil {
+			break
+		}
+
+		return e.complexity.PostComment.Author(childComplexity), true
+
+	case "PostComment.commentDate":
+		if e.complexity.PostComment.CommentDate == nil {
+			break
+		}
+
+		return e.complexity.PostComment.CommentDate(childComplexity), true
+
+	case "PostComment.content":
+		if e.complexity.PostComment.Content == nil {
+			break
+		}
+
+		return e.complexity.PostComment.Content(childComplexity), true
+
+	case "PostComment.id":
+		if e.complexity.PostComment.ID == nil {
+			break
+		}
+
+		return e.complexity.PostComment.ID(childComplexity), true
+
+	case "Query.comments":
+		if e.complexity.Query.Comments == nil {
+			break
+		}
+
+		args, err := ec.field_Query_comments_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Comments(childComplexity, args["leagueId"].(string), args["postId"].(string)), true
+
 	case "Query.league":
 		if e.complexity.Query.League == nil {
 			break
@@ -659,6 +789,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Players(childComplexity, args["numOfResults"].(*int)), true
+
+	case "Query.posts":
+		if e.complexity.Query.Posts == nil {
+			break
+		}
+
+		args, err := ec.field_Query_posts_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Posts(childComplexity, args["leagueId"].(string), args["numOfResults"].(*int)), true
 
 	case "Query.teamById":
 		if e.complexity.Query.TeamByID == nil {
@@ -918,6 +1060,22 @@ type PlayerNFL {
   avatar: String!
 }
 
+type LeaguePost {
+  id: ID!
+  author: String!
+  title: String!
+  postDate: Time!
+  content: String!
+  comments: [PostComment!]
+}
+
+type PostComment {
+  id: ID!
+  author: String!
+  content: String!
+  commentDate: Time!
+}
+
 type Query {
   users: [User]
   leagues: [League]
@@ -927,6 +1085,8 @@ type Query {
   teamContracts(leagueId: ID, teamId: ID): [Contract!]
   players(numOfResults: Int): [PlayerNFL!]
   player(playerId: ID): PlayerNFL!
+  posts(leagueId: ID!, numOfResults: Int): [LeaguePost!]
+  comments(leagueId: ID!, postId: ID!): [PostComment!]
   userPreferences(userId: ID): UserPreferences
 }
 
@@ -947,12 +1107,25 @@ input NewPlayerNFL {
   overallRank: Int
 }
 
+input NewPostComment {
+  author: String!
+  content: String!
+}
+
+input NewLeaguePost {
+  author: String!
+  title: String!
+  content: String!
+}
+
 type Mutation {
   createUser(input: NewUser!): User!
   createTeam(leagueId: ID, input: NewTeam!): Team!
   updateTeamMetaData(leagueId: ID!, teamId: ID!): Team!
   createContract(leagueId: ID, input: ContractInput): Contract!
   createPlayer(input: NewPlayerNFL!): PlayerNFL!
+  createPost(leagueId: ID!, input: NewLeaguePost): LeaguePost!
+  addComment(leagueId: ID!, postId: ID!, input: NewPostComment): PostComment!
 }`, BuiltIn: false},
 	{Name: "graph/schema/team/team.graphqls", Input: `# Team types and inputs
 type Team {
@@ -1078,6 +1251,39 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
+func (ec *executionContext) field_Mutation_addComment_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["leagueId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("leagueId"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["leagueId"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["postId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("postId"))
+		arg1, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["postId"] = arg1
+	var arg2 *model.NewPostComment
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg2, err = ec.unmarshalONewPostComment2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐNewPostComment(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg2
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_createContract_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1114,6 +1320,30 @@ func (ec *executionContext) field_Mutation_createPlayer_args(ctx context.Context
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createPost_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["leagueId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("leagueId"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["leagueId"] = arg0
+	var arg1 *model.NewLeaguePost
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalONewLeaguePost2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐNewLeaguePost(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
 	return args, nil
 }
 
@@ -1195,6 +1425,30 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_comments_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["leagueId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("leagueId"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["leagueId"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["postId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("postId"))
+		arg1, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["postId"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_league_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1237,6 +1491,30 @@ func (ec *executionContext) field_Query_players_args(ctx context.Context, rawArg
 		}
 	}
 	args["numOfResults"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_posts_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["leagueId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("leagueId"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["leagueId"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["numOfResults"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("numOfResults"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["numOfResults"] = arg1
 	return args, nil
 }
 
@@ -2811,6 +3089,213 @@ func (ec *executionContext) _League_divisions(ctx context.Context, field graphql
 	return ec.marshalODivision2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐDivisionᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _LeaguePost_id(ctx context.Context, field graphql.CollectedField, obj *model.LeaguePost) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "LeaguePost",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _LeaguePost_author(ctx context.Context, field graphql.CollectedField, obj *model.LeaguePost) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "LeaguePost",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Author, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _LeaguePost_title(ctx context.Context, field graphql.CollectedField, obj *model.LeaguePost) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "LeaguePost",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Title, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _LeaguePost_postDate(ctx context.Context, field graphql.CollectedField, obj *model.LeaguePost) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "LeaguePost",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PostDate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _LeaguePost_content(ctx context.Context, field graphql.CollectedField, obj *model.LeaguePost) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "LeaguePost",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Content, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _LeaguePost_comments(ctx context.Context, field graphql.CollectedField, obj *model.LeaguePost) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "LeaguePost",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Comments, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.PostComment)
+	fc.Result = res
+	return ec.marshalOPostComment2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐPostCommentᚄ(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_createUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -3019,6 +3504,90 @@ func (ec *executionContext) _Mutation_createPlayer(ctx context.Context, field gr
 	res := resTmp.(*model.PlayerNfl)
 	fc.Result = res
 	return ec.marshalNPlayerNFL2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐPlayerNfl(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createPost(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createPost_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreatePost(rctx, args["leagueId"].(string), args["input"].(*model.NewLeaguePost))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.LeaguePost)
+	fc.Result = res
+	return ec.marshalNLeaguePost2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐLeaguePost(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_addComment(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_addComment_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AddComment(rctx, args["leagueId"].(string), args["postId"].(string), args["input"].(*model.NewPostComment))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.PostComment)
+	fc.Result = res
+	return ec.marshalNPostComment2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐPostComment(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _PlayerNFL_id(ctx context.Context, field graphql.CollectedField, obj *model.PlayerNfl) (ret graphql.Marshaler) {
@@ -3299,6 +3868,146 @@ func (ec *executionContext) _PlayerNFL_avatar(ctx context.Context, field graphql
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PostComment_id(ctx context.Context, field graphql.CollectedField, obj *model.PostComment) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PostComment",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PostComment_author(ctx context.Context, field graphql.CollectedField, obj *model.PostComment) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PostComment",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Author, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PostComment_content(ctx context.Context, field graphql.CollectedField, obj *model.PostComment) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PostComment",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Content, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PostComment_commentDate(ctx context.Context, field graphql.CollectedField, obj *model.PostComment) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PostComment",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CommentDate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_users(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3600,6 +4309,84 @@ func (ec *executionContext) _Query_player(ctx context.Context, field graphql.Col
 	res := resTmp.(*model.PlayerNfl)
 	fc.Result = res
 	return ec.marshalNPlayerNFL2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐPlayerNfl(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_posts(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_posts_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Posts(rctx, args["leagueId"].(string), args["numOfResults"].(*int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.LeaguePost)
+	fc.Result = res
+	return ec.marshalOLeaguePost2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐLeaguePostᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_comments(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_comments_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Comments(rctx, args["leagueId"].(string), args["postId"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.PostComment)
+	fc.Result = res
+	return ec.marshalOPostComment2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐPostCommentᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_userPreferences(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -5475,6 +6262,42 @@ func (ec *executionContext) unmarshalInputContractYearInput(ctx context.Context,
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputNewLeaguePost(ctx context.Context, obj interface{}) (model.NewLeaguePost, error) {
+	var it model.NewLeaguePost
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "author":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("author"))
+			it.Author, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "title":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
+			it.Title, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "content":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("content"))
+			it.Content, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputNewPlayerNFL(ctx context.Context, obj interface{}) (model.NewPlayerNfl, error) {
 	var it model.NewPlayerNfl
 	var asMap = obj.(map[string]interface{})
@@ -5534,6 +6357,34 @@ func (ec *executionContext) unmarshalInputNewPlayerNFL(ctx context.Context, obj 
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("overallRank"))
 			it.OverallRank, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputNewPostComment(ctx context.Context, obj interface{}) (model.NewPostComment, error) {
+	var it model.NewPostComment
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "author":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("author"))
+			it.Author, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "content":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("content"))
+			it.Content, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6024,6 +6875,55 @@ func (ec *executionContext) _League(ctx context.Context, sel ast.SelectionSet, o
 	return out
 }
 
+var leaguePostImplementors = []string{"LeaguePost"}
+
+func (ec *executionContext) _LeaguePost(ctx context.Context, sel ast.SelectionSet, obj *model.LeaguePost) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, leaguePostImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("LeaguePost")
+		case "id":
+			out.Values[i] = ec._LeaguePost_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "author":
+			out.Values[i] = ec._LeaguePost_author(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "title":
+			out.Values[i] = ec._LeaguePost_title(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "postDate":
+			out.Values[i] = ec._LeaguePost_postDate(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "content":
+			out.Values[i] = ec._LeaguePost_content(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "comments":
+			out.Values[i] = ec._LeaguePost_comments(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -6061,6 +6961,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "createPlayer":
 			out.Values[i] = ec._Mutation_createPlayer(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createPost":
+			out.Values[i] = ec._Mutation_createPost(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "addComment":
+			out.Values[i] = ec._Mutation_addComment(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -6123,6 +7033,48 @@ func (ec *executionContext) _PlayerNFL(ctx context.Context, sel ast.SelectionSet
 			}
 		case "avatar":
 			out.Values[i] = ec._PlayerNFL_avatar(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var postCommentImplementors = []string{"PostComment"}
+
+func (ec *executionContext) _PostComment(ctx context.Context, sel ast.SelectionSet, obj *model.PostComment) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, postCommentImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PostComment")
+		case "id":
+			out.Values[i] = ec._PostComment_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "author":
+			out.Values[i] = ec._PostComment_author(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "content":
+			out.Values[i] = ec._PostComment_content(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "commentDate":
+			out.Values[i] = ec._PostComment_commentDate(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -6241,6 +7193,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
+				return res
+			})
+		case "posts":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_posts(ctx, field)
+				return res
+			})
+		case "comments":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_comments(ctx, field)
 				return res
 			})
 		case "userPreferences":
@@ -6968,6 +7942,20 @@ func (ec *executionContext) marshalNLeague2ᚖgithubᚗcomᚋrifaulknerᚋsports
 	return ec._League(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNLeaguePost2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐLeaguePost(ctx context.Context, sel ast.SelectionSet, v model.LeaguePost) graphql.Marshaler {
+	return ec._LeaguePost(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNLeaguePost2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐLeaguePost(ctx context.Context, sel ast.SelectionSet, v *model.LeaguePost) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._LeaguePost(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNNewPlayerNFL2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐNewPlayerNfl(ctx context.Context, v interface{}) (model.NewPlayerNfl, error) {
 	res, err := ec.unmarshalInputNewPlayerNFL(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -6995,6 +7983,20 @@ func (ec *executionContext) marshalNPlayerNFL2ᚖgithubᚗcomᚋrifaulknerᚋspo
 		return graphql.Null
 	}
 	return ec._PlayerNFL(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNPostComment2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐPostComment(ctx context.Context, sel ast.SelectionSet, v model.PostComment) graphql.Marshaler {
+	return ec._PostComment(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNPostComment2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐPostComment(ctx context.Context, sel ast.SelectionSet, v *model.PostComment) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._PostComment(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
@@ -7509,6 +8511,62 @@ func (ec *executionContext) marshalOLeague2ᚖgithubᚗcomᚋrifaulknerᚋsports
 	return ec._League(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalOLeaguePost2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐLeaguePostᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.LeaguePost) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNLeaguePost2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐLeaguePost(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) unmarshalONewLeaguePost2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐNewLeaguePost(ctx context.Context, v interface{}) (*model.NewLeaguePost, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputNewLeaguePost(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalONewPostComment2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐNewPostComment(ctx context.Context, v interface{}) (*model.NewPostComment, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputNewPostComment(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalOPlayerNFL2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐPlayerNflᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.PlayerNfl) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -7537,6 +8595,46 @@ func (ec *executionContext) marshalOPlayerNFL2ᚕᚖgithubᚗcomᚋrifaulknerᚋ
 				defer wg.Done()
 			}
 			ret[i] = ec.marshalNPlayerNFL2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐPlayerNfl(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalOPostComment2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐPostCommentᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.PostComment) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNPostComment2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐPostComment(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)

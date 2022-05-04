@@ -9,6 +9,8 @@ import (
 
 const LEAGUES_COLLECTION = "leagues"
 const PLAYER_CONTRACTS_COLLECTION_ = "playerContracts"
+const POST_COLLECTION = "posts"
+const COMMENTS_COLLECTION = "comments"
 
 type Client interface {
 	Collection(path string) *firestore.CollectionRef

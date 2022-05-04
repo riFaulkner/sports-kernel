@@ -8,7 +8,8 @@ import (
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/firestore"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/generated"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/league"
-	"github.com/rifaulkner/sports-kernel/api/sk-serve/playerNFL"
+	playernfl "github.com/rifaulkner/sports-kernel/api/sk-serve/playerNFL"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/post"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/team"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/user"
 )
@@ -23,6 +24,7 @@ type Resolver struct {
 	TeamResolver     team.Team
 	ContractResolver contract.Contract
 	PlayerResolver   playernfl.PlayerNfl
+	PostResolver     post.LeaguePost
 }
 
 func Initialize(ctx context.Context) generated.Config {
@@ -35,6 +37,7 @@ func Initialize(ctx context.Context) generated.Config {
 	r.TeamResolver = &db.TeamImpl{Client: client}
 	r.UserResolver = &db.UserImpl{Client: client}
 	r.PlayerResolver = &db.PlayerImpl{Client: client}
+	r.PostResolver = &db.PostImpl{Client: client}
 
 	return generated.Config{
 		Resolvers: &r,

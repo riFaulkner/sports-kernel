@@ -12,6 +12,22 @@ type PlayerNFL {
   avatar: String!
 }
 
+type LeaguePost {
+  id: ID!
+  author: String!
+  title: String!
+  postDate: Time!
+  content: String!
+  comments: [PostComment!]
+}
+
+type PostComment {
+  id: ID!
+  author: String!
+  content: String!
+  commentDate: Time!
+}
+
 type Query {
   users: [User]
   leagues: [League]
@@ -21,6 +37,8 @@ type Query {
   teamContracts(leagueId: ID, teamId: ID): [Contract!]
   players(numOfResults: Int): [PlayerNFL!]
   player(playerId: ID): PlayerNFL!
+  posts(leagueId: ID!, numOfResults: Int): [LeaguePost!]
+  comments(leagueId: ID!, postId: ID!): [PostComment!]
   userPreferences(userId: ID): UserPreferences
 }
 
@@ -41,10 +59,23 @@ input NewPlayerNFL {
   overallRank: Int
 }
 
+input NewPostComment {
+  author: String!
+  content: String!
+}
+
+input NewLeaguePost {
+  author: String!
+  title: String!
+  content: String!
+}
+
 type Mutation {
   createUser(input: NewUser!): User!
   createTeam(leagueId: ID, input: NewTeam!): Team!
   updateTeamMetaData(leagueId: ID!, teamId: ID!): Team!
   createContract(leagueId: ID, input: ContractInput): Contract!
   createPlayer(input: NewPlayerNFL!): PlayerNFL!
+  createPost(leagueId: ID!, input: NewLeaguePost): LeaguePost!
+  addComment(leagueId: ID!, postId: ID!, input: NewPostComment): PostComment!
 }
