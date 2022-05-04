@@ -109,6 +109,29 @@ func (p *PostImpl) AddComment(ctx context.Context, leagueId string, postId strin
 	return &newComment, nil
 }
 
+func (p *PostImpl) GetComments(ctx context.Context, leagueId string, postId string) ([]*model.PostComment, error) {
+	post := p.Client.Collection(collectionLeague).Doc(leagueId).Collection("posts").Doc(postId)
+
+	comments := make([]*model.PostComment, 0)
+
+	results, err := post.Collection("comments").Documents(ctx).GetAll()
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, result := range results {
+		comment := new(model.PostComment)
+		err = result.DataTo(&comment)
+		comment.ID = result.Ref.ID
+		if err != nil {
+			return nil, err
+		}
+		comments = append(comments, comment)
+	}
+	return comments, nil
+}
+
 func hashTitle(name string) string {
 	hashString := []byte(name)
 	md5string := md5.Sum(hashString)

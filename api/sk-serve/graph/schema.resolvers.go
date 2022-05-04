@@ -181,8 +181,8 @@ func (r *queryResolver) Player(ctx context.Context, playerID *string) (*model.Pl
 	return player, nil
 }
 
-func (r *queryResolver) Posts(ctx context.Context, leagueID string, numberOfResults *int) ([]*model.LeaguePost, error) {
-	posts, err := r.PostResolver.GetAll(ctx, leagueID, numberOfResults)
+func (r *queryResolver) Posts(ctx context.Context, leagueID string, numOfResults *int) ([]*model.LeaguePost, error) {
+	posts, err := r.PostResolver.GetAll(ctx, leagueID, numOfResults)
 
 	if err != nil {
 		return nil, err
@@ -192,7 +192,13 @@ func (r *queryResolver) Posts(ctx context.Context, leagueID string, numberOfResu
 }
 
 func (r *queryResolver) Comments(ctx context.Context, leagueID string, postID string) ([]*model.PostComment, error) {
-	panic(fmt.Errorf("not implemented"))
+	comments, err := r.PostResolver.GetComments(ctx, leagueID, postID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return comments, nil
 }
 
 func (r *queryResolver) UserPreferences(ctx context.Context, userID *string) (*model.UserPreferences, error) {

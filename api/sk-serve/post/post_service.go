@@ -11,4 +11,5 @@ type LeaguePost interface {
 	GetPostById(ctx context.Context, leagueId *string, postId *string) (*model.LeaguePost, error)
 	Create(ctx context.Context, leagueId string, post model.NewLeaguePost) (*model.LeaguePost, error)
 	AddComment(ctx context.Context, leagueId string, postId string, comment model.NewPostComment) (*model.PostComment, error)
+	GetComments(ctx context.Context, leagueId string, postId string) ([]*model.PostComment, error)
 }
