@@ -2,3 +2,5 @@
 .idea/
 app/node_modules/
 app/.nuxt
+utils/.env
+utils/credentials.json
