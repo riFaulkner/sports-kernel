@@ -1,7 +1,11 @@
 <template v-slot:extension>
-  <v-tabs-items v-model="tab">
+  <v-tabs-items
+      v-model="tab"
+      :touchless="true"
+  >
     <v-tab-item>
       <h1>Manage leagues</h1>
+      {{$auth.user}}
     </v-tab-item>
     <v-tab-item>
       <h1>Contracts</h1>
@@ -23,6 +27,7 @@ export default {
     },
   },
   created() {
+    this.$store.dispatch("application/updateActiveTab", 1);
     this.$store.dispatch("application/updateSubmenu", [
       'Manage Leagues', 'Contracts', 'Trades'
     ]);

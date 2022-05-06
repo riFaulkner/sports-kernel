@@ -6,8 +6,10 @@ type PlayerNFL {
   overallRank: Int!
   playerName: String!
   position: String!
-  positionRank: String!
+  positionRank: Int!
   teamNFL: String!  
+  birthday: String!
+  avatar: String!
 }
 
 directive @hasRole(role: Role!) on FIELD_DEFINITION
@@ -39,10 +41,21 @@ input NewUser {
   avatar: String!
 }
 
+input NewPlayerNFL {
+  playerName: String!
+  position: String!
+  positionRank: Int
+  teamNFL: String
+  birthday: String
+  avatar: String
+  overallRank: Int
+}
+
 type Mutation {
   createUser(input: NewUser!): User!
   createTeam(leagueId: ID, input: NewTeam!): Team!
   updateTeamMetaData(leagueId: ID!, teamId: ID!): Team!
   createContract(leagueId: ID, input: ContractInput): Contract!
+  createPlayer(input: NewPlayerNFL!): PlayerNFL!
   createUserRole(leagueId: ID, newUserRole: NewUserRole): UserRoles!
 }

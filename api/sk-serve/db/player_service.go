@@ -2,6 +2,8 @@ package db
 
 import (
 	"context"
+	"crypto/md5"
+	"encoding/base64"
 
 	firestore "cloud.google.com/go/firestore"
 	appFirestore "github.com/rifaulkner/sports-kernel/api/sk-serve/firestore"
@@ -50,4 +52,35 @@ func (p *PlayerImpl) GetPlayerById(ctx context.Context, playerId *string) (*mode
 	}
 
 	return player, nil
+}
+
+func (p *PlayerImpl) Create(ctx context.Context, playerInput model.NewPlayerNfl) (*model.PlayerNfl, error) {
+	players := p.Client.Collection(collectionPlayers)
+
+	playerId := generatePlayerId(playerInput.PlayerName)
+
+	newPlayer := model.PlayerNfl{
+		ID:           playerId,
+		PlayerName:   playerInput.PlayerName,
+		TeamNfl:      *playerInput.TeamNfl,
+		Position:     playerInput.Position,
+		PositionRank: *playerInput.PositionRank,
+		Birthday:     *playerInput.Birthday,
+		OverallRank:  *playerInput.OverallRank,
+		Avatar:       "",
+	}
+
+	_, err := players.Doc(newPlayer.ID).Set(ctx, newPlayer)
+	if err != nil {
+		return nil, err
+	}
+
+	return &newPlayer, nil
+}
+
+func generatePlayerId(name string) string {
+	hashString := []byte(name)
+	md5string := md5.Sum(hashString)
+	b64String := base64.RawURLEncoding.EncodeToString(md5string[:])
+	return b64String
 }

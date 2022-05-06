@@ -97,6 +97,16 @@ type League struct {
 	Divisions  []*Division `json:"divisions"`
 }
 
+type NewPlayerNfl struct {
+	PlayerName   string  `json:"playerName"`
+	Position     string  `json:"position"`
+	PositionRank *int    `json:"positionRank"`
+	TeamNfl      *string `json:"teamNFL"`
+	Birthday     *string `json:"birthday"`
+	Avatar       *string `json:"avatar"`
+	OverallRank  *int    `json:"overallRank"`
+}
+
 type NewTeam struct {
 	ID          string     `json:"id"`
 	TeamName    string     `json:"teamName"`
@@ -120,8 +130,10 @@ type PlayerNfl struct {
 	OverallRank  int    `json:"overallRank"`
 	PlayerName   string `json:"playerName"`
 	Position     string `json:"position"`
-	PositionRank string `json:"positionRank"`
+	PositionRank int    `json:"positionRank"`
 	TeamNfl      string `json:"teamNFL"`
+	Birthday     string `json:"birthday"`
+	Avatar       string `json:"avatar"`
 }
 
 type Team struct {
