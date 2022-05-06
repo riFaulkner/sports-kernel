@@ -31,6 +31,10 @@ export default {
     this.$store.dispatch("application/updateSubmenu", [
       'Manage Leagues', 'Contracts', 'Trades'
     ]);
+  },
+  destroyed() {
+    this.$store.dispatch("application/updateSubmenu", null);
+    this.$store.dispatch("application/updateActiveTab", null);
   }
 }
 </script>

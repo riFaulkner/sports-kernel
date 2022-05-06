@@ -10,5 +10,12 @@ type UserPreferences {
     id: ID!
     ownerName: String!
     preferredLeagueId: String
+    isAdmin: Boolean
     leagues: [League!]!
+}
+
+type UserRoles {
+    id: ID!
+    userId: ID!
+    role: String!
 }

@@ -1,32 +1,20 @@
 import {USER_PREFERENCES_QUERY} from "@/graphql/queries/user/userGraphQl";
 
 export const state = () => ({
-    userId: 'x3IOCU28HGe2GHAF4azJ',
+    userId: null,
     userPreferences: {
         leagues: null,
-        preferredLeagueId: ""
+        preferredLeagueId: "",
+        isAdmin: null
     },
 });
 
 export const getters = {
-    getUserId(state) {
-        const userString = this.$auth.user.userId
-        // TODO: remove console log
-        console.log("userId: ", userString);
-        return userString;
-    },
     getUserLeagues(state) {
         return state.userPreferences.leagues;
     },
-    async getDefaultLeague(state) {
-        console.info("Getting default league");
-        const leagues = state.userPreferences.leagues;
-        const preferredLeagueId = state.userPreferences.preferredLeagueId;
-        if (leagues && preferredLeagueId) {
-            console.info("Filtering for default league");
-            return leagues.find(league => league.id === preferredLeagueId);
-        }
-        return null;
+    getIsUserAdmin(state) {
+        return state.userPreferences.isAdmin;
     },
 }
 
@@ -35,11 +23,12 @@ export const mutations = {
         state.userId = payload.id;
         state.userPreferences.leagues = payload.leagues;
         state.userPreferences.preferredLeagueId = payload.preferredLeagueId;
+        state.userPreferences.isAdmin = payload.isAdmin;
     }
 }
 export const actions = {
     async initializeUserPreferences({ state, commit }, payload) {
-        const userId = state.userId;
+        const userId = payload.userId;
         if (userId) {
             const result = await payload.apolloClient.query(
                 {

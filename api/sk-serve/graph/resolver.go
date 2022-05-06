@@ -1,8 +1,8 @@
 package graph
 
-import (
-	"context"
+//go:generate go run github.com/99designs/gqlgen generate
 
+import (
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/db"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/firestore"
@@ -25,9 +25,7 @@ type Resolver struct {
 	PlayerResolver   playernfl.PlayerNfl
 }
 
-func Initialize(ctx context.Context) generated.Config {
-
-	client := firestore.NewClient(ctx)
+func Initialize(client firestore.Client) generated.Config {
 
 	r := Resolver{}
 	r.ContractResolver = &db.ContractImpl{Client: client}

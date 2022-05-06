@@ -82,6 +82,10 @@ func (r *mutationResolver) CreatePlayer(ctx context.Context, input model.NewPlay
 	return player, nil
 }
 
+func (r *mutationResolver) CreateUserRole(ctx context.Context, leagueID *string, newUserRole *model.NewUserRole) (*model.UserRoles, error) {
+	return r.UserResolver.CreateUserRole(ctx, newUserRole)
+}
+
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	users, err := r.UserResolver.GetAll(ctx)
 	if err != nil {
@@ -169,6 +173,10 @@ func (r *queryResolver) UserPreferences(ctx context.Context, userID *string) (*m
 	}
 
 	return userPreferences, nil
+}
+
+func (r *queryResolver) GetUserRoles(ctx context.Context, userID *string) ([]*model.UserRoles, error) {
+	return r.UserResolver.GetUserRoles(ctx, userID)
 }
 
 // Mutation returns generated.MutationResolver implementation.

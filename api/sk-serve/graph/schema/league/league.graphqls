@@ -3,8 +3,13 @@ type League {
     leagueName: String!
     logoUrl: String!
     startDate: Time!
-    teams: [Team!]
-    divisions: [Division!]
+    teams: [Team!]!
+    divisions: [Division!]!
+}
+
+input NewUserRole {
+    userId: ID!
+    role: String!
 }
 
 type Division {

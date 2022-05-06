@@ -7,6 +7,7 @@ query UserPreferences($userId: ID!) {
         id
         ownerName
         preferredLeagueId
+        isAdmin
         leagues {
             id
             leagueName
