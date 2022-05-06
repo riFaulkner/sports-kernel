@@ -73,10 +73,6 @@ func (r *mutationResolver) CreateContract(ctx context.Context, leagueID *string,
 	return document, nil
 }
 
-func (r *mutationResolver) CreateUserRole(ctx context.Context, leagueID *string, newUserRole *model.NewUserRole) (*model.UserRoles, error) {
-	return r.UserResolver.CreateUserRole(ctx, newUserRole)
-}
-
 func (r *mutationResolver) CreatePlayer(ctx context.Context, input model.NewPlayerNfl) (*model.PlayerNfl, error) {
 	player, err := r.PlayerResolver.Create(ctx, input)
 	if err != nil {
@@ -84,6 +80,10 @@ func (r *mutationResolver) CreatePlayer(ctx context.Context, input model.NewPlay
 	}
 
 	return player, nil
+}
+
+func (r *mutationResolver) CreateUserRole(ctx context.Context, leagueID *string, newUserRole *model.NewUserRole) (*model.UserRoles, error) {
+	return r.UserResolver.CreateUserRole(ctx, newUserRole)
 }
 
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
