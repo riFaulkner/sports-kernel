@@ -1,0 +1,23 @@
+tasks:
+  - name: "API setup"
+    before: |
+      mkdir -p $SA_FILEPATH
+      echo $SERVICE_ACCOUNT >> $SA_FILEPATH/service_account.json
+      cd /workspace/sports-kernel/api/sk-serve
+    init: go generate ./...
+    command: go run server.go
+  - name: "APP setup"
+    before:  cd /workspace/sports-kernel/app
+    init: npm install
+    command: npm run dev
+
+jetbrains:
+  goland:
+    - org.jetbrains.plugins.vue
+    - com.intellij.lang.jsgraphql
+
+ports:
+  - port: 8080
+    onOpen: ignore
+  - port: 3000
+    onOpen: notify
