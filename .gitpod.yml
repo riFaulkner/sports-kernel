@@ -2,7 +2,7 @@ tasks:
   - name: "API setup"
     before: |
       mkdir -p $SA_FILEPATH
-      echo $SERVICE_ACCOUNT >> $SA_FILEPATH/service_account.json
+      echo $SERVICE_ACCOUNT > $SA_FILEPATH/service_account.json
       cd /workspace/sports-kernel/api/sk-serve
     init: go generate ./...
     command: go run server.go
