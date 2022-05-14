@@ -140,6 +140,11 @@ type NewUser struct {
 	Avatar    string `json:"avatar"`
 }
 
+type NewUserRole struct {
+	UserID string `json:"userId"`
+	Role   string `json:"role"`
+}
+
 type PlayerNfl struct {
 	ID           string `json:"id"`
 	OverallRank  int    `json:"overallRank"`
@@ -183,7 +188,14 @@ type UserPreferences struct {
 	ID                string    `json:"id"`
 	OwnerName         string    `json:"ownerName"`
 	PreferredLeagueID *string   `json:"preferredLeagueId"`
+	IsAdmin           *bool     `json:"isAdmin"`
 	Leagues           []*League `json:"leagues"`
+}
+
+type UserRoles struct {
+	ID     string `json:"id"`
+	UserID string `json:"userId"`
+	Role   string `json:"role"`
 }
 
 type ContractRestructureStatus string
@@ -226,5 +238,50 @@ func (e *ContractRestructureStatus) UnmarshalGQL(v interface{}) error {
 }
 
 func (e ContractRestructureStatus) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type Role string
+
+const (
+	RoleAdmin         Role = "ADMIN"
+	RoleLeagueManager Role = "LEAGUE_MANAGER"
+	RoleLeagueMember  Role = "LEAGUE_MEMBER"
+	RoleTeamOwner     Role = "TEAM_OWNER"
+)
+
+var AllRole = []Role{
+	RoleAdmin,
+	RoleLeagueManager,
+	RoleLeagueMember,
+	RoleTeamOwner,
+}
+
+func (e Role) IsValid() bool {
+	switch e {
+	case RoleAdmin, RoleLeagueManager, RoleLeagueMember, RoleTeamOwner:
+		return true
+	}
+	return false
+}
+
+func (e Role) String() string {
+	return string(e)
+}
+
+func (e *Role) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = Role(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid Role", str)
+	}
+	return nil
+}
+
+func (e Role) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }

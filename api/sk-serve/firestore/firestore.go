@@ -11,6 +11,10 @@ const LEAGUES_COLLECTION = "leagues"
 const PLAYER_CONTRACTS_COLLECTION_ = "playerContracts"
 const POST_COLLECTION = "posts"
 const COMMENTS_COLLECTION = "comments"
+const LeaguesCollection = "leagues"
+const PlayerContractsCollection = "playerContracts"
+const UserRolesCollection = "user-roles"
+const UsersCollection = "users"
 
 type Client interface {
 	Collection(path string) *firestore.CollectionRef

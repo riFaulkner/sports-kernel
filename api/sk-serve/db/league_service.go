@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/firestore"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
 )
@@ -38,7 +37,10 @@ func (u *LeagueImpl) GetAll(ctx context.Context) ([]*model.League, error) {
 }
 
 func (u *LeagueImpl) GetByLeagueId(ctx context.Context, leagueId string) (*model.League, error) {
-	result, err := u.Client.Collection(collectionLeague).Doc(leagueId).Get(ctx)
+	result, err := u.Client.
+		Collection(collectionLeague).
+		Doc(leagueId).
+		Get(ctx)
 	if err != nil {
 		return nil, err
 	}
