@@ -19,8 +19,22 @@ type PlayerImpl struct {
 func (p *PlayerImpl) GetAll(ctx context.Context, numberOfResults *int) ([]*model.PlayerNfl, error) {
 	players := make([]*model.PlayerNfl, 0)
 
-	results, err := p.Client.
-		Collection(collectionPlayers).OrderBy("overallRank", firestore.Asc).Limit(*numberOfResults).Documents(ctx).GetAll()
+	var results []*firestore.DocumentSnapshot
+	var err error
+
+	if *numberOfResults < -1 {
+		return nil, err
+	}
+
+	if *numberOfResults == -1 {
+		//-1 to return all players, no query limit
+		results, err = p.Client.
+			Collection(collectionPlayers).OrderBy("overallRank", firestore.Asc).Documents(ctx).GetAll()
+	} else {
+		//else return the desired number of players
+		results, err = p.Client.
+			Collection(collectionPlayers).OrderBy("overallRank", firestore.Asc).Limit(*numberOfResults).Documents(ctx).GetAll()
+	}
 
 	if err != nil {
 		return nil, err
@@ -67,7 +81,7 @@ func (p *PlayerImpl) Create(ctx context.Context, playerInput model.NewPlayerNfl)
 		PositionRank: *playerInput.PositionRank,
 		Birthday:     *playerInput.Birthday,
 		OverallRank:  *playerInput.OverallRank,
-		Avatar:       "",
+		Avatar:       *playerInput.Avatar,
 	}
 
 	_, err := players.Doc(newPlayer.ID).Set(ctx, newPlayer)

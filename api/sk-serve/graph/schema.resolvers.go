@@ -82,6 +82,26 @@ func (r *mutationResolver) CreatePlayer(ctx context.Context, input model.NewPlay
 	return player, nil
 }
 
+func (r *mutationResolver) CreatePost(ctx context.Context, leagueID string, input *model.NewLeaguePost) (*model.LeaguePost, error) {
+	post, err := r.PostResolver.Create(ctx, leagueID, *input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return post, nil
+}
+
+func (r *mutationResolver) AddComment(ctx context.Context, leagueID string, postID string, input *model.NewPostComment) (*model.PostComment, error) {
+	comment, err := r.PostResolver.AddComment(ctx, leagueID, postID, *input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return comment, nil
+}
+
 func (r *mutationResolver) CreateUserRole(ctx context.Context, leagueID *string, newUserRole *model.NewUserRole) (*model.UserRoles, error) {
 	return r.UserResolver.CreateUserRole(ctx, newUserRole)
 }
@@ -163,6 +183,26 @@ func (r *queryResolver) Player(ctx context.Context, playerID *string) (*model.Pl
 	}
 
 	return player, nil
+}
+
+func (r *queryResolver) Posts(ctx context.Context, leagueID string, numOfResults *int) ([]*model.LeaguePost, error) {
+	posts, err := r.PostResolver.GetAll(ctx, leagueID, numOfResults)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return posts, nil
+}
+
+func (r *queryResolver) Comments(ctx context.Context, leagueID string, postID string) ([]*model.PostComment, error) {
+	comments, err := r.PostResolver.GetComments(ctx, leagueID, postID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return comments, nil
 }
 
 func (r *queryResolver) UserPreferences(ctx context.Context, userID *string) (*model.UserPreferences, error) {

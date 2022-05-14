@@ -97,6 +97,21 @@ type League struct {
 	Divisions  []*Division `json:"divisions"`
 }
 
+type LeaguePost struct {
+	ID       string         `json:"id"`
+	Author   string         `json:"author"`
+	Title    string         `json:"title"`
+	PostDate time.Time      `json:"postDate"`
+	Content  string         `json:"content"`
+	Comments []*PostComment `json:"comments"`
+}
+
+type NewLeaguePost struct {
+	Author  string `json:"author"`
+	Title   string `json:"title"`
+	Content string `json:"content"`
+}
+
 type NewPlayerNfl struct {
 	PlayerName   string  `json:"playerName"`
 	Position     string  `json:"position"`
@@ -105,6 +120,11 @@ type NewPlayerNfl struct {
 	Birthday     *string `json:"birthday"`
 	Avatar       *string `json:"avatar"`
 	OverallRank  *int    `json:"overallRank"`
+}
+
+type NewPostComment struct {
+	Author  string `json:"author"`
+	Content string `json:"content"`
 }
 
 type NewTeam struct {
@@ -134,6 +154,13 @@ type PlayerNfl struct {
 	TeamNfl      string `json:"teamNFL"`
 	Birthday     string `json:"birthday"`
 	Avatar       string `json:"avatar"`
+}
+
+type PostComment struct {
+	ID          string    `json:"id"`
+	Author      string    `json:"author"`
+	Content     string    `json:"content"`
+	CommentDate time.Time `json:"commentDate"`
 }
 
 type Team struct {
