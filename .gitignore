@@ -1,5 +1,4 @@
 .DS_Store
-.idea/
 app/node_modules/
 app/.nuxt
 utils/.env

@@ -11,13 +11,8 @@ tasks:
     init: npm install
     command: npm run dev
 
-jetbrains:
-  goland:
-    - org.jetbrains.plugins.vue
-    - com.intellij.lang.jsgraphql
-
 ports:
   - port: 8080
-    onOpen: ignore
+    onOpen: notify
   - port: 3000
     onOpen: notify
