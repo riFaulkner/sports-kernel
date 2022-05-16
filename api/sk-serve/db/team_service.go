@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 	"log"
 	"time"
 
@@ -85,7 +86,7 @@ func (u *TeamImpl) Create(ctx context.Context, leagueId string, teamInput model.
 	return &team, nil
 }
 
-func (u *TeamImpl) UpdateTeamContractMetaData(ctx context.Context, leagueId string, teamContracts []*model.Contract) error {
+func (u *TeamImpl) UpdateTeamContractMetaData(ctx context.Context, leagueId string, teamContracts []*contract.Contract) error {
 	currentContractsMetadataDefault := model.ContractsMetadata{
 		TotalUtilizedCap:  0,
 		TotalAvailableCap: 200000000,

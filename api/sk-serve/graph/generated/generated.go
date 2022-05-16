@@ -14,6 +14,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
@@ -138,6 +139,7 @@ type ComplexityRoot struct {
 	Query struct {
 		GetUserRoles    func(childComplexity int, userID *string) int
 		League          func(childComplexity int, leagueID *string) int
+		LeagueContracts func(childComplexity int, leagueID string) int
 		Leagues         func(childComplexity int) int
 		Player          func(childComplexity int, playerID *string) int
 		Players         func(childComplexity int, numOfResults *int) int
@@ -188,7 +190,7 @@ type MutationResolver interface {
 	CreateUser(ctx context.Context, input model.NewUser) (*model.User, error)
 	CreateTeam(ctx context.Context, leagueID *string, input model.NewTeam) (*model.Team, error)
 	UpdateTeamMetaData(ctx context.Context, leagueID string, teamID string) (*model.Team, error)
-	CreateContract(ctx context.Context, leagueID *string, input *model.ContractInput) (*model.Contract, error)
+	CreateContract(ctx context.Context, leagueID *string, input *model.ContractInput) (*contract.Contract, error)
 	CreatePlayer(ctx context.Context, input model.NewPlayerNfl) (*model.PlayerNfl, error)
 	CreateUserRole(ctx context.Context, leagueID *string, newUserRole *model.NewUserRole) (*model.UserRoles, error)
 }
@@ -196,9 +198,10 @@ type QueryResolver interface {
 	Users(ctx context.Context) ([]*model.User, error)
 	Leagues(ctx context.Context) ([]*model.League, error)
 	League(ctx context.Context, leagueID *string) (*model.League, error)
+	LeagueContracts(ctx context.Context, leagueID string) ([]*contract.Contract, error)
 	Teams(ctx context.Context, leagueID *string) ([]*model.Team, error)
 	TeamByID(ctx context.Context, leagueID string, teamID string) (*model.Team, error)
-	TeamContracts(ctx context.Context, leagueID *string, teamID *string) ([]*model.Contract, error)
+	TeamContracts(ctx context.Context, leagueID *string, teamID *string) ([]*contract.Contract, error)
 	Players(ctx context.Context, numOfResults *int) ([]*model.PlayerNfl, error)
 	Player(ctx context.Context, playerID *string) (*model.PlayerNfl, error)
 	UserPreferences(ctx context.Context, userID *string) (*model.UserPreferences, error)
@@ -666,6 +669,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.League(childComplexity, args["leagueId"].(*string)), true
 
+	case "Query.leagueContracts":
+		if e.complexity.Query.LeagueContracts == nil {
+			break
+		}
+
+		args, err := ec.field_Query_leagueContracts_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.LeagueContracts(childComplexity, args["leagueId"].(string)), true
+
 	case "Query.leagues":
 		if e.complexity.Query.Leagues == nil {
 			break
@@ -956,134 +971,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "graph/schema/league/league.graphqls", Input: `type League {
-    id: ID!
-    leagueName: String!
-    logoUrl: String!
-    startDate: Time!
-    teams: [Team!]!
-    divisions: [Division!]!
-}
-
-input NewUserRole {
-    userId: ID!
-    role: String!
-}
-
-type Division {
-    divisionName: String!
-    leadingWins: Int
-}
-`, BuiltIn: false},
-	{Name: "graph/schema/schema.graphqls", Input: `#Data types and Queries
-scalar Time
-
-type PlayerNFL {
-  id: ID!
-  overallRank: Int!
-  playerName: String!
-  position: String!
-  positionRank: Int!
-  teamNFL: String!  
-  birthday: String!
-  avatar: String!
-}
-
-directive @hasRole(role: Role!) on FIELD_DEFINITION
-
-enum Role {
-  ADMIN
-  LEAGUE_MANAGER
-  LEAGUE_MEMBER
-  TEAM_OWNER
-}
-
-type Query {
-  users: [User]
-  leagues: [League]
-  league(leagueId: ID): League
-  teams(leagueId: ID): [Team!] @hasRole(role: LEAGUE_MEMBER)
-  teamById(leagueId: ID!, teamId: ID!): Team @hasRole(role: LEAGUE_MEMBER)
-  teamContracts(leagueId: ID, teamId: ID): [Contract!]
-  players(numOfResults: Int): [PlayerNFL!]
-  player(playerId: ID): PlayerNFL!
-  userPreferences(userId: ID): UserPreferences
-  getUserRoles(userId:ID): [UserRoles]
-}
-
-#Mutations and Inputs
-input NewUser {
-  ownerName: String!
-  email: String!
-  avatar: String!
-}
-
-input NewPlayerNFL {
-  playerName: String!
-  position: String!
-  positionRank: Int
-  teamNFL: String
-  birthday: String
-  avatar: String
-  overallRank: Int
-}
-
-type Mutation {
-  createUser(input: NewUser!): User!
-  createTeam(leagueId: ID, input: NewTeam!): Team!
-  updateTeamMetaData(leagueId: ID!, teamId: ID!): Team!
-  createContract(leagueId: ID, input: ContractInput): Contract!
-  createPlayer(input: NewPlayerNFL!): PlayerNFL!
-  createUserRole(leagueId: ID, newUserRole: NewUserRole): UserRoles!
-}`, BuiltIn: false},
-	{Name: "graph/schema/team/team.graphqls", Input: `# Team types and inputs
-type Team {
-    id: ID!
-    foundedDate: Time!
-    teamName: String!
-    ownerID: String!
-    division: String
-    currentContractsMetadata: ContractsMetadata
-    teamAssets: TeamAssets
-}
-
-input NewTeam {
-    id: ID!
-    teamName: String!
-    division: String
-    foundedDate: Time
-}
-
-type ContractsMetadata {
-    totalUtilizedCap: Int!
-    totalAvailableCap: Int!
-    qbUtilizedCap: CapUtilizationSummary!
-    rbUtilizedCap: CapUtilizationSummary!
-    wrUtilizedCap: CapUtilizationSummary!
-    teUtilizedCap: CapUtilizationSummary!
-}
-
-type TeamAssets {
-    draftPicks: [DraftYear]!
-}
-
-type DraftYear {
-    year: Int!
-    picks: [DraftPick]!
-}
-
-type DraftPick {
-    round: Int!
-    value: Int
-}
-
-
-type CapUtilizationSummary {
-    capUtilization: Int!
-    numContracts: Int!
-}
-
-# Contract types and inputs
+	{Name: "graph/schema/league/contract/contract.graphqls", Input: `# Contract types and inputs
 type Contract {
     id: ID!
     playerId: String!
@@ -1139,13 +1027,121 @@ input ContractYearInput {
     paidAmount: Float!
     guaranteedAmount: Float!
 }`, BuiltIn: false},
+	{Name: "graph/schema/league/league.graphqls", Input: `type League {
+    id: ID!
+    leagueName: String!
+    logoUrl: String!
+    startDate: Time!
+    teams: [Team!]!
+    divisions: [Division!]!
+}
+
+input NewUserRole {
+    userId: ID!
+    role: String!
+}
+
+type Division {
+    divisionName: String!
+    leadingWins: Int
+}
+`, BuiltIn: false},
+	{Name: "graph/schema/schema.graphqls", Input: `#Data types and Queries
+scalar Time
+
+type PlayerNFL {
+  id: ID!
+  overallRank: Int!
+  playerName: String!
+  position: String!
+  positionRank: Int!
+  teamNFL: String!  
+  birthday: String!
+  avatar: String!
+}
+
+directive @hasRole(role: Role!) on FIELD_DEFINITION
+
+enum Role {
+  ADMIN
+  LEAGUE_MANAGER
+  LEAGUE_MEMBER
+  TEAM_OWNER
+}
+
+type Query {
+  users: [User]
+  leagues: [League]
+  league(leagueId: ID): League
+  leagueContracts(leagueId: ID!): [Contract!] @hasRole(role: LEAGUE_MEMBER)
+  teams(leagueId: ID): [Team!] @hasRole(role: LEAGUE_MEMBER)
+  teamById(leagueId: ID!, teamId: ID!): Team @hasRole(role: LEAGUE_MEMBER)
+  teamContracts(leagueId: ID, teamId: ID): [Contract!] @hasRole(role: LEAGUE_MEMBER)
+  players(numOfResults: Int): [PlayerNFL!]
+  player(playerId: ID): PlayerNFL!
+  userPreferences(userId: ID): UserPreferences
+  getUserRoles(userId:ID): [UserRoles]
+}
+
+type Mutation {
+  createUser(input: NewUser!): User!
+  createTeam(leagueId: ID, input: NewTeam!): Team!
+  updateTeamMetaData(leagueId: ID!, teamId: ID!): Team!
+  createContract(leagueId: ID, input: ContractInput): Contract!
+  createPlayer(input: NewPlayerNFL!): PlayerNFL!
+  createUserRole(leagueId: ID, newUserRole: NewUserRole): UserRoles!
+}`, BuiltIn: false},
+	{Name: "graph/schema/team/team.graphqls", Input: `# Team types and inputs
+type Team {
+    id: ID!
+    foundedDate: Time!
+    teamName: String!
+    ownerID: String!
+    division: String
+    currentContractsMetadata: ContractsMetadata
+    teamAssets: TeamAssets
+}
+
+input NewTeam {
+    id: ID!
+    teamName: String!
+    division: String
+    foundedDate: Time
+}
+
+type ContractsMetadata {
+    totalUtilizedCap: Int!
+    totalAvailableCap: Int!
+    qbUtilizedCap: CapUtilizationSummary!
+    rbUtilizedCap: CapUtilizationSummary!
+    wrUtilizedCap: CapUtilizationSummary!
+    teUtilizedCap: CapUtilizationSummary!
+}
+
+type TeamAssets {
+    draftPicks: [DraftYear]!
+}
+
+type DraftYear {
+    year: Int!
+    picks: [DraftPick]!
+}
+
+type DraftPick {
+    round: Int!
+    value: Int
+}
+
+type CapUtilizationSummary {
+    capUtilization: Int!
+    numContracts: Int!
+}`, BuiltIn: false},
 	{Name: "graph/schema/user/user.graphqls", Input: `type User {
     id: ID!
     ownerName: String!
     email: String!
     avatar: String!
 }
-
 
 type UserPreferences {
     id: ID!
@@ -1159,6 +1155,22 @@ type UserRoles {
     id: ID!
     userId: ID!
     role: String!
+}
+
+#Mutations and Inputs
+input NewUser {
+    ownerName: String!
+    email: String!
+    avatar: String!
+}`, BuiltIn: false},
+	{Name: "graph/schema/player/player.graphql", Input: `input NewPlayerNFL {
+    playerName: String!
+    position: String!
+    positionRank: Int
+    teamNFL: String
+    birthday: String
+    avatar: String
+    overallRank: Int
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -1335,6 +1347,21 @@ func (ec *executionContext) field_Query_getUserRoles_args(ctx context.Context, r
 		}
 	}
 	args["userId"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_leagueContracts_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["leagueId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("leagueId"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["leagueId"] = arg0
 	return args, nil
 }
 
@@ -1587,7 +1614,7 @@ func (ec *executionContext) fieldContext_CapUtilizationSummary_numContracts(ctx 
 	return fc, nil
 }
 
-func (ec *executionContext) _Contract_id(ctx context.Context, field graphql.CollectedField, obj *model.Contract) (ret graphql.Marshaler) {
+func (ec *executionContext) _Contract_id(ctx context.Context, field graphql.CollectedField, obj *contract.Contract) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Contract_id(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1631,7 +1658,7 @@ func (ec *executionContext) fieldContext_Contract_id(ctx context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) _Contract_playerId(ctx context.Context, field graphql.CollectedField, obj *model.Contract) (ret graphql.Marshaler) {
+func (ec *executionContext) _Contract_playerId(ctx context.Context, field graphql.CollectedField, obj *contract.Contract) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Contract_playerId(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1675,7 +1702,7 @@ func (ec *executionContext) fieldContext_Contract_playerId(ctx context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _Contract_player(ctx context.Context, field graphql.CollectedField, obj *model.Contract) (ret graphql.Marshaler) {
+func (ec *executionContext) _Contract_player(ctx context.Context, field graphql.CollectedField, obj *contract.Contract) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Contract_player(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1737,7 +1764,7 @@ func (ec *executionContext) fieldContext_Contract_player(ctx context.Context, fi
 	return fc, nil
 }
 
-func (ec *executionContext) _Contract_teamId(ctx context.Context, field graphql.CollectedField, obj *model.Contract) (ret graphql.Marshaler) {
+func (ec *executionContext) _Contract_teamId(ctx context.Context, field graphql.CollectedField, obj *contract.Contract) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Contract_teamId(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1781,7 +1808,7 @@ func (ec *executionContext) fieldContext_Contract_teamId(ctx context.Context, fi
 	return fc, nil
 }
 
-func (ec *executionContext) _Contract_currentYear(ctx context.Context, field graphql.CollectedField, obj *model.Contract) (ret graphql.Marshaler) {
+func (ec *executionContext) _Contract_currentYear(ctx context.Context, field graphql.CollectedField, obj *contract.Contract) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Contract_currentYear(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1825,7 +1852,7 @@ func (ec *executionContext) fieldContext_Contract_currentYear(ctx context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _Contract_restructureStatus(ctx context.Context, field graphql.CollectedField, obj *model.Contract) (ret graphql.Marshaler) {
+func (ec *executionContext) _Contract_restructureStatus(ctx context.Context, field graphql.CollectedField, obj *contract.Contract) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Contract_restructureStatus(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1869,7 +1896,7 @@ func (ec *executionContext) fieldContext_Contract_restructureStatus(ctx context.
 	return fc, nil
 }
 
-func (ec *executionContext) _Contract_totalContractValue(ctx context.Context, field graphql.CollectedField, obj *model.Contract) (ret graphql.Marshaler) {
+func (ec *executionContext) _Contract_totalContractValue(ctx context.Context, field graphql.CollectedField, obj *contract.Contract) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Contract_totalContractValue(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1913,7 +1940,7 @@ func (ec *executionContext) fieldContext_Contract_totalContractValue(ctx context
 	return fc, nil
 }
 
-func (ec *executionContext) _Contract_totalRemainingValue(ctx context.Context, field graphql.CollectedField, obj *model.Contract) (ret graphql.Marshaler) {
+func (ec *executionContext) _Contract_totalRemainingValue(ctx context.Context, field graphql.CollectedField, obj *contract.Contract) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Contract_totalRemainingValue(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1957,7 +1984,7 @@ func (ec *executionContext) fieldContext_Contract_totalRemainingValue(ctx contex
 	return fc, nil
 }
 
-func (ec *executionContext) _Contract_contractLength(ctx context.Context, field graphql.CollectedField, obj *model.Contract) (ret graphql.Marshaler) {
+func (ec *executionContext) _Contract_contractLength(ctx context.Context, field graphql.CollectedField, obj *contract.Contract) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Contract_contractLength(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -2001,7 +2028,7 @@ func (ec *executionContext) fieldContext_Contract_contractLength(ctx context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _Contract_playerPosition(ctx context.Context, field graphql.CollectedField, obj *model.Contract) (ret graphql.Marshaler) {
+func (ec *executionContext) _Contract_playerPosition(ctx context.Context, field graphql.CollectedField, obj *contract.Contract) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Contract_playerPosition(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -2042,7 +2069,7 @@ func (ec *executionContext) fieldContext_Contract_playerPosition(ctx context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _Contract_contractDetails(ctx context.Context, field graphql.CollectedField, obj *model.Contract) (ret graphql.Marshaler) {
+func (ec *executionContext) _Contract_contractDetails(ctx context.Context, field graphql.CollectedField, obj *contract.Contract) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Contract_contractDetails(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -3651,9 +3678,9 @@ func (ec *executionContext) _Mutation_createContract(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.Contract)
+	res := resTmp.(*contract.Contract)
 	fc.Result = res
-	return ec.marshalNContract2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐContract(ctx, field.Selections, res)
+	return ec.marshalNContract2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋcontractᚐContract(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createContract(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4364,6 +4391,106 @@ func (ec *executionContext) fieldContext_Query_league(ctx context.Context, field
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_leagueContracts(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_leagueContracts(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().LeagueContracts(rctx, fc.Args["leagueId"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRole2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐRole(ctx, "LEAGUE_MEMBER")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*contract.Contract); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/rifaulkner/sports-kernel/api/sk-serve/contract.Contract`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*contract.Contract)
+	fc.Result = res
+	return ec.marshalOContract2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋcontractᚐContractᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_leagueContracts(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Contract_id(ctx, field)
+			case "playerId":
+				return ec.fieldContext_Contract_playerId(ctx, field)
+			case "player":
+				return ec.fieldContext_Contract_player(ctx, field)
+			case "teamId":
+				return ec.fieldContext_Contract_teamId(ctx, field)
+			case "currentYear":
+				return ec.fieldContext_Contract_currentYear(ctx, field)
+			case "restructureStatus":
+				return ec.fieldContext_Contract_restructureStatus(ctx, field)
+			case "totalContractValue":
+				return ec.fieldContext_Contract_totalContractValue(ctx, field)
+			case "totalRemainingValue":
+				return ec.fieldContext_Contract_totalRemainingValue(ctx, field)
+			case "contractLength":
+				return ec.fieldContext_Contract_contractLength(ctx, field)
+			case "playerPosition":
+				return ec.fieldContext_Contract_playerPosition(ctx, field)
+			case "contractDetails":
+				return ec.fieldContext_Contract_contractDetails(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Contract", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_leagueContracts_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_teams(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_teams(ctx, field)
 	if err != nil {
@@ -4561,8 +4688,32 @@ func (ec *executionContext) _Query_teamContracts(ctx context.Context, field grap
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().TeamContracts(rctx, fc.Args["leagueId"].(*string), fc.Args["teamId"].(*string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().TeamContracts(rctx, fc.Args["leagueId"].(*string), fc.Args["teamId"].(*string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRole2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐRole(ctx, "LEAGUE_MEMBER")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*contract.Contract); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/rifaulkner/sports-kernel/api/sk-serve/contract.Contract`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4571,9 +4722,9 @@ func (ec *executionContext) _Query_teamContracts(ctx context.Context, field grap
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*model.Contract)
+	res := resTmp.([]*contract.Contract)
 	fc.Result = res
-	return ec.marshalOContract2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐContractᚄ(ctx, field.Selections, res)
+	return ec.marshalOContract2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋcontractᚐContractᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_teamContracts(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8069,7 +8220,7 @@ func (ec *executionContext) _CapUtilizationSummary(ctx context.Context, sel ast.
 
 var contractImplementors = []string{"Contract"}
 
-func (ec *executionContext) _Contract(ctx context.Context, sel ast.SelectionSet, obj *model.Contract) graphql.Marshaler {
+func (ec *executionContext) _Contract(ctx context.Context, sel ast.SelectionSet, obj *contract.Contract) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, contractImplementors)
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
@@ -8886,6 +9037,26 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_league(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "leagueContracts":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_leagueContracts(ctx, field)
 				return res
 			}
 
@@ -9802,11 +9973,11 @@ func (ec *executionContext) marshalNCapUtilizationSummary2ᚖgithubᚗcomᚋrifa
 	return ec._CapUtilizationSummary(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNContract2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐContract(ctx context.Context, sel ast.SelectionSet, v model.Contract) graphql.Marshaler {
+func (ec *executionContext) marshalNContract2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋcontractᚐContract(ctx context.Context, sel ast.SelectionSet, v contract.Contract) graphql.Marshaler {
 	return ec._Contract(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNContract2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐContract(ctx context.Context, sel ast.SelectionSet, v *model.Contract) graphql.Marshaler {
+func (ec *executionContext) marshalNContract2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋcontractᚐContract(ctx context.Context, sel ast.SelectionSet, v *contract.Contract) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -10565,7 +10736,7 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) marshalOContract2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐContractᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Contract) graphql.Marshaler {
+func (ec *executionContext) marshalOContract2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋcontractᚐContractᚄ(ctx context.Context, sel ast.SelectionSet, v []*contract.Contract) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -10592,7 +10763,7 @@ func (ec *executionContext) marshalOContract2ᚕᚖgithubᚗcomᚋrifaulknerᚋs
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNContract2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐContract(ctx, sel, v[i])
+			ret[i] = ec.marshalNContract2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋcontractᚐContract(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)

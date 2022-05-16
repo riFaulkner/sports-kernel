@@ -21,7 +21,7 @@ type Resolver struct {
 	UserResolver     user.User
 	LeagueResolver   league.League
 	TeamResolver     team.Team
-	ContractResolver contract.Contract
+	ContractResolver contract.Resolver
 	PlayerResolver   playernfl.PlayerNfl
 }
 
@@ -37,5 +37,4 @@ func Initialize(client firestore.Client) generated.Config {
 	return generated.Config{
 		Resolvers: &r,
 	}
-
 }

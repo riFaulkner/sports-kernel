@@ -9,6 +9,7 @@ import (
 	"log"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/generated"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
 )
@@ -38,7 +39,7 @@ func (r *mutationResolver) CreateTeam(ctx context.Context, leagueID *string, inp
 }
 
 func (r *mutationResolver) UpdateTeamMetaData(ctx context.Context, leagueID string, teamID string) (*model.Team, error) {
-	contracts, err := r.ContractResolver.GetAll(ctx, leagueID, teamID)
+	contracts, err := r.ContractResolver.GetAllTeamContracts(ctx, leagueID, teamID)
 	if err != nil {
 		return nil, err
 	}
@@ -56,14 +57,14 @@ func (r *mutationResolver) UpdateTeamMetaData(ctx context.Context, leagueID stri
 	return team, nil
 }
 
-func (r *mutationResolver) CreateContract(ctx context.Context, leagueID *string, input *model.ContractInput) (*model.Contract, error) {
+func (r *mutationResolver) CreateContract(ctx context.Context, leagueID *string, input *model.ContractInput) (*contract.Contract, error) {
 	document, err := r.ContractResolver.CreateContract(ctx, *leagueID, input)
 
 	if err != nil {
 		return nil, err
 	}
 
-	teamContracts, err := r.ContractResolver.GetAll(ctx, *leagueID, document.TeamID)
+	teamContracts, err := r.ContractResolver.GetAllTeamContracts(ctx, *leagueID, document.TeamID)
 	if err != nil {
 		log.Println("Failed to update contract metadata")
 		return nil, err
@@ -113,6 +114,10 @@ func (r *queryResolver) League(ctx context.Context, leagueID *string) (*model.Le
 	return league, nil
 }
 
+func (r *queryResolver) LeagueContracts(ctx context.Context, leagueID string) ([]*contract.Contract, error) {
+	return r.ContractResolver.GetAllLeagueContracts(ctx, leagueID)
+}
+
 func (r *queryResolver) Teams(ctx context.Context, leagueID *string) ([]*model.Team, error) {
 	teams, err := r.TeamResolver.GetAll(ctx, *leagueID)
 	if err != nil {
@@ -130,8 +135,8 @@ func (r *queryResolver) TeamByID(ctx context.Context, leagueID string, teamID st
 	return team, nil
 }
 
-func (r *queryResolver) TeamContracts(ctx context.Context, leagueID *string, teamID *string) ([]*model.Contract, error) {
-	contracts, err := r.ContractResolver.GetAll(ctx, *leagueID, *teamID)
+func (r *queryResolver) TeamContracts(ctx context.Context, leagueID *string, teamID *string) ([]*contract.Contract, error) {
+	contracts, err := r.ContractResolver.GetAllTeamContracts(ctx, *leagueID, *teamID)
 	if err != nil {
 		return nil, err
 	}

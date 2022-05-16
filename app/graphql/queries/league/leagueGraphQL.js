@@ -42,3 +42,7 @@ export const LEAGUE_TEAMS_BY_LEAGUE_ID = gql`
       } 
 }
 `
+
+export const LEAGUE_CONTRACTS_BY_PLAYER_NAME = gql`
+    
+    `

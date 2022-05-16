@@ -14,20 +14,6 @@ type CapUtilizationSummary struct {
 	NumContracts   int `json:"numContracts"`
 }
 
-type Contract struct {
-	ID                  string                    `json:"id"`
-	PlayerID            string                    `json:"playerId"`
-	Player              *PlayerNfl                `json:"player"`
-	TeamID              string                    `json:"teamId"`
-	CurrentYear         int                       `json:"currentYear"`
-	RestructureStatus   ContractRestructureStatus `json:"restructureStatus"`
-	TotalContractValue  float64                   `json:"totalContractValue"`
-	TotalRemainingValue float64                   `json:"totalRemainingValue"`
-	ContractLength      int                       `json:"contractLength"`
-	PlayerPosition      *string                   `json:"playerPosition"`
-	ContractDetails     []*ContractYear           `json:"contractDetails"`
-}
-
 type ContractDetail struct {
 	RestructuredContract      bool    `json:"restructuredContract"`
 	TotalRemainingValue       float64 `json:"totalRemainingValue"`

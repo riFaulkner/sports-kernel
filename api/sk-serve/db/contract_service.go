@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/pkg/errors"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/firestore"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -17,8 +18,33 @@ type ContractImpl struct {
 	PlayerResolver PlayerImpl
 }
 
-func (u *ContractImpl) GetAll(ctx context.Context, leagueID string, teamID string) ([]*model.Contract, error) {
-	contracts := make([]*model.Contract, 0)
+func (u *ContractImpl) GetAllLeagueContracts(ctx context.Context, leagueID string) ([]*contract.Contract, error) {
+	contracts := make([]*contract.Contract, 0, 20)
+	contractsReturned, err := u.Client.
+		Collection(firestore.LeaguesCollection).
+		Doc(leagueID).
+		Collection(firestore.PlayerContractsCollection).
+		Documents(ctx).
+		GetAll()
+	if err != nil {
+		graphql.AddError(ctx, gqlerror.Errorf("Error fetching contracts for league"))
+		return nil, err
+	}
+
+	for _, result := range contractsReturned {
+		contract := new(contract.Contract)
+		err = result.DataTo(&contract)
+		if err != nil {
+			return nil, err
+		}
+		contract.ID = result.Ref.ID
+		contracts = append(contracts, contract)
+	}
+	return contracts, nil
+}
+
+func (u *ContractImpl) GetAllTeamContracts(ctx context.Context, leagueID string, teamID string) ([]*contract.Contract, error) {
+	contracts := make([]*contract.Contract, 0)
 
 	//Create Document Ref - There is no traffic associated with this...
 	league := u.Client.Collection(firestore.LeaguesCollection).Doc(leagueID)
@@ -31,7 +57,7 @@ func (u *ContractImpl) GetAll(ctx context.Context, leagueID string, teamID strin
 	}
 
 	for _, result := range results {
-		contract := new(model.Contract)
+		contract := new(contract.Contract)
 		err = result.DataTo(&contract)
 		if err != nil {
 			return nil, err
@@ -47,13 +73,13 @@ func (u *ContractImpl) GetAll(ctx context.Context, leagueID string, teamID strin
 	return contracts, nil
 }
 
-func (u *ContractImpl) GetContractByLeagueAndPlayerId(ctx context.Context, leagueId string, playerId string) (*model.Contract, error) {
+func (u *ContractImpl) GetContractByLeagueAndPlayerId(ctx context.Context, leagueId string, playerId string) (*contract.Contract, error) {
 	// Todo add a filter for active filters
 	result, err := u.Client.Collection(firestore.LeaguesCollection).Doc(leagueId).Collection(firestore.PlayerContractsCollection).Doc(playerId).Get(ctx)
 	if err != nil {
 		return nil, err
 	}
-	contract := new(model.Contract)
+	contract := new(contract.Contract)
 	err = result.DataTo(contract)
 	if err != nil {
 		return nil, err
@@ -62,7 +88,7 @@ func (u *ContractImpl) GetContractByLeagueAndPlayerId(ctx context.Context, leagu
 	return contract, nil
 }
 
-func (u *ContractImpl) CreateContract(ctx context.Context, leagueId string, contractInput *model.ContractInput) (*model.Contract, error) {
+func (u *ContractImpl) CreateContract(ctx context.Context, leagueId string, contractInput *model.ContractInput) (*contract.Contract, error) {
 	u.validateContract(ctx, &leagueId, contractInput)
 
 	if len(graphql.GetErrors(ctx)) > 0 {
@@ -85,7 +111,7 @@ func (u *ContractImpl) CreateContract(ctx context.Context, leagueId string, cont
 		return nil, err
 	}
 
-	contract := new(model.Contract)
+	contract := new(contract.Contract)
 	err = doc.DataTo(&contract)
 	if err != nil {
 		return nil, err
@@ -122,7 +148,7 @@ func (u *ContractImpl) validatePlayer(ctx context.Context, leagueId *string, pla
 func (u *ContractImpl) validateTeam(ctx context.Context, leagueId *string, teamId *string) {
 	// valid team ID in that league
 	// TODO: Validate that this wont push team over cap value
-	//result, _ := u.GetAll(ctx, *leagueId, *teamId)
+	//result, _ := u.GetAllTeamContracts(ctx, *leagueId, *teamId)
 }
 
 func getAndValidateContractTotalValue(ctx context.Context, contractYears []*model.ContractYearInput) *float64 {
