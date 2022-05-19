@@ -36,8 +36,6 @@
     <v-tab-item>
       <v-card>
         <v-card-text>
-          <h1>League Rules</h1>
-          <h3>Updated: June 2021</h3>
           <rule-summary/>
         </v-card-text>
       </v-card>
