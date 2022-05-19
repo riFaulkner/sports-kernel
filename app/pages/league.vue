@@ -33,6 +33,20 @@
         </v-card-text>
       </v-card>
     </v-tab-item>
+    <v-tab-item>
+      <v-card>
+        <v-card-text>
+          <rule-summary/>
+        </v-card-text>
+      </v-card>
+    </v-tab-item>
+    <v-tab-item>
+      <v-card>
+        <v-card-text>
+          <h1>League Discussions</h1>
+        </v-card-text>
+      </v-card>
+    </v-tab-item>
 
   </v-tabs-items>
   <div v-else class="text-center">
@@ -44,10 +58,11 @@
 
 <script>
 import ContractsOverview from "@/components/league/ContractsOverview";
+import RuleSummary from "@/components/league/RuleSummary";
 
 export default {
   name: "league-home.vue",
-  components: {ContractsOverview},
+  components: {ContractsOverview, RuleSummary},
   middleware: 'auth',
   data: function () {
     return {
@@ -66,7 +81,7 @@ export default {
   },
   created() {
     this.$store.dispatch("application/updateSubmenu", [
-      'Standings', 'Match up', 'Contracts Overview', 'Trade Center'
+      'Standings', 'Match up', 'Contracts Overview', 'Trade Center', 'Rules', 'Discussion'
     ]);
   },
   destroyed() {
