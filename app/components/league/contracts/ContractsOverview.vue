@@ -6,11 +6,10 @@
         :items=teams
         :expanded.sync="expanded"
         item-key="teamName"
-        items-per-page=15
+        :items-per-page=15
         hide-default-footer
         show-expand
     >
-
       <template v-slot:item.currentContractsMetadata.totalUtilizedCap="{item}">
         ${{ item.currentContractsMetadata.totalUtilizedCap.toLocaleString() }}
       </template>
@@ -44,8 +43,8 @@
 </template>
 
 <script>
-import TeamAssetsBreakdown from "~/components/league/TeamAssetsBreakdown";
-import {LEAGUE_TEAMS_BY_LEAGUE_ID} from "~/graphql/queries/league/leagueGraphQL";
+import TeamAssetsBreakdown from "@/components/league/TeamAssetsBreakdown";
+import {LEAGUE_TEAMS_BY_LEAGUE_ID} from "@/graphql/queries/league/leagueGraphQL";
 
 export default {
   name: "ContractsOverview.vue",

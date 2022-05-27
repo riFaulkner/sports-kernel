@@ -15,7 +15,6 @@ export default {
     },
 
     publicRuntimeConfig: {
-        // graphQLBase: process.env.NODE_ENV === 'production' ? 'https://api.sports-kernel.com/graphql' : 'http://localhost:8080/graphql'
     },
     privateRuntimeConfig: {
 

@@ -5,10 +5,8 @@ package graph
 
 import (
 	"context"
-	"fmt"
 	"log"
 
-	"github.com/99designs/gqlgen/graphql"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/generated"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
@@ -87,6 +85,10 @@ func (r *mutationResolver) CreateUserRole(ctx context.Context, leagueID *string,
 	return r.UserResolver.CreateUserRole(ctx, newUserRole)
 }
 
+func (r *mutationResolver) ContractActionRestructure(ctx context.Context, leagueID *string, restructureDetails model.ContractRestructureInput) (*contract.Contract, error) {
+	return r.ContractResolver.RestructureContract(ctx, leagueID, &restructureDetails)
+}
+
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	users, err := r.UserResolver.GetAll(ctx)
 	if err != nil {
@@ -139,13 +141,6 @@ func (r *queryResolver) TeamContracts(ctx context.Context, leagueID *string, tea
 	contracts, err := r.ContractResolver.GetAllTeamContracts(ctx, *leagueID, *teamID)
 	if err != nil {
 		return nil, err
-	}
-
-	for _, s := range contracts {
-		s.Player, err = r.Player(ctx, &s.PlayerID)
-		if err != nil {
-			graphql.AddErrorf(ctx, fmt.Sprintf("Error getting player info for playerID: %s", s.PlayerID))
-		}
 	}
 
 	return contracts, nil

@@ -43,6 +43,26 @@ export const LEAGUE_TEAMS_BY_LEAGUE_ID = gql`
 }
 `
 
-export const LEAGUE_CONTRACTS_BY_PLAYER_NAME = gql`
-    
-    `
+export const LEAGUE_CONTRACTS = gql`
+    query getLeagueContracts($leagueId:ID!){
+        leagueContracts(leagueId:$leagueId) {
+            id
+            playerId
+            player {
+                playerName
+                teamNFL
+                position
+            }
+            contractLength
+            totalContractValue
+            restructureStatus
+            currentYear
+            contractDetails {
+                year
+                totalAmount
+                guaranteedAmount
+                paidAmount
+            }
+        }
+    }
+`

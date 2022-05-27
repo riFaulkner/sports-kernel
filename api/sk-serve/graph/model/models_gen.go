@@ -14,40 +14,35 @@ type CapUtilizationSummary struct {
 	NumContracts   int `json:"numContracts"`
 }
 
-type ContractDetail struct {
-	RestructuredContract      bool    `json:"restructuredContract"`
-	TotalRemainingValue       float64 `json:"totalRemainingValue"`
-	CurrentYearRemainingValue float64 `json:"currentYearRemainingValue"`
-	Year1value                float64 `json:"year1value"`
-	Year2value                float64 `json:"year2value"`
-	Year3Value                float64 `json:"year3Value"`
-	Year4value                float64 `json:"year4value"`
-}
-
 type ContractInput struct {
 	PlayerID            string                    `json:"playerId"`
 	TeamID              string                    `json:"teamId"`
 	CurrentYear         int                       `json:"currentYear"`
 	RestructureStatus   ContractRestructureStatus `json:"restructureStatus"`
-	TotalContractValue  *float64                  `json:"totalContractValue"`
-	TotalRemainingValue *float64                  `json:"totalRemainingValue"`
+	TotalContractValue  *int                      `json:"totalContractValue"`
+	TotalRemainingValue *int                      `json:"totalRemainingValue"`
 	ContractLength      *int                      `json:"contractLength"`
 	PlayerPosition      string                    `json:"playerPosition"`
 	ContractDetails     []*ContractYearInput      `json:"contractDetails"`
 }
 
+type ContractRestructureInput struct {
+	ContractID                 string               `json:"contractId"`
+	ContractRestructureDetails []*ContractYearInput `json:"contractRestructureDetails"`
+}
+
 type ContractYear struct {
-	Year             int     `json:"year"`
-	TotalAmount      int     `json:"totalAmount"`
-	PaidAmount       int     `json:"paidAmount"`
-	GuaranteedAmount float64 `json:"guaranteedAmount"`
+	Year             int `json:"year"`
+	TotalAmount      int `json:"totalAmount"`
+	PaidAmount       int `json:"paidAmount"`
+	GuaranteedAmount int `json:"guaranteedAmount"`
 }
 
 type ContractYearInput struct {
-	Year             int     `json:"year"`
-	TotalAmount      float64 `json:"totalAmount"`
-	PaidAmount       float64 `json:"paidAmount"`
-	GuaranteedAmount float64 `json:"guaranteedAmount"`
+	Year             int `json:"year"`
+	TotalAmount      int `json:"totalAmount"`
+	PaidAmount       int `json:"paidAmount"`
+	GuaranteedAmount int `json:"guaranteedAmount"`
 }
 
 type ContractsMetadata struct {
@@ -65,8 +60,9 @@ type Division struct {
 }
 
 type DraftPick struct {
-	Round int  `json:"round"`
-	Value *int `json:"value"`
+	Round           int    `json:"round"`
+	Value           *int   `json:"value"`
+	OriginalOwnerID string `json:"originalOwnerId"`
 }
 
 type DraftYear struct {

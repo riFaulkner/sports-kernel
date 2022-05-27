@@ -42,4 +42,5 @@ type Mutation {
   createContract(leagueId: ID, input: ContractInput): Contract!
   createPlayer(input: NewPlayerNFL!): PlayerNFL!
   createUserRole(leagueId: ID, newUserRole: NewUserRole): UserRoles!
+  contractActionRestructure(leagueId: ID, restructureDetails: ContractRestructureInput!): Contract!
 }

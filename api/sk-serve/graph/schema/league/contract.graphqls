@@ -6,8 +6,8 @@ type Contract {
     teamId: String!
     currentYear: Int!
     restructureStatus: ContractRestructureStatus!
-    totalContractValue: Float!
-    totalRemainingValue: Float!
+    totalContractValue: Int!
+    totalRemainingValue: Int!
     contractLength: Int!
     playerPosition: String
     contractDetails: [ContractYear!]!
@@ -17,7 +17,7 @@ type ContractYear {
     year: Int!
     totalAmount: Int!
     paidAmount: Int!
-    guaranteedAmount: Float!
+    guaranteedAmount: Int!
 }
 
 enum ContractRestructureStatus {
@@ -26,23 +26,13 @@ enum ContractRestructureStatus {
     PREVIOUSLY_RESTRUCTURED
 }
 
-type ContractDetail {
-    restructuredContract: Boolean!
-    totalRemainingValue: Float!
-    currentYearRemainingValue: Float!
-    year1value: Float!
-    year2value: Float!
-    year3Value: Float!
-    year4value: Float!
-}
-
 input ContractInput {
     playerId: String!
     teamId: String!
     currentYear: Int!
     restructureStatus: ContractRestructureStatus!
-    totalContractValue: Float
-    totalRemainingValue: Float
+    totalContractValue: Int
+    totalRemainingValue: Int
     contractLength: Int
     playerPosition: String!
     contractDetails: [ContractYearInput!]!
@@ -50,7 +40,12 @@ input ContractInput {
 
 input ContractYearInput {
     year: Int!
-    totalAmount: Float!
-    paidAmount: Float!
-    guaranteedAmount: Float!
+    totalAmount: Int!
+    paidAmount: Int!
+    guaranteedAmount: Int!
+}
+
+input ContractRestructureInput {
+    contractId: ID!
+    contractRestructureDetails: [ContractYearInput!]!
 }

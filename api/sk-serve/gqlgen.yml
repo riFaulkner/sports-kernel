@@ -58,3 +58,6 @@ models:
   Contract:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/contract.Contract
+    fields:
+      Player:
+        resolver: true

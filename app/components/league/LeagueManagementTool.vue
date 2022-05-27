@@ -10,14 +10,13 @@
               persistent-hint
               v-model=selectedTool
           />
-
         </v-card>
       </v-col>
       <v-col cols="4"/>
 
       <v-col>
-        <restructure-contract
-            v-if="selectedTool === 'restructure'"
+        <manage-contract
+            v-if="selectedTool === 'manageContract'"
             :league-id="leagueId"
         />
       </v-col>
@@ -28,11 +27,12 @@
 </template>
 
 <script>
-import RestructureContract from "~/components/league/managementTools/RestructureContract";
+import RestructureContract from "@/components/league/managementTools/ManageContract";
+import ManageContract from "@/components/league/managementTools/ManageContract";
 
 export default {
   name: "LeagueManagementTool",
-  components: {RestructureContract},
+  components: {ManageContract, RestructureContract},
   props: {
     leagueId: {
       type: String,
@@ -42,8 +42,9 @@ export default {
   data: function () {
     return {
       toolTypes: [
-        {text: "Drop", value: "drop"},
-        {text: "Restructure", value: "restructure"}
+        {text: "Create Contract", value: "createContract"},
+        {text: "Manage Contract", value: "manageContract"},
+        {text: "Add Player", value: "addPlayer"}
       ],
       selectedTool: ""
     }

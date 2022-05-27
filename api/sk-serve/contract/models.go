@@ -8,10 +8,15 @@ type Contract struct {
 	TeamID              string                          `json:"teamId"`
 	CurrentYear         int                             `json:"currentYear"`
 	RestructureStatus   model.ContractRestructureStatus `json:"restructureStatus"`
-	TotalContractValue  float64                         `json:"totalContractValue"`
-	TotalRemainingValue float64                         `json:"totalRemainingValue"`
+	TotalContractValue  int                             `json:"totalContractValue"`
+	TotalRemainingValue int                             `json:"totalRemainingValue"`
 	ContractLength      int                             `json:"contractLength"`
 	PlayerPosition      *string                         `json:"playerPosition"`
 	ContractDetails     []*model.ContractYear           `json:"contractDetails"`
-	Player              *model.PlayerNfl                `json:"player"`
+	ContractHistory     []*HistoryRecord
+}
+
+type HistoryRecord struct {
+	DateUpdated     int64
+	ContractDetails []*model.ContractYear
 }

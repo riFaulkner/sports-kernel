@@ -47,7 +47,7 @@
 </template>
 
 <script>
-import ContractsOverview from "@/components/league/ContractsOverview";
+import ContractsOverview from "@/components/league/contracts/ContractsOverview";
 import LeagueManagementTool from "~/components/league/LeagueManagementTool";
 
 export default {

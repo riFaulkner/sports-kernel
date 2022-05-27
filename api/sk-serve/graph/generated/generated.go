@@ -38,6 +38,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Contract() ContractResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
 }
@@ -66,16 +67,6 @@ type ComplexityRoot struct {
 		TotalRemainingValue func(childComplexity int) int
 	}
 
-	ContractDetail struct {
-		CurrentYearRemainingValue func(childComplexity int) int
-		RestructuredContract      func(childComplexity int) int
-		TotalRemainingValue       func(childComplexity int) int
-		Year1value                func(childComplexity int) int
-		Year2value                func(childComplexity int) int
-		Year3Value                func(childComplexity int) int
-		Year4value                func(childComplexity int) int
-	}
-
 	ContractYear struct {
 		GuaranteedAmount func(childComplexity int) int
 		PaidAmount       func(childComplexity int) int
@@ -98,8 +89,9 @@ type ComplexityRoot struct {
 	}
 
 	DraftPick struct {
-		Round func(childComplexity int) int
-		Value func(childComplexity int) int
+		OriginalOwnerID func(childComplexity int) int
+		Round           func(childComplexity int) int
+		Value           func(childComplexity int) int
 	}
 
 	DraftYear struct {
@@ -117,12 +109,13 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateContract     func(childComplexity int, leagueID *string, input *model.ContractInput) int
-		CreatePlayer       func(childComplexity int, input model.NewPlayerNfl) int
-		CreateTeam         func(childComplexity int, leagueID *string, input model.NewTeam) int
-		CreateUser         func(childComplexity int, input model.NewUser) int
-		CreateUserRole     func(childComplexity int, leagueID *string, newUserRole *model.NewUserRole) int
-		UpdateTeamMetaData func(childComplexity int, leagueID string, teamID string) int
+		ContractActionRestructure func(childComplexity int, leagueID *string, restructureDetails model.ContractRestructureInput) int
+		CreateContract            func(childComplexity int, leagueID *string, input *model.ContractInput) int
+		CreatePlayer              func(childComplexity int, input model.NewPlayerNfl) int
+		CreateTeam                func(childComplexity int, leagueID *string, input model.NewTeam) int
+		CreateUser                func(childComplexity int, input model.NewUser) int
+		CreateUserRole            func(childComplexity int, leagueID *string, newUserRole *model.NewUserRole) int
+		UpdateTeamMetaData        func(childComplexity int, leagueID string, teamID string) int
 	}
 
 	PlayerNFL struct {
@@ -186,6 +179,9 @@ type ComplexityRoot struct {
 	}
 }
 
+type ContractResolver interface {
+	Player(ctx context.Context, obj *contract.Contract) (*model.PlayerNfl, error)
+}
 type MutationResolver interface {
 	CreateUser(ctx context.Context, input model.NewUser) (*model.User, error)
 	CreateTeam(ctx context.Context, leagueID *string, input model.NewTeam) (*model.Team, error)
@@ -193,6 +189,7 @@ type MutationResolver interface {
 	CreateContract(ctx context.Context, leagueID *string, input *model.ContractInput) (*contract.Contract, error)
 	CreatePlayer(ctx context.Context, input model.NewPlayerNfl) (*model.PlayerNfl, error)
 	CreateUserRole(ctx context.Context, leagueID *string, newUserRole *model.NewUserRole) (*model.UserRoles, error)
+	ContractActionRestructure(ctx context.Context, leagueID *string, restructureDetails model.ContractRestructureInput) (*contract.Contract, error)
 }
 type QueryResolver interface {
 	Users(ctx context.Context) ([]*model.User, error)
@@ -314,55 +311,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Contract.TotalRemainingValue(childComplexity), true
 
-	case "ContractDetail.currentYearRemainingValue":
-		if e.complexity.ContractDetail.CurrentYearRemainingValue == nil {
-			break
-		}
-
-		return e.complexity.ContractDetail.CurrentYearRemainingValue(childComplexity), true
-
-	case "ContractDetail.restructuredContract":
-		if e.complexity.ContractDetail.RestructuredContract == nil {
-			break
-		}
-
-		return e.complexity.ContractDetail.RestructuredContract(childComplexity), true
-
-	case "ContractDetail.totalRemainingValue":
-		if e.complexity.ContractDetail.TotalRemainingValue == nil {
-			break
-		}
-
-		return e.complexity.ContractDetail.TotalRemainingValue(childComplexity), true
-
-	case "ContractDetail.year1value":
-		if e.complexity.ContractDetail.Year1value == nil {
-			break
-		}
-
-		return e.complexity.ContractDetail.Year1value(childComplexity), true
-
-	case "ContractDetail.year2value":
-		if e.complexity.ContractDetail.Year2value == nil {
-			break
-		}
-
-		return e.complexity.ContractDetail.Year2value(childComplexity), true
-
-	case "ContractDetail.year3Value":
-		if e.complexity.ContractDetail.Year3Value == nil {
-			break
-		}
-
-		return e.complexity.ContractDetail.Year3Value(childComplexity), true
-
-	case "ContractDetail.year4value":
-		if e.complexity.ContractDetail.Year4value == nil {
-			break
-		}
-
-		return e.complexity.ContractDetail.Year4value(childComplexity), true
-
 	case "ContractYear.guaranteedAmount":
 		if e.complexity.ContractYear.GuaranteedAmount == nil {
 			break
@@ -447,6 +395,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Division.LeadingWins(childComplexity), true
 
+	case "DraftPick.originalOwnerId":
+		if e.complexity.DraftPick.OriginalOwnerID == nil {
+			break
+		}
+
+		return e.complexity.DraftPick.OriginalOwnerID(childComplexity), true
+
 	case "DraftPick.round":
 		if e.complexity.DraftPick.Round == nil {
 			break
@@ -516,6 +471,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.League.Teams(childComplexity), true
+
+	case "Mutation.contractActionRestructure":
+		if e.complexity.Mutation.ContractActionRestructure == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_contractActionRestructure_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ContractActionRestructure(childComplexity, args["leagueId"].(*string), args["restructureDetails"].(model.ContractRestructureInput)), true
 
 	case "Mutation.createContract":
 		if e.complexity.Mutation.CreateContract == nil {
@@ -971,7 +938,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "graph/schema/league/contract/contract.graphqls", Input: `# Contract types and inputs
+	{Name: "graph/schema/league/contract.graphqls", Input: `# Contract types and inputs
 type Contract {
     id: ID!
     playerId: String!
@@ -979,8 +946,8 @@ type Contract {
     teamId: String!
     currentYear: Int!
     restructureStatus: ContractRestructureStatus!
-    totalContractValue: Float!
-    totalRemainingValue: Float!
+    totalContractValue: Int!
+    totalRemainingValue: Int!
     contractLength: Int!
     playerPosition: String
     contractDetails: [ContractYear!]!
@@ -990,7 +957,7 @@ type ContractYear {
     year: Int!
     totalAmount: Int!
     paidAmount: Int!
-    guaranteedAmount: Float!
+    guaranteedAmount: Int!
 }
 
 enum ContractRestructureStatus {
@@ -999,23 +966,13 @@ enum ContractRestructureStatus {
     PREVIOUSLY_RESTRUCTURED
 }
 
-type ContractDetail {
-    restructuredContract: Boolean!
-    totalRemainingValue: Float!
-    currentYearRemainingValue: Float!
-    year1value: Float!
-    year2value: Float!
-    year3Value: Float!
-    year4value: Float!
-}
-
 input ContractInput {
     playerId: String!
     teamId: String!
     currentYear: Int!
     restructureStatus: ContractRestructureStatus!
-    totalContractValue: Float
-    totalRemainingValue: Float
+    totalContractValue: Int
+    totalRemainingValue: Int
     contractLength: Int
     playerPosition: String!
     contractDetails: [ContractYearInput!]!
@@ -1023,9 +980,14 @@ input ContractInput {
 
 input ContractYearInput {
     year: Int!
-    totalAmount: Float!
-    paidAmount: Float!
-    guaranteedAmount: Float!
+    totalAmount: Int!
+    paidAmount: Int!
+    guaranteedAmount: Int!
+}
+
+input ContractRestructureInput {
+    contractId: ID!
+    contractRestructureDetails: [ContractYearInput!]!
 }`, BuiltIn: false},
 	{Name: "graph/schema/league/league.graphqls", Input: `type League {
     id: ID!
@@ -1090,6 +1052,7 @@ type Mutation {
   createContract(leagueId: ID, input: ContractInput): Contract!
   createPlayer(input: NewPlayerNFL!): PlayerNFL!
   createUserRole(leagueId: ID, newUserRole: NewUserRole): UserRoles!
+  contractActionRestructure(leagueId: ID, restructureDetails: ContractRestructureInput!): Contract!
 }`, BuiltIn: false},
 	{Name: "graph/schema/team/team.graphqls", Input: `# Team types and inputs
 type Team {
@@ -1130,6 +1093,7 @@ type DraftYear {
 type DraftPick {
     round: Int!
     value: Int
+    originalOwnerId: ID!
 }
 
 type CapUtilizationSummary {
@@ -1191,6 +1155,30 @@ func (ec *executionContext) dir_hasRole_args(ctx context.Context, rawArgs map[st
 		}
 	}
 	args["role"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_contractActionRestructure_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *string
+	if tmp, ok := rawArgs["leagueId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("leagueId"))
+		arg0, err = ec.unmarshalOID2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["leagueId"] = arg0
+	var arg1 model.ContractRestructureInput
+	if tmp, ok := rawArgs["restructureDetails"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("restructureDetails"))
+		arg1, err = ec.unmarshalNContractRestructureInput2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐContractRestructureInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["restructureDetails"] = arg1
 	return args, nil
 }
 
@@ -1716,7 +1704,7 @@ func (ec *executionContext) _Contract_player(ctx context.Context, field graphql.
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Player, nil
+		return ec.resolvers.Contract().Player(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1737,8 +1725,8 @@ func (ec *executionContext) fieldContext_Contract_player(ctx context.Context, fi
 	fc = &graphql.FieldContext{
 		Object:     "Contract",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
@@ -1922,9 +1910,9 @@ func (ec *executionContext) _Contract_totalContractValue(ctx context.Context, fi
 		}
 		return graphql.Null
 	}
-	res := resTmp.(float64)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Contract_totalContractValue(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1934,7 +1922,7 @@ func (ec *executionContext) fieldContext_Contract_totalContractValue(ctx context
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1966,9 +1954,9 @@ func (ec *executionContext) _Contract_totalRemainingValue(ctx context.Context, f
 		}
 		return graphql.Null
 	}
-	res := resTmp.(float64)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Contract_totalRemainingValue(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1978,7 +1966,7 @@ func (ec *executionContext) fieldContext_Contract_totalRemainingValue(ctx contex
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2118,314 +2106,6 @@ func (ec *executionContext) fieldContext_Contract_contractDetails(ctx context.Co
 				return ec.fieldContext_ContractYear_guaranteedAmount(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ContractYear", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ContractDetail_restructuredContract(ctx context.Context, field graphql.CollectedField, obj *model.ContractDetail) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ContractDetail_restructuredContract(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.RestructuredContract, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(bool)
-	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_ContractDetail_restructuredContract(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ContractDetail",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ContractDetail_totalRemainingValue(ctx context.Context, field graphql.CollectedField, obj *model.ContractDetail) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ContractDetail_totalRemainingValue(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.TotalRemainingValue, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(float64)
-	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_ContractDetail_totalRemainingValue(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ContractDetail",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ContractDetail_currentYearRemainingValue(ctx context.Context, field graphql.CollectedField, obj *model.ContractDetail) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ContractDetail_currentYearRemainingValue(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.CurrentYearRemainingValue, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(float64)
-	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_ContractDetail_currentYearRemainingValue(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ContractDetail",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ContractDetail_year1value(ctx context.Context, field graphql.CollectedField, obj *model.ContractDetail) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ContractDetail_year1value(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Year1value, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(float64)
-	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_ContractDetail_year1value(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ContractDetail",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ContractDetail_year2value(ctx context.Context, field graphql.CollectedField, obj *model.ContractDetail) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ContractDetail_year2value(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Year2value, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(float64)
-	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_ContractDetail_year2value(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ContractDetail",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ContractDetail_year3Value(ctx context.Context, field graphql.CollectedField, obj *model.ContractDetail) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ContractDetail_year3Value(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Year3Value, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(float64)
-	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_ContractDetail_year3Value(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ContractDetail",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ContractDetail_year4value(ctx context.Context, field graphql.CollectedField, obj *model.ContractDetail) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ContractDetail_year4value(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Year4value, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(float64)
-	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_ContractDetail_year4value(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ContractDetail",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2589,9 +2269,9 @@ func (ec *executionContext) _ContractYear_guaranteedAmount(ctx context.Context, 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(float64)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ContractYear_guaranteedAmount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2601,7 +2281,7 @@ func (ec *executionContext) fieldContext_ContractYear_guaranteedAmount(ctx conte
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3065,6 +2745,50 @@ func (ec *executionContext) fieldContext_DraftPick_value(ctx context.Context, fi
 	return fc, nil
 }
 
+func (ec *executionContext) _DraftPick_originalOwnerId(ctx context.Context, field graphql.CollectedField, obj *model.DraftPick) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DraftPick_originalOwnerId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.OriginalOwnerID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DraftPick_originalOwnerId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DraftPick",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _DraftYear_year(ctx context.Context, field graphql.CollectedField, obj *model.DraftYear) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_DraftYear_year(ctx, field)
 	if err != nil {
@@ -3152,6 +2876,8 @@ func (ec *executionContext) fieldContext_DraftYear_picks(ctx context.Context, fi
 				return ec.fieldContext_DraftPick_round(ctx, field)
 			case "value":
 				return ec.fieldContext_DraftPick_value(ctx, field)
+			case "originalOwnerId":
+				return ec.fieldContext_DraftPick_originalOwnerId(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type DraftPick", field.Name)
 		},
@@ -3861,6 +3587,85 @@ func (ec *executionContext) fieldContext_Mutation_createUserRole(ctx context.Con
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_createUserRole_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_contractActionRestructure(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_contractActionRestructure(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().ContractActionRestructure(rctx, fc.Args["leagueId"].(*string), fc.Args["restructureDetails"].(model.ContractRestructureInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*contract.Contract)
+	fc.Result = res
+	return ec.marshalNContract2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋcontractᚐContract(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_contractActionRestructure(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Contract_id(ctx, field)
+			case "playerId":
+				return ec.fieldContext_Contract_playerId(ctx, field)
+			case "player":
+				return ec.fieldContext_Contract_player(ctx, field)
+			case "teamId":
+				return ec.fieldContext_Contract_teamId(ctx, field)
+			case "currentYear":
+				return ec.fieldContext_Contract_currentYear(ctx, field)
+			case "restructureStatus":
+				return ec.fieldContext_Contract_restructureStatus(ctx, field)
+			case "totalContractValue":
+				return ec.fieldContext_Contract_totalContractValue(ctx, field)
+			case "totalRemainingValue":
+				return ec.fieldContext_Contract_totalRemainingValue(ctx, field)
+			case "contractLength":
+				return ec.fieldContext_Contract_contractLength(ctx, field)
+			case "playerPosition":
+				return ec.fieldContext_Contract_playerPosition(ctx, field)
+			case "contractDetails":
+				return ec.fieldContext_Contract_contractDetails(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Contract", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_contractActionRestructure_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -7892,7 +7697,7 @@ func (ec *executionContext) unmarshalInputContractInput(ctx context.Context, obj
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("totalContractValue"))
-			it.TotalContractValue, err = ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			it.TotalContractValue, err = ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -7900,7 +7705,7 @@ func (ec *executionContext) unmarshalInputContractInput(ctx context.Context, obj
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("totalRemainingValue"))
-			it.TotalRemainingValue, err = ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			it.TotalRemainingValue, err = ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -7934,6 +7739,37 @@ func (ec *executionContext) unmarshalInputContractInput(ctx context.Context, obj
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputContractRestructureInput(ctx context.Context, obj interface{}) (model.ContractRestructureInput, error) {
+	var it model.ContractRestructureInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "contractId":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contractId"))
+			it.ContractID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "contractRestructureDetails":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contractRestructureDetails"))
+			it.ContractRestructureDetails, err = ec.unmarshalNContractYearInput2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐContractYearInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputContractYearInput(ctx context.Context, obj interface{}) (model.ContractYearInput, error) {
 	var it model.ContractYearInput
 	asMap := map[string]interface{}{}
@@ -7955,7 +7791,7 @@ func (ec *executionContext) unmarshalInputContractYearInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("totalAmount"))
-			it.TotalAmount, err = ec.unmarshalNFloat2float64(ctx, v)
+			it.TotalAmount, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -7963,7 +7799,7 @@ func (ec *executionContext) unmarshalInputContractYearInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("paidAmount"))
-			it.PaidAmount, err = ec.unmarshalNFloat2float64(ctx, v)
+			it.PaidAmount, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -7971,7 +7807,7 @@ func (ec *executionContext) unmarshalInputContractYearInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("guaranteedAmount"))
-			it.GuaranteedAmount, err = ec.unmarshalNFloat2float64(ctx, v)
+			it.GuaranteedAmount, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -8236,7 +8072,7 @@ func (ec *executionContext) _Contract(ctx context.Context, sel ast.SelectionSet,
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "playerId":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -8246,18 +8082,28 @@ func (ec *executionContext) _Contract(ctx context.Context, sel ast.SelectionSet,
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "player":
+			field := field
+
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Contract_player(ctx, field, obj)
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Contract_player(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
 			}
 
-			out.Values[i] = innerFunc(ctx)
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
 
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			})
 		case "teamId":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Contract_teamId(ctx, field, obj)
@@ -8266,7 +8112,7 @@ func (ec *executionContext) _Contract(ctx context.Context, sel ast.SelectionSet,
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "currentYear":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -8276,7 +8122,7 @@ func (ec *executionContext) _Contract(ctx context.Context, sel ast.SelectionSet,
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "restructureStatus":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -8286,7 +8132,7 @@ func (ec *executionContext) _Contract(ctx context.Context, sel ast.SelectionSet,
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "totalContractValue":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -8296,7 +8142,7 @@ func (ec *executionContext) _Contract(ctx context.Context, sel ast.SelectionSet,
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "totalRemainingValue":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -8306,7 +8152,7 @@ func (ec *executionContext) _Contract(ctx context.Context, sel ast.SelectionSet,
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "contractLength":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -8316,7 +8162,7 @@ func (ec *executionContext) _Contract(ctx context.Context, sel ast.SelectionSet,
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "playerPosition":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -8333,98 +8179,7 @@ func (ec *executionContext) _Contract(ctx context.Context, sel ast.SelectionSet,
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
-var contractDetailImplementors = []string{"ContractDetail"}
-
-func (ec *executionContext) _ContractDetail(ctx context.Context, sel ast.SelectionSet, obj *model.ContractDetail) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, contractDetailImplementors)
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("ContractDetail")
-		case "restructuredContract":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._ContractDetail_restructuredContract(ctx, field, obj)
-			}
-
-			out.Values[i] = innerFunc(ctx)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "totalRemainingValue":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._ContractDetail_totalRemainingValue(ctx, field, obj)
-			}
-
-			out.Values[i] = innerFunc(ctx)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "currentYearRemainingValue":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._ContractDetail_currentYearRemainingValue(ctx, field, obj)
-			}
-
-			out.Values[i] = innerFunc(ctx)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "year1value":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._ContractDetail_year1value(ctx, field, obj)
-			}
-
-			out.Values[i] = innerFunc(ctx)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "year2value":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._ContractDetail_year2value(ctx, field, obj)
-			}
-
-			out.Values[i] = innerFunc(ctx)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "year3Value":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._ContractDetail_year3Value(ctx, field, obj)
-			}
-
-			out.Values[i] = innerFunc(ctx)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "year4value":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._ContractDetail_year4value(ctx, field, obj)
-			}
-
-			out.Values[i] = innerFunc(ctx)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -8644,6 +8399,16 @@ func (ec *executionContext) _DraftPick(ctx context.Context, sel ast.SelectionSet
 
 			out.Values[i] = innerFunc(ctx)
 
+		case "originalOwnerId":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._DraftPick_originalOwnerId(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8849,6 +8614,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "createUserRole":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createUserRole(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "contractActionRestructure":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_contractActionRestructure(ctx, field)
 			}
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
@@ -9987,6 +9762,11 @@ func (ec *executionContext) marshalNContract2ᚖgithubᚗcomᚋrifaulknerᚋspor
 	return ec._Contract(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNContractRestructureInput2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐContractRestructureInput(ctx context.Context, v interface{}) (model.ContractRestructureInput, error) {
+	res, err := ec.unmarshalInputContractRestructureInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNContractRestructureStatus2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐContractRestructureStatus(ctx context.Context, v interface{}) (model.ContractRestructureStatus, error) {
 	var res model.ContractRestructureStatus
 	err := res.UnmarshalGQL(v)
@@ -10201,21 +9981,6 @@ func (ec *executionContext) marshalNDraftYear2ᚕᚖgithubᚗcomᚋrifaulknerᚋ
 	wg.Wait()
 
 	return ret
-}
-
-func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v interface{}) (float64, error) {
-	res, err := graphql.UnmarshalFloatContext(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.SelectionSet, v float64) graphql.Marshaler {
-	res := graphql.MarshalFloatContext(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return graphql.WrapContextMarshaler(ctx, res)
 }
 
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
@@ -10810,22 +10575,6 @@ func (ec *executionContext) marshalODraftYear2ᚖgithubᚗcomᚋrifaulknerᚋspo
 		return graphql.Null
 	}
 	return ec._DraftYear(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalOFloat2ᚖfloat64(ctx context.Context, v interface{}) (*float64, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := graphql.UnmarshalFloatContext(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel ast.SelectionSet, v *float64) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	res := graphql.MarshalFloatContext(*v)
-	return graphql.WrapContextMarshaler(ctx, res)
 }
 
 func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v interface{}) (*string, error) {

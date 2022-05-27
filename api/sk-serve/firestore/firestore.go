@@ -7,10 +7,13 @@ import (
 	"cloud.google.com/go/firestore"
 )
 
-const LeaguesCollection = "leagues"
-const PlayerContractsCollection = "playerContracts"
-const UserRolesCollection = "user-roles"
-const UsersCollection = "users"
+const (
+	LeaguesCollection         = "leagues"
+	PlayerCollection          = "playersNFL"
+	PlayerContractsCollection = "playerContracts"
+	UserRolesCollection       = "user-roles"
+	UsersCollection           = "users"
+)
 
 type Client interface {
 	Collection(path string) *firestore.CollectionRef

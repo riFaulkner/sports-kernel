@@ -5,6 +5,8 @@ schema {
     mutation: Mutation
 }
 
+directive @hasRole(role: Role!) on FIELD_DEFINITION
+
 type CapUtilizationSummary {
     capUtilization: Int!
     numContracts: Int!
@@ -66,32 +68,38 @@ type DraftYear {
 }
 
 type League {
-    divisions: [Division!]
+    divisions: [Division!]!
     id: ID!
     leagueName: String!
     logoUrl: String!
     startDate: Time!
-    teams: [Team!]
+    teams: [Team!]!
 }
 
 type Mutation {
     createContract(input: ContractInput, leagueId: ID): Contract!
+    createPlayer(input: NewPlayerNFL!): PlayerNFL!
     createTeam(input: NewTeam!, leagueId: ID): Team!
     createUser(input: NewUser!): User!
+    createUserRole(leagueId: ID, newUserRole: NewUserRole): UserRoles!
     updateTeamMetaData(leagueId: ID!, teamId: ID!): Team!
 }
 
 type PlayerNFL {
+    avatar: String!
+    birthday: String!
     id: ID!
     overallRank: Int!
     playerName: String!
     position: String!
-    positionRank: String!
+    positionRank: Int!
     teamNFL: String!
 }
 
 type Query {
+    getUserRoles(userId: ID): [UserRoles]
     league(leagueId: ID): League
+    leagueContracts(leagueId: ID!): [Contract!]
     leagues: [League]
     player(playerId: ID): PlayerNFL!
     players(numOfResults: Int): [PlayerNFL!]
@@ -131,11 +139,26 @@ type UserPreferences {
     preferredLeagueId: String
 }
 
+type UserRoles {
+    id: ID!
+    role: String!
+    userId: ID!
+}
+
 enum ContractRestructureStatus {
     ELIGIBLE
     INELIGIBLE
     PREVIOUSLY_RESTRUCTURED
 }
+
+enum Role {
+    ADMIN
+    LEAGUE_MANAGER
+    LEAGUE_MEMBER
+    TEAM_OWNER
+}
+
+scalar Time
 
 input ContractInput {
     contractDetails: [ContractYearInput!]!
@@ -156,6 +179,16 @@ input ContractYearInput {
     year: Int!
 }
 
+input NewPlayerNFL {
+    avatar: String
+    birthday: String
+    overallRank: Int
+    playerName: String!
+    position: String!
+    positionRank: Int
+    teamNFL: String
+}
+
 input NewTeam {
     division: String
     foundedDate: Time
@@ -169,5 +202,7 @@ input NewUser {
     ownerName: String!
 }
 
-
-scalar Time
+input NewUserRole {
+    role: String!
+    userId: ID!
+}

@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"sort"
+	"time"
 )
 
 type ContractImpl struct {
@@ -121,6 +122,72 @@ func (u *ContractImpl) CreateContract(ctx context.Context, leagueId string, cont
 	return contract, nil
 }
 
+func (u *ContractImpl) RestructureContract(ctx context.Context, leagueID *string, restructureDetails *model.ContractRestructureInput) (*contract.Contract, error) {
+	// Get the contract
+	contractRef, err := u.Client.Collection(firestore.LeaguesCollection).
+		Doc(*leagueID).
+		Collection(firestore.PlayerContractsCollection).
+		Doc(restructureDetails.ContractID).
+		Get(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+	contractValue := new(contract.Contract)
+	contractRef.DataTo(&contractValue)
+	contractValue.ID = contractRef.Ref.ID
+	// Validate the contract.
+	// contract should be eligible for restructure
+	if contractValue.RestructureStatus != model.ContractRestructureStatusEligible {
+		return nil, gqlerror.Errorf("Contract %s is ineligible for restructure", restructureDetails)
+	}
+	// contract restructure total should match the original total
+	restructureTotal := 0
+	guaranteedTotal := 0
+	for _, value := range restructureDetails.ContractRestructureDetails {
+		restructureTotal += value.TotalAmount
+		guaranteedTotal += value.GuaranteedAmount
+	}
+	if contractValue.TotalContractValue != restructureTotal {
+		return nil, gqlerror.Errorf("Contract %s restructured contract did not match the value of the original contract", contractValue.ID)
+	}
+	// contract totals should be 100% guaranteed
+	if restructureTotal != guaranteedTotal {
+		return nil, gqlerror.Errorf("Contract %s restructures invalid; guaranteed amount not equal to total amount", contractValue.ID)
+	}
+
+	// After validation, update the contract
+	// Add the old contract details to a metadata field
+	contractHistory := contractValue.ContractHistory
+	if contractHistory == nil {
+		contractHistory = make([]*contract.HistoryRecord, 0, 1)
+	}
+	mostRecentHistory := contract.HistoryRecord{
+		DateUpdated:     time.Now().UnixMilli(),
+		ContractDetails: contractValue.ContractDetails,
+	}
+
+	contractHistory = append(contractHistory, &mostRecentHistory)
+
+	// TODO: Verify its not this easy but with different syntax
+	//test := []*model.ContractYear(restructureDetails.ContractRestructureDetails)
+
+	newContractDetails := make([]*model.ContractYear, 0, len(restructureDetails.ContractRestructureDetails))
+	for _, yearDetailsInput := range restructureDetails.ContractRestructureDetails {
+		yearDetails := model.ContractYear{
+			Year:             yearDetailsInput.Year,
+			TotalAmount:      yearDetailsInput.TotalAmount,
+			PaidAmount:       yearDetailsInput.PaidAmount,
+			GuaranteedAmount: yearDetailsInput.GuaranteedAmount,
+		}
+		newContractDetails = append(newContractDetails, &yearDetails)
+	}
+
+	contractValue.ContractDetails = newContractDetails
+
+	return contractValue, nil
+}
+
 func (u *ContractImpl) validateContract(ctx context.Context, leagueId *string, contractInput *model.ContractInput) {
 	contractInput.TotalContractValue = getAndValidateContractTotalValue(ctx, contractInput.ContractDetails)
 
@@ -151,8 +218,8 @@ func (u *ContractImpl) validateTeam(ctx context.Context, leagueId *string, teamI
 	//result, _ := u.GetAllTeamContracts(ctx, *leagueId, *teamId)
 }
 
-func getAndValidateContractTotalValue(ctx context.Context, contractYears []*model.ContractYearInput) *float64 {
-	totalContractValue := 0.0
+func getAndValidateContractTotalValue(ctx context.Context, contractYears []*model.ContractYearInput) *int {
+	totalContractValue := 0
 	for _, value := range contractYears {
 		totalContractValue += value.TotalAmount
 	}

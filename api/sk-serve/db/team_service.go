@@ -67,7 +67,7 @@ func (u *TeamImpl) Create(ctx context.Context, leagueId string, teamInput model.
 	league := u.Client.Collection("leagues").Doc(leagueId)
 
 	defaultTeamContractsMetadata := generateDefaultTeamContractsMetadata()
-	defaultTeamAssets := generateTeamAssets()
+	defaultTeamAssets := generateTeamAssets(teamInput.ID)
 
 	team := model.Team{
 		ID:                       teamInput.ID,
@@ -175,7 +175,7 @@ func generateDefaultTeamContractsMetadata() *model.ContractsMetadata {
 	}
 }
 
-func generateTeamAssets() *model.TeamAssets {
+func generateTeamAssets(teamID string) *model.TeamAssets {
 	year := time.Now().Year()
 	var draftYears []*model.DraftYear
 
@@ -183,11 +183,11 @@ func generateTeamAssets() *model.TeamAssets {
 		draftYear := model.DraftYear{
 			Year: year + i,
 			Picks: []*model.DraftPick{
-				{Round: 1, Value: nil},
-				{Round: 2, Value: nil},
-				{Round: 3, Value: nil},
-				{Round: 4, Value: nil},
-				{Round: 5, Value: nil},
+				{Round: 1, Value: nil, OriginalOwnerID: teamID},
+				{Round: 2, Value: nil, OriginalOwnerID: teamID},
+				{Round: 3, Value: nil, OriginalOwnerID: teamID},
+				{Round: 4, Value: nil, OriginalOwnerID: teamID},
+				{Round: 5, Value: nil, OriginalOwnerID: teamID},
 			},
 		}
 		draftYears = append(draftYears, &draftYear)
