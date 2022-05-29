@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 	"log"
 	"time"
 
@@ -66,7 +67,7 @@ func (u *TeamImpl) Create(ctx context.Context, leagueId string, teamInput model.
 	league := u.Client.Collection("leagues").Doc(leagueId)
 
 	defaultTeamContractsMetadata := generateDefaultTeamContractsMetadata()
-	defaultTeamAssets := generateTeamAssets()
+	defaultTeamAssets := generateTeamAssets(teamInput.ID)
 
 	team := model.Team{
 		ID:                       teamInput.ID,
@@ -85,7 +86,7 @@ func (u *TeamImpl) Create(ctx context.Context, leagueId string, teamInput model.
 	return &team, nil
 }
 
-func (u *TeamImpl) UpdateTeamContractMetaData(ctx context.Context, leagueId string, teamContracts []*model.Contract) error {
+func (u *TeamImpl) UpdateTeamContractMetaData(ctx context.Context, leagueId string, teamContracts []*contract.Contract) error {
 	currentContractsMetadataDefault := model.ContractsMetadata{
 		TotalUtilizedCap:  0,
 		TotalAvailableCap: 200000000,
@@ -174,7 +175,7 @@ func generateDefaultTeamContractsMetadata() *model.ContractsMetadata {
 	}
 }
 
-func generateTeamAssets() *model.TeamAssets {
+func generateTeamAssets(teamID string) *model.TeamAssets {
 	year := time.Now().Year()
 	var draftYears []*model.DraftYear
 
@@ -182,11 +183,11 @@ func generateTeamAssets() *model.TeamAssets {
 		draftYear := model.DraftYear{
 			Year: year + i,
 			Picks: []*model.DraftPick{
-				{Round: 1, Value: nil},
-				{Round: 2, Value: nil},
-				{Round: 3, Value: nil},
-				{Round: 4, Value: nil},
-				{Round: 5, Value: nil},
+				{Round: 1, Value: nil, OriginalOwnerID: &teamID},
+				{Round: 2, Value: nil, OriginalOwnerID: &teamID},
+				{Round: 3, Value: nil, OriginalOwnerID: &teamID},
+				{Round: 4, Value: nil, OriginalOwnerID: &teamID},
+				{Round: 5, Value: nil, OriginalOwnerID: &teamID},
 			},
 		}
 		draftYears = append(draftYears, &draftYear)

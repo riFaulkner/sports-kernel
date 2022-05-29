@@ -22,15 +22,16 @@ type Resolver struct {
 	UserResolver     user.User
 	LeagueResolver   league.League
 	TeamResolver     team.Team
-	ContractResolver contract.Contract
+	ContractResolver contract.Resolver
 	PlayerResolver   playernfl.PlayerNfl
 	PostResolver     post.LeaguePost
 }
 
 func Initialize(client firestore.Client) generated.Config {
+	transactionImpl := db.TransactionImpl{Client: client}
 
 	r := Resolver{}
-	r.ContractResolver = &db.ContractImpl{Client: client}
+	r.ContractResolver = &db.ContractImpl{Client: client, TransactionImpl: transactionImpl}
 	r.LeagueResolver = &db.LeagueImpl{Client: client}
 	r.TeamResolver = &db.TeamImpl{Client: client}
 	r.UserResolver = &db.UserImpl{Client: client}
@@ -40,5 +41,4 @@ func Initialize(client firestore.Client) generated.Config {
 	return generated.Config{
 		Resolvers: &r,
 	}
-
 }

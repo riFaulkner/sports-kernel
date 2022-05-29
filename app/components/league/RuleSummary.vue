@@ -10,13 +10,13 @@
 
     <v-expansion-panels
       v-model="panel"
-      :disabled="disabled"
       multiple
       focusable
     >
       <v-expansion-panel>
         <v-expansion-panel-header class="grey--text">Core League Elements</v-expansion-panel-header>
         <v-expansion-panel-content>
+          <br/>
           <h3><u>Best Ball</u></h3>
           <p>Your best performing players are automatically "started". You make no start-sit decisions and there is no weekly waiver wire. The roster is a bit bigger as a result to account for injuries and bye weeks. Most standard best ball leagues don't allow trading (they are just draft exercises), but this league will have trading. Matchups are still head-to-head each week.</p>
           <h3><u>Contract</u></h3>
@@ -33,6 +33,7 @@
       <v-expansion-panel>
         <v-expansion-panel-header class="grey--text">Roster Composition</v-expansion-panel-header>
         <v-expansion-panel-content>
+          <br/>
           <p>We want to introduce some new elements with the starting line-up to make it more interesting.
              Remember, you don't select a line-up each week, but the slots are filled with your best players to maximize scoring. 
              It's also heavier on flex spots to make it easier to have a valid line-up each week. The effect of the roster is to increase value for QBs and TEs (rather than doing that through scoring only).</p>
@@ -55,6 +56,7 @@
       <v-expansion-panel>
         <v-expansion-panel-header class="grey--text">Scoring</v-expansion-panel-header>
         <v-expansion-panel-content>
+          <br/>
           <p>Same as roster, we want some new elements to keep things interesting! Goal is to maintain balance but create much higher scores, 
             so I'm sure we'll tweak things a bit once we can dig into projections a bit more (still on to-do list). We'll use decimal scoring and scoring is additive 
             (e.g. 0.5 PPR and 0.2 points per target = 0.7 total PPR).</p>
@@ -125,7 +127,7 @@
 
       <v-expansion-panel>
         <v-expansion-panel-header class="grey--text">Contracts and Free Agent Auction</v-expansion-panel-header>
-        <v-expansion-panel-content>
+        <v-expansion-panel-content> <br/>
           <p>The minimum contract for a player is a 1 year, $0.5 million. 
             This is the opening bid in the auction when a player is nominated. 
             Nominations go in reverse order from the draft order and owners can pass on a nomination (still able to nominate in future rounds). 
@@ -151,14 +153,14 @@
       </v-expansion-panel>
       <v-expansion-panel>
         <v-expansion-panel-header class="grey--text">Transaction Deadline</v-expansion-panel-header>
-        <v-expansion-panel-content>
+        <v-expansion-panel-content> <br/>
           <p>The league will have a transaction deadline at kickoff of the Sunday, 1pm games of Week 10 of the NFL season. 
             After that point, there will be no allowed trades or roster cuts until after the end of the season.</p>
         </v-expansion-panel-content>
       </v-expansion-panel>
       <v-expansion-panel>
         <v-expansion-panel-header class="grey--text">Restricted Free Agent Matching Tag</v-expansion-panel-header>
-        <v-expansion-panel-content>
+        <v-expansion-panel-content> <br/>
           <p>We are also introducing a restricted free agent mechanism (matching tag) to allow owners to more easily retain players. 
             If the player up for auction was on your team, you have the option to match the highest bid made after the auction is complete. 
             You have the choice to change the contract length within the same value. 
@@ -172,7 +174,7 @@
       </v-expansion-panel>
       <v-expansion-panel>
         <v-expansion-panel-header class="grey--text">Salary Cap and Contract Guarantees</v-expansion-panel-header>
-        <v-expansion-panel-content>
+        <v-expansion-panel-content> <br/>
           <p>The salary cap is a hard cap at $200 Million (no luxury tax nonsense). Because of the slope, you should always have the highest cap hit in the upcoming season (year 2 should usually be less than year 1). However, your rookie picks will need to be signed (these values are pre-determined).</p>
           <p>Contracts are 50% guaranteed. If you cut a player in the offseason, you eat 50% of the money due the next season in the next season and 50% of the balance in the year after. Money already spent on the player is obviously 100% spent with the maximum being hit at the trade deadline which is week 10. Some examples:</p>
           <ul>
@@ -200,7 +202,7 @@
       </v-expansion-panel>
        <v-expansion-panel>
         <v-expansion-panel-header class="grey--text">Rookie Contracts</v-expansion-panel-header>
-        <v-expansion-panel-content>
+        <v-expansion-panel-content> <br/>
           <p>As with the NFL, rookie contracts will all be 4-year deals. Values are predetermined based on the draft pick. After the rookie draft, they follow the same rules as the free agent contracts. Picks are forfeited if the team does not have the cap space for the pick or if the owner chooses not to draft a player.</p>
           <p>Rookie contract values were very hard to determine fairly. The approach we’ll take is to base rookie contract values on the actual start-up auction results for Rookies. The total contract value will be normalized to a smooth slope (vs. the tiers that will occur) and based on 2021 Rookie values vs. typical years (using ADP). The proposed values will be sent to the league for a vote with a simple majority needed.</p>
           <p>Rookie contracts may (low chance) be adjusted one additional time after the 3rd season along with salary slope.</p>
@@ -208,7 +210,7 @@
       </v-expansion-panel>
        <v-expansion-panel>
         <v-expansion-panel-header class="grey--text">Mid-Season Free Agent Auction</v-expansion-panel-header>
-        <v-expansion-panel-content>
+        <v-expansion-panel-content> <br/>
           <p>Every year there are some surprise players that burst onto the scene. The undrafted free agents, the resurgent veterans, etc. Around week 6, we will have a Dutch auction to allow these players to be acquired (high bidder wins and pays 1 increment higher than the second highest bidder) with bids being the amount you are willing to pay to acquire them for the remainder of the season. The player goes into the free agent auction at the end of the year; however, you will have the ability to use matching tags on these players which will make it easier to retain them.</p>
           <p></p>
           <ul>
@@ -218,7 +220,7 @@
       </v-expansion-panel>
        <v-expansion-panel>
         <v-expansion-panel-header class="grey--text">Regular Season and Playoff Structure</v-expansion-panel-header>
-        <v-expansion-panel-content>
+        <v-expansion-panel-content> <br/>
           <p>The regular season for the league will consist of 14 head-to-head games. Each team will play 3 teams twice per season. The first year this will be randomized. In subsequent years, we will group the teams based on the previous year finish. Teams that finished 1-4 will play each other twice, 5-8, 9-12. This is a simple solution to how to decide on repeat games that drives parity.</p>
           <p>Playoffs will be played from weeks 15-17 of the NFL regular season. The top two regular season finishers based on ESPN seeding (record as first tiebreaker, then points scored) will get a bye for week 15. The 3 plays the 6, the 4 plays the 5. Playoff is single elimination. In week 16, the 1 seed plays the lowest remaining seed and the 2 seed plays the higher (re-seeded).</p>
           <p>There will be a 3-point home-field advantage for the higher seeded team for all rounds.</p>
@@ -226,7 +228,7 @@
       </v-expansion-panel>
     <v-expansion-panel>
       <v-expansion-panel-header class="grey--text">Buy-In and Payouts</v-expansion-panel-header>
-        <v-expansion-panel-content>
+        <v-expansion-panel-content> <br/>
           <p>Buy-in continues to be a source of division within interested people. Some people want a high amount and others have this as a barrier for entry.</p>
           <p>We want this league to have as many teams as possible. We will therefore create a dual buy-in tier system. This will allow for a lower buy-in for more casual owners and a higher buy-in for those that want to gamble.</p>
           <p></p>
@@ -249,7 +251,7 @@
       </v-expansion-panel>
       <v-expansion-panel>
       <v-expansion-panel-header class="grey--text">Tanking and Collusion</v-expansion-panel-header>
-        <v-expansion-panel-content>
+        <v-expansion-panel-content> <br/>
           <p>We define tanking as making decisions designed primarily to increase the chances of losing while not providing a substantiative benefit to your team beyond improving draft picks. Tanking is damaging to league morale, and it will not be tolerated. If the majority of the league believes a transaction is intentionally designed to tank, the commissioner can reject the transaction. Repeated issues will result in forfeiting of team.</p>
           <p>Collusion is defined as one team making a move that benefits another team without improving their own position. This is much more common in redraft leagues than dynasty, but it is possible. Examples that are more subtle include things like player “rentals” where you trade a player to someone competing and they later trade that player back as well as a draft pick. Transactions like this are not allowed. However, as noted above, trades intended to free up cap space are allowed.</p>
         </v-expansion-panel-content>
@@ -265,7 +267,7 @@ export default {
   name: "RuleSummary.vue",
   data () {
     return {
-
+      panel: []
     }
   }
 }

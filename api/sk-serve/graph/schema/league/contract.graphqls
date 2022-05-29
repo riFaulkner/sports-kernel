@@ -1,0 +1,51 @@
+# Contract types and inputs
+type Contract {
+    id: ID!
+    playerId: String!
+    player: PlayerNFL!
+    teamId: String!
+    currentYear: Int!
+    restructureStatus: ContractRestructureStatus!
+    totalContractValue: Int!
+    totalRemainingValue: Int!
+    contractLength: Int!
+    playerPosition: String
+    contractDetails: [ContractYear!]!
+}
+
+type ContractYear {
+    year: Int!
+    totalAmount: Int!
+    paidAmount: Int!
+    guaranteedAmount: Int!
+}
+
+enum ContractRestructureStatus {
+    ELIGIBLE,
+    INELIGIBLE_FINAL_YEAR,
+    PREVIOUSLY_RESTRUCTURED
+}
+
+input ContractInput {
+    playerId: String!
+    teamId: String!
+    currentYear: Int!
+    restructureStatus: ContractRestructureStatus!
+    totalContractValue: Int
+    totalRemainingValue: Int
+    contractLength: Int
+    playerPosition: String!
+    contractDetails: [ContractYearInput!]!
+}
+
+input ContractYearInput {
+    year: Int!
+    totalAmount: Int!
+    paidAmount: Int!
+    guaranteedAmount: Int!
+}
+
+input ContractRestructureInput {
+    contractId: ID!
+    contractRestructureDetails: [ContractYearInput!]!
+}

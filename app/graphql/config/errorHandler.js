@@ -3,8 +3,7 @@ export default (graphqlError, { store, error, redirect, route }) => {
 
     const { networkError, message, gqlError, graphqlErrors } = graphqlError
 
-    // handle error
-    console.log("what should I do with this error?");
+    this.$store.dispatch('application/alertError', {message: "Unable to load data, please try again later."})
     if (message === "GraphQL error: Access denied") {
         console.log("attempting to dispatch message to global toast")
         store.dispatch("application/alertError", {message: "Unable to load, required permissions not found"});

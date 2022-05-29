@@ -1,6 +1,7 @@
 # Where are all the schema files located? globs are supported eg  src/**/*.graphqls
 schema:
   - graph/schema/**.graphqls
+  - graph/schema/**.graphql
 
 # Where should the generated server code go?
 exec:
@@ -54,3 +55,9 @@ models:
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
+  Contract:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/contract.Contract
+    fields:
+      Player:
+        resolver: true

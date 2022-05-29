@@ -5,6 +5,8 @@ schema {
     mutation: Mutation
 }
 
+directive @hasRole(role: Role!) on FIELD_DEFINITION
+
 type CapUtilizationSummary {
     capUtilization: Int!
     numContracts: Int!
@@ -20,22 +22,12 @@ type Contract {
     playerPosition: String
     restructureStatus: ContractRestructureStatus!
     teamId: String!
-    totalContractValue: Float!
-    totalRemainingValue: Float!
-}
-
-type ContractDetail {
-    currentYearRemainingValue: Float!
-    restructuredContract: Boolean!
-    totalRemainingValue: Float!
-    year1value: Float!
-    year2value: Float!
-    year3Value: Float!
-    year4value: Float!
+    totalContractValue: Int!
+    totalRemainingValue: Int!
 }
 
 type ContractYear {
-    guaranteedAmount: Float!
+    guaranteedAmount: Int!
     paidAmount: Int!
     totalAmount: Int!
     year: Int!
@@ -56,6 +48,7 @@ type Division {
 }
 
 type DraftPick {
+    originalOwnerId: String
     round: Int!
     value: Int
 }
@@ -66,32 +59,39 @@ type DraftYear {
 }
 
 type League {
-    divisions: [Division!]
+    divisions: [Division!]!
     id: ID!
     leagueName: String!
     logoUrl: String!
     startDate: Time!
-    teams: [Team!]
+    teams: [Team!]!
 }
 
 type Mutation {
+    contractActionRestructure(leagueId: ID, restructureDetails: ContractRestructureInput!): Contract!
     createContract(input: ContractInput, leagueId: ID): Contract!
+    createPlayer(input: NewPlayerNFL!): PlayerNFL!
     createTeam(input: NewTeam!, leagueId: ID): Team!
     createUser(input: NewUser!): User!
+    createUserRole(leagueId: ID, newUserRole: NewUserRole): UserRoles!
     updateTeamMetaData(leagueId: ID!, teamId: ID!): Team!
 }
 
 type PlayerNFL {
+    avatar: String!
+    birthday: String!
     id: ID!
     overallRank: Int!
     playerName: String!
     position: String!
-    positionRank: String!
+    positionRank: Int!
     teamNFL: String!
 }
 
 type Query {
+    getUserRoles(userId: ID): [UserRoles]
     league(leagueId: ID): League
+    leagueContracts(leagueId: ID!): [Contract!]
     leagues: [League]
     player(playerId: ID): PlayerNFL!
     players(numOfResults: Int): [PlayerNFL!]
@@ -116,6 +116,12 @@ type TeamAssets {
     draftPicks: [DraftYear]!
 }
 
+type Transaction {
+    occurrenceDate: Int!
+    transactionData: String!
+    transactionType: TransactionType!
+}
+
 type User {
     avatar: String!
     email: String!
@@ -131,11 +137,30 @@ type UserPreferences {
     preferredLeagueId: String
 }
 
+type UserRoles {
+    id: ID!
+    role: String!
+    userId: ID!
+}
+
 enum ContractRestructureStatus {
     ELIGIBLE
-    INELIGIBLE
+    INELIGIBLE_FINAL_YEAR
     PREVIOUSLY_RESTRUCTURED
 }
+
+enum Role {
+    ADMIN
+    LEAGUE_MANAGER
+    LEAGUE_MEMBER
+    TEAM_OWNER
+}
+
+enum TransactionType {
+    CONTRACT_RESTRUCTURE
+}
+
+scalar Time
 
 input ContractInput {
     contractDetails: [ContractYearInput!]!
@@ -145,15 +170,30 @@ input ContractInput {
     playerPosition: String!
     restructureStatus: ContractRestructureStatus!
     teamId: String!
-    totalContractValue: Float
-    totalRemainingValue: Float
+    totalContractValue: Int
+    totalRemainingValue: Int
+}
+
+input ContractRestructureInput {
+    contractId: ID!
+    contractRestructureDetails: [ContractYearInput!]!
 }
 
 input ContractYearInput {
-    guaranteedAmount: Float!
-    paidAmount: Float!
-    totalAmount: Float!
+    guaranteedAmount: Int!
+    paidAmount: Int!
+    totalAmount: Int!
     year: Int!
+}
+
+input NewPlayerNFL {
+    avatar: String
+    birthday: String
+    overallRank: Int
+    playerName: String!
+    position: String!
+    positionRank: Int
+    teamNFL: String
 }
 
 input NewTeam {
@@ -169,5 +209,12 @@ input NewUser {
     ownerName: String!
 }
 
+input NewUserRole {
+    role: String!
+    userId: ID!
+}
 
-scalar Time
+input TransactionInput {
+    transactionData: String!
+    transactionType: TransactionType!
+}

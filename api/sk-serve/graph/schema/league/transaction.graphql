@@ -1,0 +1,14 @@
+type Transaction {
+    transactionType: TransactionType!
+    occurrenceDate: Int!
+    transactionData: String!
+}
+
+enum TransactionType {
+    CONTRACT_RESTRUCTURE
+}
+
+input TransactionInput {
+    transactionType: TransactionType!
+    transactionData: String!
+}

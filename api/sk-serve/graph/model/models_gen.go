@@ -14,54 +14,35 @@ type CapUtilizationSummary struct {
 	NumContracts   int `json:"numContracts"`
 }
 
-type Contract struct {
-	ID                  string                    `json:"id"`
-	PlayerID            string                    `json:"playerId"`
-	Player              *PlayerNfl                `json:"player"`
-	TeamID              string                    `json:"teamId"`
-	CurrentYear         int                       `json:"currentYear"`
-	RestructureStatus   ContractRestructureStatus `json:"restructureStatus"`
-	TotalContractValue  float64                   `json:"totalContractValue"`
-	TotalRemainingValue float64                   `json:"totalRemainingValue"`
-	ContractLength      int                       `json:"contractLength"`
-	PlayerPosition      *string                   `json:"playerPosition"`
-	ContractDetails     []*ContractYear           `json:"contractDetails"`
-}
-
-type ContractDetail struct {
-	RestructuredContract      bool    `json:"restructuredContract"`
-	TotalRemainingValue       float64 `json:"totalRemainingValue"`
-	CurrentYearRemainingValue float64 `json:"currentYearRemainingValue"`
-	Year1value                float64 `json:"year1value"`
-	Year2value                float64 `json:"year2value"`
-	Year3Value                float64 `json:"year3Value"`
-	Year4value                float64 `json:"year4value"`
-}
-
 type ContractInput struct {
 	PlayerID            string                    `json:"playerId"`
 	TeamID              string                    `json:"teamId"`
 	CurrentYear         int                       `json:"currentYear"`
 	RestructureStatus   ContractRestructureStatus `json:"restructureStatus"`
-	TotalContractValue  *float64                  `json:"totalContractValue"`
-	TotalRemainingValue *float64                  `json:"totalRemainingValue"`
+	TotalContractValue  *int                      `json:"totalContractValue"`
+	TotalRemainingValue *int                      `json:"totalRemainingValue"`
 	ContractLength      *int                      `json:"contractLength"`
 	PlayerPosition      string                    `json:"playerPosition"`
 	ContractDetails     []*ContractYearInput      `json:"contractDetails"`
 }
 
+type ContractRestructureInput struct {
+	ContractID                 string               `json:"contractId"`
+	ContractRestructureDetails []*ContractYearInput `json:"contractRestructureDetails"`
+}
+
 type ContractYear struct {
-	Year             int     `json:"year"`
-	TotalAmount      int     `json:"totalAmount"`
-	PaidAmount       int     `json:"paidAmount"`
-	GuaranteedAmount float64 `json:"guaranteedAmount"`
+	Year             int `json:"year"`
+	TotalAmount      int `json:"totalAmount"`
+	PaidAmount       int `json:"paidAmount"`
+	GuaranteedAmount int `json:"guaranteedAmount"`
 }
 
 type ContractYearInput struct {
-	Year             int     `json:"year"`
-	TotalAmount      float64 `json:"totalAmount"`
-	PaidAmount       float64 `json:"paidAmount"`
-	GuaranteedAmount float64 `json:"guaranteedAmount"`
+	Year             int `json:"year"`
+	TotalAmount      int `json:"totalAmount"`
+	PaidAmount       int `json:"paidAmount"`
+	GuaranteedAmount int `json:"guaranteedAmount"`
 }
 
 type ContractsMetadata struct {
@@ -79,8 +60,9 @@ type Division struct {
 }
 
 type DraftPick struct {
-	Round int  `json:"round"`
-	Value *int `json:"value"`
+	Round           int     `json:"round"`
+	Value           *int    `json:"value"`
+	OriginalOwnerID *string `json:"originalOwnerId"`
 }
 
 type DraftYear struct {
@@ -177,6 +159,17 @@ type TeamAssets struct {
 	DraftPicks []*DraftYear `json:"draftPicks"`
 }
 
+type Transaction struct {
+	TransactionType TransactionType `json:"transactionType"`
+	OccurrenceDate  int             `json:"occurrenceDate"`
+	TransactionData string          `json:"transactionData"`
+}
+
+type TransactionInput struct {
+	TransactionType TransactionType `json:"transactionType"`
+	TransactionData string          `json:"transactionData"`
+}
+
 type User struct {
 	ID        string `json:"id"`
 	OwnerName string `json:"ownerName"`
@@ -202,19 +195,19 @@ type ContractRestructureStatus string
 
 const (
 	ContractRestructureStatusEligible               ContractRestructureStatus = "ELIGIBLE"
-	ContractRestructureStatusIneligible             ContractRestructureStatus = "INELIGIBLE"
+	ContractRestructureStatusIneligibleFinalYear    ContractRestructureStatus = "INELIGIBLE_FINAL_YEAR"
 	ContractRestructureStatusPreviouslyRestructured ContractRestructureStatus = "PREVIOUSLY_RESTRUCTURED"
 )
 
 var AllContractRestructureStatus = []ContractRestructureStatus{
 	ContractRestructureStatusEligible,
-	ContractRestructureStatusIneligible,
+	ContractRestructureStatusIneligibleFinalYear,
 	ContractRestructureStatusPreviouslyRestructured,
 }
 
 func (e ContractRestructureStatus) IsValid() bool {
 	switch e {
-	case ContractRestructureStatusEligible, ContractRestructureStatusIneligible, ContractRestructureStatusPreviouslyRestructured:
+	case ContractRestructureStatusEligible, ContractRestructureStatusIneligibleFinalYear, ContractRestructureStatusPreviouslyRestructured:
 		return true
 	}
 	return false
@@ -283,5 +276,44 @@ func (e *Role) UnmarshalGQL(v interface{}) error {
 }
 
 func (e Role) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type TransactionType string
+
+const (
+	TransactionTypeContractRestructure TransactionType = "CONTRACT_RESTRUCTURE"
+)
+
+var AllTransactionType = []TransactionType{
+	TransactionTypeContractRestructure,
+}
+
+func (e TransactionType) IsValid() bool {
+	switch e {
+	case TransactionTypeContractRestructure:
+		return true
+	}
+	return false
+}
+
+func (e TransactionType) String() string {
+	return string(e)
+}
+
+func (e *TransactionType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = TransactionType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid TransactionType", str)
+	}
+	return nil
+}
+
+func (e TransactionType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }

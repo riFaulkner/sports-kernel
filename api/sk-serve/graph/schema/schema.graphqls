@@ -41,32 +41,16 @@ type Query {
   users: [User]
   leagues: [League]
   league(leagueId: ID): League
+  leagueContracts(leagueId: ID!): [Contract!] @hasRole(role: LEAGUE_MEMBER)
   teams(leagueId: ID): [Team!] @hasRole(role: LEAGUE_MEMBER)
   teamById(leagueId: ID!, teamId: ID!): Team @hasRole(role: LEAGUE_MEMBER)
-  teamContracts(leagueId: ID, teamId: ID): [Contract!]
+  teamContracts(leagueId: ID, teamId: ID): [Contract!] @hasRole(role: LEAGUE_MEMBER)
   players(numOfResults: Int): [PlayerNFL!]
   player(playerId: ID): PlayerNFL!
   posts(leagueId: ID!, numOfResults: Int): [LeaguePost!]
   comments(leagueId: ID!, postId: ID!): [PostComment!]
   userPreferences(userId: ID): UserPreferences
   getUserRoles(userId:ID): [UserRoles]
-}
-
-#Mutations and Inputs
-input NewUser {
-  ownerName: String!
-  email: String!
-  avatar: String!
-}
-
-input NewPlayerNFL {
-  playerName: String!
-  position: String!
-  positionRank: Int
-  teamNFL: String
-  birthday: String
-  avatar: String
-  overallRank: Int
 }
 
 input NewPostComment {
@@ -89,4 +73,5 @@ type Mutation {
   createPost(leagueId: ID!, input: NewLeaguePost): LeaguePost!
   addComment(leagueId: ID!, postId: ID!, input: NewPostComment): PostComment!
   createUserRole(leagueId: ID, newUserRole: NewUserRole): UserRoles!
+  contractActionRestructure(leagueId: ID, restructureDetails: ContractRestructureInput!): Contract!
 }

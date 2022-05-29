@@ -47,6 +47,10 @@
         </v-card-text>
       </v-card>
     </v-tab-item>
+    <v-tab-item>
+      <league-management-tool :league-id="league.id"/>
+    </v-tab-item>
+
 
   </v-tabs-items>
   <div v-else class="text-center">
@@ -57,12 +61,13 @@
 </template>
 
 <script>
-import ContractsOverview from "@/components/league/ContractsOverview";
+import ContractsOverview from "@/components/league/contracts/ContractsOverview";
+import LeagueManagementTool from "~/components/league/LeagueManagementTool";
 import RuleSummary from "@/components/league/RuleSummary";
 
 export default {
   name: "league-home.vue",
-  components: {ContractsOverview, RuleSummary},
+  components: {LeagueManagementTool, ContractsOverview, RuleSummary},
   middleware: 'auth',
   data: function () {
     return {
@@ -81,8 +86,9 @@ export default {
   },
   created() {
     this.$store.dispatch("application/updateSubmenu", [
-      'Standings', 'Match up', 'Contracts Overview', 'Trade Center', 'Rules', 'Discussion'
+      'Standings', 'Match up', 'Contracts Overview', 'Trade Center', 'Rules', 'Discussion', 'League Management'
     ]);
+    this.$store.dispatch("application/updateActiveTab", "Rules")
   },
   destroyed() {
     this.$store.dispatch("application/updateSubmenu", null);

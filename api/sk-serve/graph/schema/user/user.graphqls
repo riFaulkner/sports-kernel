@@ -5,7 +5,6 @@ type User {
     avatar: String!
 }
 
-
 type UserPreferences {
     id: ID!
     ownerName: String!
@@ -18,4 +17,11 @@ type UserRoles {
     id: ID!
     userId: ID!
     role: String!
+}
+
+#Mutations and Inputs
+input NewUser {
+    ownerName: String!
+    email: String!
+    avatar: String!
 }
