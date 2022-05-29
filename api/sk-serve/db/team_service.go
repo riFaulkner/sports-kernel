@@ -13,7 +13,6 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
-const leagueCollection = "leagues"
 const teamCollection = "teams"
 
 type TeamImpl struct {
@@ -24,7 +23,7 @@ func (u *TeamImpl) GetAll(ctx context.Context, leagueId string) ([]*model.Team, 
 	teams := make([]*model.Team, 0)
 
 	//Create Document Ref - There is no traffic associated with this...
-	league := u.Client.Collection(leagueCollection).Doc(leagueId)
+	league := u.Client.Collection(firestore.LeaguesCollection).Doc(leagueId)
 
 	results, err := league.Collection(teamCollection).Documents(ctx).GetAll()
 
@@ -46,7 +45,7 @@ func (u *TeamImpl) GetAll(ctx context.Context, leagueId string) ([]*model.Team, 
 }
 
 func (u *TeamImpl) GetTeamById(ctx context.Context, leagueId string, teamId string) (*model.Team, error) {
-	league := u.Client.Collection(leagueCollection).Doc(leagueId)
+	league := u.Client.Collection(firestore.LeaguesCollection).Doc(leagueId)
 
 	result, err := league.Collection(teamCollection).Doc(teamId).Get(ctx)
 
@@ -64,7 +63,7 @@ func (u *TeamImpl) GetTeamById(ctx context.Context, leagueId string, teamId stri
 }
 
 func (u *TeamImpl) Create(ctx context.Context, leagueId string, teamInput model.NewTeam) (*model.Team, error) {
-	league := u.Client.Collection("leagues").Doc(leagueId)
+	league := u.Client.Collection(firestore.LeaguesCollection).Doc(leagueId)
 
 	defaultTeamContractsMetadata := generateDefaultTeamContractsMetadata()
 	defaultTeamAssets := generateTeamAssets(teamInput.ID)
@@ -136,7 +135,7 @@ func (u *TeamImpl) UpdateTeamContractMetaData(ctx context.Context, leagueId stri
 
 	teamId := teamContracts[0].TeamID
 
-	league := u.Client.Collection(leagueCollection).Doc(leagueId)
+	league := u.Client.Collection(firestore.LeaguesCollection).Doc(leagueId)
 
 	_, err := league.Collection(teamCollection).Doc(teamId).Update(ctx, []firestoreMain.Update{
 		{

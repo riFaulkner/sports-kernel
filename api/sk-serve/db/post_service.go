@@ -16,8 +16,10 @@ type PostImpl struct {
 }
 
 func (p *PostImpl) GetAll(ctx context.Context, leagueId string, numberOfResults *int) ([]*model.LeaguePost, error) {
-
-	postref := p.Client.Collection(leagueCollection).Doc(leagueId).Collection("posts")
+	postref := p.Client.
+		Collection(appFirestore.LeaguesCollection).
+		Doc(leagueId).
+		Collection(appFirestore.PostCollection)
 
 	posts := make([]*model.LeaguePost, 0)
 
@@ -53,7 +55,12 @@ func (p *PostImpl) GetAll(ctx context.Context, leagueId string, numberOfResults 
 }
 
 func (p *PostImpl) GetPostById(ctx context.Context, leagueId *string, postId *string) (*model.LeaguePost, error) {
-	result, err := p.Client.Collection(*leagueId).Doc(*postId).Get(ctx)
+	result, err := p.Client.
+		Collection(appFirestore.LeaguesCollection).
+		Doc(*leagueId).
+		Collection(appFirestore.PostCollection).
+		Doc(*postId).
+		Get(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +76,10 @@ func (p *PostImpl) GetPostById(ctx context.Context, leagueId *string, postId *st
 }
 
 func (p *PostImpl) Create(ctx context.Context, leagueId string, inputPost model.NewLeaguePost) (*model.LeaguePost, error) {
-	posts := p.Client.Collection(leagueCollection).Doc(leagueId).Collection("posts")
+	posts := p.Client.
+		Collection(appFirestore.LeaguesCollection).
+		Doc(leagueId).
+		Collection(appFirestore.PostCollection)
 
 	titlehash := hashTitle(inputPost.Title)
 
@@ -91,7 +101,11 @@ func (p *PostImpl) Create(ctx context.Context, leagueId string, inputPost model.
 }
 
 func (p *PostImpl) AddComment(ctx context.Context, leagueId string, postId string, inputComment model.NewPostComment) (*model.PostComment, error) {
-	post := p.Client.Collection(collectionLeague).Doc(leagueId).Collection("posts").Doc(postId)
+	post := p.Client.
+		Collection(collectionLeague).
+		Doc(leagueId).
+		Collection(appFirestore.PostCollection).
+		Doc(postId)
 
 	newComment := model.PostComment{
 		Author:      inputComment.Author,
@@ -110,7 +124,11 @@ func (p *PostImpl) AddComment(ctx context.Context, leagueId string, postId strin
 }
 
 func (p *PostImpl) GetComments(ctx context.Context, leagueId string, postId string) ([]*model.PostComment, error) {
-	post := p.Client.Collection(collectionLeague).Doc(leagueId).Collection("posts").Doc(postId)
+	post := p.Client.
+		Collection(collectionLeague).
+		Doc(leagueId).
+		Collection(appFirestore.PostCollection).
+		Doc(postId)
 
 	comments := make([]*model.PostComment, 0)
 
