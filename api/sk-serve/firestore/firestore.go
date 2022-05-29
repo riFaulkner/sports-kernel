@@ -8,8 +8,10 @@ import (
 )
 
 const (
+	CommentsCollection        = "comments"
 	LeaguesCollection         = "leagues"
 	PlayerCollection          = "playersNFL"
+	PostCollection            = "posts"
 	PlayerContractsCollection = "playerContracts"
 	TransactionCollection     = "transactions"
 	UserRolesCollection       = "user-roles"

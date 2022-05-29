@@ -12,6 +12,22 @@ type PlayerNFL {
   avatar: String!
 }
 
+type LeaguePost {
+  id: ID!
+  author: String!
+  title: String!
+  postDate: Time!
+  content: String!
+  comments: [PostComment!]
+}
+
+type PostComment {
+  id: ID!
+  author: String!
+  content: String!
+  commentDate: Time!
+}
+
 directive @hasRole(role: Role!) on FIELD_DEFINITION
 
 enum Role {
@@ -31,8 +47,21 @@ type Query {
   teamContracts(leagueId: ID, teamId: ID): [Contract!] @hasRole(role: LEAGUE_MEMBER)
   players(numOfResults: Int): [PlayerNFL!]
   player(playerId: ID): PlayerNFL!
+  posts(leagueId: ID!, numOfResults: Int): [LeaguePost!]
+  comments(leagueId: ID!, postId: ID!): [PostComment!]
   userPreferences(userId: ID): UserPreferences
   getUserRoles(userId:ID): [UserRoles]
+}
+
+input NewPostComment {
+  author: String!
+  content: String!
+}
+
+input NewLeaguePost {
+  author: String!
+  title: String!
+  content: String!
 }
 
 type Mutation {
@@ -41,6 +70,8 @@ type Mutation {
   updateTeamMetaData(leagueId: ID!, teamId: ID!): Team!
   createContract(leagueId: ID, input: ContractInput): Contract!
   createPlayer(input: NewPlayerNFL!): PlayerNFL!
+  createPost(leagueId: ID!, input: NewLeaguePost): LeaguePost!
+  addComment(leagueId: ID!, postId: ID!, input: NewPostComment): PostComment!
   createUserRole(leagueId: ID, newUserRole: NewUserRole): UserRoles!
   contractActionRestructure(leagueId: ID, restructureDetails: ContractRestructureInput!): Contract!
 }
