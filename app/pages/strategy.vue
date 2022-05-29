@@ -9,7 +9,6 @@
 </template>
 
 <script>
-import LeagueManagementTool from "~/components/league/LeagueManagementTool";
 export default {
   components: {LeagueManagementTool},
   data: function () {
