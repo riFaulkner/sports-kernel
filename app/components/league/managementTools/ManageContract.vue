@@ -10,7 +10,11 @@
       />
     </v-card-text>
     <div v-else>
-      <contract-management-card :contract=selectedContract :league-id="leagueId"/>
+      <contract-management-card
+          :contract=selectedContract
+          :league-id="leagueId"
+          @contractRestructured="contractRestructured"
+      />
     </div>
   </v-card>
 
@@ -41,6 +45,9 @@ export default {
     contractDeselected() {
       this.selectedContract = null
     },
+    contractRestructured() {
+      this.selectedContract = null
+    }
   }
 }
 </script>

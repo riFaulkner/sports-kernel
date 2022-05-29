@@ -9,13 +9,22 @@ export const CONTRACT_RESTRUCTURE = gql`
             restructureDetails: $restructureDetails
         ) {
             id
+            playerId
+            player {
+                playerName
+                teamNFL
+                position
+            }
+            contractLength
+            totalContractValue
+            restructureStatus
+            currentYear
             contractDetails {
                 year
                 totalAmount
-                paidAmount
                 guaranteedAmount
+                paidAmount
             }
-            totalContractValue
         }
     }
     `

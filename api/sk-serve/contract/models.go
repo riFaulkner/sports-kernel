@@ -17,6 +17,6 @@ type Contract struct {
 }
 
 type HistoryRecord struct {
-	DateUpdated     int64
-	ContractDetails []*model.ContractYear
+	DateUpdated     int64                 `json:"dateUpdated"`
+	ContractDetails []*model.ContractYear `json:"contractDetails"`
 }

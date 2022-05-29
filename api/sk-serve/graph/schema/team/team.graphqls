@@ -37,6 +37,7 @@ type DraftYear {
 type DraftPick {
     round: Int!
     value: Int
+    originalOwnerId: String
 }
 
 type CapUtilizationSummary {

@@ -107,38 +107,38 @@
 
         <v-card-text>
           <v-form
-            v-model="formValidation"
-            >
+              v-model="formValidation"
+          >
 
-          <v-container>
-            <v-row>
-              <v-col
-                  cols="12"
-              >
-                Original Total: ${{ contract.totalContractValue.toLocaleString() }} <br/>
-                Restructure Total: <strong :class="restructureTotalClass">
-                ${{ restructureTotal.toLocaleString() }}</strong>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col
-                  cols="3"
-                  v-for="year in tempContractRestructure"
-                  :key="year.year"
-              >
-                <v-text-field
-                    :label=getRestructureTextFieldLabel(year.year)
-                    :value="year.totalAmount"
-                    v-model="year.totalAmount"
-                    :disabled="year.year < contract.currentYear"
-                    type="number"
-                    :rules="restructureRules"
+            <v-container>
+              <v-row>
+                <v-col
+                    cols="12"
                 >
-                </v-text-field>
+                  Original Total: ${{ contract.totalContractValue.toLocaleString() }} <br/>
+                  Restructure Total: <strong :class="restructureTotalClass">
+                  ${{ restructureTotal.toLocaleString() }}</strong>
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col
+                    cols="3"
+                    v-for="year in tempContractRestructure"
+                    :key="year.year"
+                >
+                  <v-text-field
+                      :label=getRestructureTextFieldLabel(year.year)
+                      :value="year.totalAmount"
+                      v-model="year.totalAmount"
+                      :disabled="year.year < contract.currentYear"
+                      type="number"
+                      :rules="restructureRules"
+                  >
+                  </v-text-field>
 
-              </v-col>
-            </v-row>
-          </v-container>
+                </v-col>
+              </v-row>
+            </v-container>
           </v-form>
         </v-card-text>
 
@@ -169,6 +169,7 @@
 
 <script>
 import {CONTRACT_RESTRUCTURE} from "@/graphql/queries/contract/contractsGraphQL";
+import {LEAGUE_CONTRACTS} from "@/graphql/queries/league/leagueGraphQL";
 
 export default {
   name: "ContractManagementCard",
@@ -292,21 +293,40 @@ export default {
 
       this.actionToPerform = () => {
         this.$apollo.mutate({
-              mutation: CONTRACT_RESTRUCTURE,
-              variables: {
-                  leagueId: this.leagueId,
-                  restructureDetails: contractRestructure,
-              }
+          mutation: CONTRACT_RESTRUCTURE,
+          variables: {
+            leagueId: this.leagueId,
+            restructureDetails: contractRestructure,
+          },
+          // Update the cache with the result
+          // The query will be updated with the optimistic response -- actually I removed the optimistic response...
+          // and then with the real result of the mutation
+          update: (store, {data: {contractActionRestructure}}) => {
+            const allContractsQuery = {
+              query: LEAGUE_CONTRACTS,
+              variables: {leagueId: this.leagueId}
+            }
+            // Read the data from our cache for this query.
+            const {leagueContracts} = store.readQuery(allContractsQuery)
+
+            // Filter out the old version of this tag, and add a new one to the end
+            // We don't want to modify the object returned by readQuery directly:
+            // https://www.apollographql.com/docs/react/caching/cache-interaction/
+            const contractsCopy = leagueContracts.slice().filter(contract => contract.id !== contractRestructure.contractId)
+            contractsCopy.push(contractActionRestructure)
+
+            // Write our data back to the cache.
+            store.writeQuery({...allContractsQuery, data: {leagueContracts: contractsCopy}})
+          },
         }).then(() => {
           this.$store.dispatch("application/alertSuccess", {message: "Contract restructured"})
+          this.$emit("contractRestructured", {contractId: contractRestructure.contractId})
+        }).catch((data) => {
+          this.$store.dispatch("application/alertError", {message: "Failed to restructure contract"})
+          console.error("Failed to restructure contract ", data)
         })
-            .catch((data) => {
-              this.$store.dispatch("application/alertError", {message: "Failed to restructure contract"})
-              console.error("Failed to restructure contract ", data)
-            })
       }
 
-      // open up the confirmation dialog
       this.contractRestructureDialog = false
       this.confirmationDialog = true
     }

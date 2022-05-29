@@ -183,11 +183,11 @@ func generateTeamAssets(teamID string) *model.TeamAssets {
 		draftYear := model.DraftYear{
 			Year: year + i,
 			Picks: []*model.DraftPick{
-				{Round: 1, Value: nil, OriginalOwnerID: teamID},
-				{Round: 2, Value: nil, OriginalOwnerID: teamID},
-				{Round: 3, Value: nil, OriginalOwnerID: teamID},
-				{Round: 4, Value: nil, OriginalOwnerID: teamID},
-				{Round: 5, Value: nil, OriginalOwnerID: teamID},
+				{Round: 1, Value: nil, OriginalOwnerID: &teamID},
+				{Round: 2, Value: nil, OriginalOwnerID: &teamID},
+				{Round: 3, Value: nil, OriginalOwnerID: &teamID},
+				{Round: 4, Value: nil, OriginalOwnerID: &teamID},
+				{Round: 5, Value: nil, OriginalOwnerID: &teamID},
 			},
 		}
 		draftYears = append(draftYears, &draftYear)

@@ -196,6 +196,7 @@ func (u *ContractImpl) RestructureContract(ctx context.Context, leagueID *string
 
 	contractValue.ContractDetails = newContractDetails
 	contractValue.RestructureStatus = model.ContractRestructureStatusPreviouslyRestructured
+	contractValue.ContractHistory = contractHistory
 
 	// Save the new contract
 	u.Client.Collection(firestore.LeaguesCollection).Doc(*leagueID).Collection(firestore.PlayerContractsCollection).Doc(restructureDetails.ContractID).Set(ctx, contractValue)
