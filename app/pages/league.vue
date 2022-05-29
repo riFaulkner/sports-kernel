@@ -62,7 +62,7 @@
 
 <script>
 import ContractsOverview from "@/components/league/contracts/ContractsOverview";
-import LeagueManagementTool from "~/components/league/LeagueManagementTool";
+import LeagueManagementTool from "@/components/league/managementTools/LeagueManagementTool";
 import RuleSummary from "@/components/league/RuleSummary";
 
 export default {

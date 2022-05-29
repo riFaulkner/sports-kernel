@@ -61,7 +61,6 @@
       </v-card>
     </template>
 
-
     <v-dialog
         v-model="confirmationDialog"
         max-width="500px"
@@ -109,7 +108,6 @@
           <v-form
               v-model="formValidation"
           >
-
             <v-container>
               <v-row>
                 <v-col
@@ -122,7 +120,8 @@
               </v-row>
               <v-row>
                 <v-col
-                    cols="3"
+                    md="3"
+                    cols="12"
                     v-for="year in tempContractRestructure"
                     :key="year.year"
                 >

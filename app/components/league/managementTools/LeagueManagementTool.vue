@@ -1,7 +1,7 @@
 <template>
   <v-container fluid>
     <v-row>
-      <v-col cols="4" offset="4">
+      <v-col md="4"  >
         <v-card>
           <v-select
               :items="toolTypes"
@@ -12,15 +12,15 @@
           />
         </v-card>
       </v-col>
-      <v-col cols="4"/>
 
+    </v-row>
+    <v-row>
       <v-col>
         <manage-contract
             v-if="selectedTool === 'manageContract'"
             :league-id="leagueId"
         />
       </v-col>
-
     </v-row>
   </v-container>
 
