@@ -63,7 +63,6 @@
 <script>
 import ContractsOverview from "@/components/league/contracts/ContractsOverview";
 import LeagueManagementTool from "~/components/league/LeagueManagementTool";
-import ContractsOverview from "@/components/league/ContractsOverview";
 import RuleSummary from "@/components/league/RuleSummary";
 
 export default {
@@ -89,6 +88,7 @@ export default {
     this.$store.dispatch("application/updateSubmenu", [
       'Standings', 'Match up', 'Contracts Overview', 'Trade Center', 'Rules', 'Discussion', 'League Management'
     ]);
+    this.$store.dispatch("application/updateActiveTab", "Rules")
   },
   destroyed() {
     this.$store.dispatch("application/updateSubmenu", null);

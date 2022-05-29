@@ -5,7 +5,6 @@
         :mini-variant=false
         :clipped=true
         disable-resize-watcher
-        disable-route-watcher
         fixed
         app
     >
