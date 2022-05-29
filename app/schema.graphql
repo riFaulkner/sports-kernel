@@ -22,22 +22,12 @@ type Contract {
     playerPosition: String
     restructureStatus: ContractRestructureStatus!
     teamId: String!
-    totalContractValue: Float!
-    totalRemainingValue: Float!
-}
-
-type ContractDetail {
-    currentYearRemainingValue: Float!
-    restructuredContract: Boolean!
-    totalRemainingValue: Float!
-    year1value: Float!
-    year2value: Float!
-    year3Value: Float!
-    year4value: Float!
+    totalContractValue: Int!
+    totalRemainingValue: Int!
 }
 
 type ContractYear {
-    guaranteedAmount: Float!
+    guaranteedAmount: Int!
     paidAmount: Int!
     totalAmount: Int!
     year: Int!
@@ -58,6 +48,7 @@ type Division {
 }
 
 type DraftPick {
+    originalOwnerId: String
     round: Int!
     value: Int
 }
@@ -77,6 +68,7 @@ type League {
 }
 
 type Mutation {
+    contractActionRestructure(leagueId: ID, restructureDetails: ContractRestructureInput!): Contract!
     createContract(input: ContractInput, leagueId: ID): Contract!
     createPlayer(input: NewPlayerNFL!): PlayerNFL!
     createTeam(input: NewTeam!, leagueId: ID): Team!
@@ -124,6 +116,12 @@ type TeamAssets {
     draftPicks: [DraftYear]!
 }
 
+type Transaction {
+    occurrenceDate: Int!
+    transactionData: String!
+    transactionType: TransactionType!
+}
+
 type User {
     avatar: String!
     email: String!
@@ -147,7 +145,7 @@ type UserRoles {
 
 enum ContractRestructureStatus {
     ELIGIBLE
-    INELIGIBLE
+    INELIGIBLE_FINAL_YEAR
     PREVIOUSLY_RESTRUCTURED
 }
 
@@ -156,6 +154,10 @@ enum Role {
     LEAGUE_MANAGER
     LEAGUE_MEMBER
     TEAM_OWNER
+}
+
+enum TransactionType {
+    CONTRACT_RESTRUCTURE
 }
 
 scalar Time
@@ -168,14 +170,19 @@ input ContractInput {
     playerPosition: String!
     restructureStatus: ContractRestructureStatus!
     teamId: String!
-    totalContractValue: Float
-    totalRemainingValue: Float
+    totalContractValue: Int
+    totalRemainingValue: Int
+}
+
+input ContractRestructureInput {
+    contractId: ID!
+    contractRestructureDetails: [ContractYearInput!]!
 }
 
 input ContractYearInput {
-    guaranteedAmount: Float!
-    paidAmount: Float!
-    totalAmount: Float!
+    guaranteedAmount: Int!
+    paidAmount: Int!
+    totalAmount: Int!
     year: Int!
 }
 
@@ -205,4 +212,9 @@ input NewUser {
 input NewUserRole {
     role: String!
     userId: ID!
+}
+
+input TransactionInput {
+    transactionData: String!
+    transactionType: TransactionType!
 }

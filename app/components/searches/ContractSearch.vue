@@ -111,12 +111,10 @@ export default {
       return item.player.playerName.toLowerCase().includes(search.toLowerCase());
     },
     contractSelected(contract, select) {
-      console.log("Being selected")
       select(true)
       this.$emit('contract-selected', {contract:contract})
     },
     contractDeselected(contract, select) {
-      console.log("Being deselected")
       select(false)
       this.$emit('contract-deselected', {contract:contract})
     }

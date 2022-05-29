@@ -157,6 +157,12 @@ type ComplexityRoot struct {
 		DraftPicks func(childComplexity int) int
 	}
 
+	Transaction struct {
+		OccurrenceDate  func(childComplexity int) int
+		TransactionData func(childComplexity int) int
+		TransactionType func(childComplexity int) int
+	}
+
 	User struct {
 		Avatar    func(childComplexity int) int
 		Email     func(childComplexity int) int
@@ -790,6 +796,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TeamAssets.DraftPicks(childComplexity), true
 
+	case "Transaction.occurrenceDate":
+		if e.complexity.Transaction.OccurrenceDate == nil {
+			break
+		}
+
+		return e.complexity.Transaction.OccurrenceDate(childComplexity), true
+
+	case "Transaction.transactionData":
+		if e.complexity.Transaction.TransactionData == nil {
+			break
+		}
+
+		return e.complexity.Transaction.TransactionData(childComplexity), true
+
+	case "Transaction.transactionType":
+		if e.complexity.Transaction.TransactionType == nil {
+			break
+		}
+
+		return e.complexity.Transaction.TransactionType(childComplexity), true
+
 	case "User.avatar":
 		if e.complexity.User.Avatar == nil {
 			break
@@ -962,7 +989,7 @@ type ContractYear {
 
 enum ContractRestructureStatus {
     ELIGIBLE,
-    INELIGIBLE,
+    INELIGIBLE_FINAL_YEAR,
     PREVIOUSLY_RESTRUCTURED
 }
 
@@ -1093,7 +1120,7 @@ type DraftYear {
 type DraftPick {
     round: Int!
     value: Int
-    originalOwnerId: ID!
+    originalOwnerId: String
 }
 
 type CapUtilizationSummary {
@@ -1126,6 +1153,20 @@ input NewUser {
     ownerName: String!
     email: String!
     avatar: String!
+}`, BuiltIn: false},
+	{Name: "graph/schema/league/transaction.graphql", Input: `type Transaction {
+    transactionType: TransactionType!
+    occurrenceDate: Int!
+    transactionData: String!
+}
+
+enum TransactionType {
+    CONTRACT_RESTRUCTURE
+}
+
+input TransactionInput {
+    transactionType: TransactionType!
+    transactionData: String!
 }`, BuiltIn: false},
 	{Name: "graph/schema/player/player.graphql", Input: `input NewPlayerNFL {
     playerName: String!
@@ -2766,14 +2807,11 @@ func (ec *executionContext) _DraftPick_originalOwnerId(ctx context.Context, fiel
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_DraftPick_originalOwnerId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2783,7 +2821,7 @@ func (ec *executionContext) fieldContext_DraftPick_originalOwnerId(ctx context.C
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5338,6 +5376,138 @@ func (ec *executionContext) fieldContext_TeamAssets_draftPicks(ctx context.Conte
 				return ec.fieldContext_DraftYear_picks(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type DraftYear", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Transaction_transactionType(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Transaction_transactionType(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TransactionType, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.TransactionType)
+	fc.Result = res
+	return ec.marshalNTransactionType2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐTransactionType(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Transaction_transactionType(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Transaction",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type TransactionType does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Transaction_occurrenceDate(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Transaction_occurrenceDate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.OccurrenceDate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Transaction_occurrenceDate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Transaction",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Transaction_transactionData(ctx context.Context, field graphql.CollectedField, obj *model.Transaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Transaction_transactionData(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TransactionData, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Transaction_transactionData(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Transaction",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -8005,6 +8175,37 @@ func (ec *executionContext) unmarshalInputNewUserRole(ctx context.Context, obj i
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputTransactionInput(ctx context.Context, obj interface{}) (model.TransactionInput, error) {
+	var it model.TransactionInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "transactionType":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("transactionType"))
+			it.TransactionType, err = ec.unmarshalNTransactionType2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐTransactionType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "transactionData":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("transactionData"))
+			it.TransactionData, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -8406,9 +8607,6 @@ func (ec *executionContext) _DraftPick(ctx context.Context, sel ast.SelectionSet
 
 			out.Values[i] = innerFunc(ctx)
 
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -9105,6 +9303,57 @@ func (ec *executionContext) _TeamAssets(ctx context.Context, sel ast.SelectionSe
 		case "draftPicks":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._TeamAssets_draftPicks(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var transactionImplementors = []string{"Transaction"}
+
+func (ec *executionContext) _Transaction(ctx context.Context, sel ast.SelectionSet, obj *model.Transaction) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, transactionImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Transaction")
+		case "transactionType":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Transaction_transactionType(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "occurrenceDate":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Transaction_occurrenceDate(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "transactionData":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Transaction_transactionData(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -10192,6 +10441,16 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNTransactionType2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐTransactionType(ctx context.Context, v interface{}) (model.TransactionType, error) {
+	var res model.TransactionType
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNTransactionType2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐTransactionType(ctx context.Context, sel ast.SelectionSet, v model.TransactionType) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) marshalNUser2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {

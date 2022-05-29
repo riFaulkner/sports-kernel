@@ -10,7 +10,7 @@
       />
     </v-card-text>
     <div v-else>
-      <contract-management-card :contract=selectedContract />
+      <contract-management-card :contract=selectedContract :league-id="leagueId"/>
     </div>
   </v-card>
 

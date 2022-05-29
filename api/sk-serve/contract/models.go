@@ -13,7 +13,7 @@ type Contract struct {
 	ContractLength      int                             `json:"contractLength"`
 	PlayerPosition      *string                         `json:"playerPosition"`
 	ContractDetails     []*model.ContractYear           `json:"contractDetails"`
-	ContractHistory     []*HistoryRecord
+	ContractHistory     []*HistoryRecord                `json:"contractHistory"`
 }
 
 type HistoryRecord struct {

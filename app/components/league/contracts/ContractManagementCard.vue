@@ -106,12 +106,18 @@
         </v-card-subtitle>
 
         <v-card-text>
+          <v-form
+            v-model="formValidation"
+            >
+
           <v-container>
             <v-row>
               <v-col
-                cols="12"
-                >
-                Restructure Total: <strong :class="restructureTotalClass"> ${{restructureTotal.toLocaleString()}}</strong>
+                  cols="12"
+              >
+                Original Total: ${{ contract.totalContractValue.toLocaleString() }} <br/>
+                Restructure Total: <strong :class="restructureTotalClass">
+                ${{ restructureTotal.toLocaleString() }}</strong>
               </v-col>
             </v-row>
             <v-row>
@@ -133,7 +139,7 @@
               </v-col>
             </v-row>
           </v-container>
-
+          </v-form>
         </v-card-text>
 
         <v-card-actions>
@@ -148,6 +154,7 @@
           <v-btn
               @click="submitRestructure"
               color="primary"
+              :disabled="!validateRestructure"
               text
           >
             Submit
@@ -161,11 +168,17 @@
 </template>
 
 <script>
+import {CONTRACT_RESTRUCTURE} from "@/graphql/queries/contract/contractsGraphQL";
+
 export default {
   name: "ContractManagementCard",
   props: {
     contract: {
       type: Object,
+      required: true
+    },
+    leagueId: {
+      type: String,
       required: true
     }
   },
@@ -174,6 +187,7 @@ export default {
       actionToPerform: null,
       confirmationDialog: false,
       contractRestructureDialog: false,
+      formValidation: false,
       headers: [
         {text: "Year", value: "year"},
         {text: "Total", value: "totalAmount"},
@@ -187,7 +201,7 @@ export default {
       ],
       maxVal: (this.contract.contractDetails[0].totalAmount * 2),
       minVal: (this.contract.contractDetails[0].totalAmount * .50),
-      tempContractRestructure: this.contract.contractDetails,
+      tempContractRestructure: JSON.parse(JSON.stringify(this.contract.contractDetails)),
     }
   },
   computed: {
@@ -196,16 +210,42 @@ export default {
     },
     restructureTotal() {
       let total = 0
-      for (let i=0; i< this.tempContractRestructure.length; i++) {
-        total += this.tempContractRestructure[i].totalAmount
+      for (let i = 0; i < this.tempContractRestructure.length; i++) {
+        total += parseInt(this.tempContractRestructure[i].totalAmount)
       }
       return total
     },
-    restructureTotalClass(){
-      if (this.restructureTotal  === this.contract.totalValue){
-        return "text--success"
+    validateRestructureTotal() {
+      const restructureTotalValue = this.restructureTotal;
+      const totalValue = this.contract.totalContractValue;
+
+      return totalValue === restructureTotalValue
+    },
+    validateRestructure() {
+      if (this.validateRestructureTotal && this.formValidation) {
+        // Contract year values to not match the original contract details (a change was actually made)
+        const originalContractDetails = this.contract.contractDetails
+        let hasChange = false
+
+        for (let i = 0; i < originalContractDetails.length; i++) {
+          if (hasChange) continue
+          const originalYearTotal = parseInt(originalContractDetails[i].totalAmount)
+          const newYearTotal = parseInt(this.tempContractRestructure[i].totalAmount)
+
+          if (originalYearTotal !== newYearTotal) {
+            hasChange = true
+          }
+        }
+
+        return hasChange
       }
-      return "text--error"
+      return false
+    },
+    restructureTotalClass() {
+      if (this.validateRestructureTotal) {
+        return "success--text"
+      }
+      return "error--text"
     }
   },
   methods: {
@@ -214,7 +254,7 @@ export default {
       this.confirmationDialog = false
       this.$store.dispatch("application/alertInfo", {message: "Action canceled"})
     },
-    getRestructureTextFieldLabel(year){
+    getRestructureTextFieldLabel(year) {
       return `Year: ${year}`
     },
     performConfirmedAction() {
@@ -228,8 +268,8 @@ export default {
       this.confirmationDialog = false
     },
     resetRestructureDialog() {
-      this.tempContractRestructure = this.contract.contractDetails
       this.contractRestructureDialog = false
+      this.tempContractRestructure = JSON.parse(JSON.stringify(this.contract.contractDetails))
     },
     restructureContract() {
       if (!this.canRestructure) {
@@ -238,11 +278,32 @@ export default {
       this.contractRestructureDialog = true
     },
     submitRestructure() {
-      // generate the function call to make
+      // Todo: generate the function call to make
 
       // load function call into the action to perform data field
+      const contractRestructure = {
+        contractId: this.contract.id,
+        contractRestructureDetails: this.tempContractRestructure
+      }
+
+      contractRestructure.contractRestructureDetails.forEach((year) => {
+        year.guaranteedAmount = year.totalAmount
+      });
+
       this.actionToPerform = () => {
-        alert("Testing 123 perfoming an action")
+        this.$apollo.mutate({
+              mutation: CONTRACT_RESTRUCTURE,
+              variables: {
+                  leagueId: this.leagueId,
+                  restructureDetails: contractRestructure,
+              }
+        }).then(() => {
+          this.$store.dispatch("application/alertSuccess", {message: "Contract restructured"})
+        })
+            .catch((data) => {
+              this.$store.dispatch("application/alertError", {message: "Failed to restructure contract"})
+              console.error("Failed to restructure contract ", data)
+            })
       }
 
       // open up the confirmation dialog

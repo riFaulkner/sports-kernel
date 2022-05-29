@@ -60,9 +60,9 @@ type Division struct {
 }
 
 type DraftPick struct {
-	Round           int    `json:"round"`
-	Value           *int   `json:"value"`
-	OriginalOwnerID string `json:"originalOwnerId"`
+	Round           int     `json:"round"`
+	Value           *int    `json:"value"`
+	OriginalOwnerID *string `json:"originalOwnerId"`
 }
 
 type DraftYear struct {
@@ -132,6 +132,17 @@ type TeamAssets struct {
 	DraftPicks []*DraftYear `json:"draftPicks"`
 }
 
+type Transaction struct {
+	TransactionType TransactionType `json:"transactionType"`
+	OccurrenceDate  int             `json:"occurrenceDate"`
+	TransactionData string          `json:"transactionData"`
+}
+
+type TransactionInput struct {
+	TransactionType TransactionType `json:"transactionType"`
+	TransactionData string          `json:"transactionData"`
+}
+
 type User struct {
 	ID        string `json:"id"`
 	OwnerName string `json:"ownerName"`
@@ -157,19 +168,19 @@ type ContractRestructureStatus string
 
 const (
 	ContractRestructureStatusEligible               ContractRestructureStatus = "ELIGIBLE"
-	ContractRestructureStatusIneligible             ContractRestructureStatus = "INELIGIBLE"
+	ContractRestructureStatusIneligibleFinalYear    ContractRestructureStatus = "INELIGIBLE_FINAL_YEAR"
 	ContractRestructureStatusPreviouslyRestructured ContractRestructureStatus = "PREVIOUSLY_RESTRUCTURED"
 )
 
 var AllContractRestructureStatus = []ContractRestructureStatus{
 	ContractRestructureStatusEligible,
-	ContractRestructureStatusIneligible,
+	ContractRestructureStatusIneligibleFinalYear,
 	ContractRestructureStatusPreviouslyRestructured,
 }
 
 func (e ContractRestructureStatus) IsValid() bool {
 	switch e {
-	case ContractRestructureStatusEligible, ContractRestructureStatusIneligible, ContractRestructureStatusPreviouslyRestructured:
+	case ContractRestructureStatusEligible, ContractRestructureStatusIneligibleFinalYear, ContractRestructureStatusPreviouslyRestructured:
 		return true
 	}
 	return false
@@ -238,5 +249,44 @@ func (e *Role) UnmarshalGQL(v interface{}) error {
 }
 
 func (e Role) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type TransactionType string
+
+const (
+	TransactionTypeContractRestructure TransactionType = "CONTRACT_RESTRUCTURE"
+)
+
+var AllTransactionType = []TransactionType{
+	TransactionTypeContractRestructure,
+}
+
+func (e TransactionType) IsValid() bool {
+	switch e {
+	case TransactionTypeContractRestructure:
+		return true
+	}
+	return false
+}
+
+func (e TransactionType) String() string {
+	return string(e)
+}
+
+func (e *TransactionType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = TransactionType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid TransactionType", str)
+	}
+	return nil
+}
+
+func (e TransactionType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }

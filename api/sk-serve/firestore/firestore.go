@@ -11,6 +11,7 @@ const (
 	LeaguesCollection         = "leagues"
 	PlayerCollection          = "playersNFL"
 	PlayerContractsCollection = "playerContracts"
+	TransactionCollection     = "transactions"
 	UserRolesCollection       = "user-roles"
 	UsersCollection           = "users"
 )

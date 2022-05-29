@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/pkg/errors"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
@@ -15,8 +16,9 @@ import (
 )
 
 type ContractImpl struct {
-	Client         firestore.Client
-	PlayerResolver PlayerImpl
+	Client          firestore.Client
+	PlayerResolver  PlayerImpl
+	TransactionImpl TransactionImpl
 }
 
 func (u *ContractImpl) GetAllLeagueContracts(ctx context.Context, leagueID string) ([]*contract.Contract, error) {
@@ -136,27 +138,39 @@ func (u *ContractImpl) RestructureContract(ctx context.Context, leagueID *string
 	contractValue := new(contract.Contract)
 	contractRef.DataTo(&contractValue)
 	contractValue.ID = contractRef.Ref.ID
+
 	// Validate the contract.
+
 	// contract should be eligible for restructure
 	if contractValue.RestructureStatus != model.ContractRestructureStatusEligible {
-		return nil, gqlerror.Errorf("Contract %s is ineligible for restructure", restructureDetails)
+		return nil, gqlerror.Errorf("Contract %s is ineligible for restructure", restructureDetails.ContractID)
 	}
 	// contract restructure total should match the original total
 	restructureTotal := 0
 	guaranteedTotal := 0
-	for _, value := range restructureDetails.ContractRestructureDetails {
+	hasChange := false
+	for i, value := range restructureDetails.ContractRestructureDetails {
 		restructureTotal += value.TotalAmount
 		guaranteedTotal += value.GuaranteedAmount
+		if contractValue.ContractDetails[i].TotalAmount != value.TotalAmount {
+			hasChange = true
+		}
 	}
+
+	if !hasChange {
+		return nil, gqlerror.Errorf("Contract restructure did not have any changes to the contract")
+	}
+
 	if contractValue.TotalContractValue != restructureTotal {
 		return nil, gqlerror.Errorf("Contract %s restructured contract did not match the value of the original contract", contractValue.ID)
 	}
 	// contract totals should be 100% guaranteed
 	if restructureTotal != guaranteedTotal {
-		return nil, gqlerror.Errorf("Contract %s restructures invalid; guaranteed amount not equal to total amount", contractValue.ID)
+		return nil, gqlerror.Errorf("Contract %s restructure invalid; guaranteed amount not equal to total amount", contractValue.ID)
 	}
 
 	// After validation, update the contract
+
 	// Add the old contract details to a metadata field
 	contractHistory := contractValue.ContractHistory
 	if contractHistory == nil {
@@ -168,9 +182,6 @@ func (u *ContractImpl) RestructureContract(ctx context.Context, leagueID *string
 	}
 
 	contractHistory = append(contractHistory, &mostRecentHistory)
-
-	// TODO: Verify its not this easy but with different syntax
-	//test := []*model.ContractYear(restructureDetails.ContractRestructureDetails)
 
 	newContractDetails := make([]*model.ContractYear, 0, len(restructureDetails.ContractRestructureDetails))
 	for _, yearDetailsInput := range restructureDetails.ContractRestructureDetails {
@@ -184,6 +195,24 @@ func (u *ContractImpl) RestructureContract(ctx context.Context, leagueID *string
 	}
 
 	contractValue.ContractDetails = newContractDetails
+	contractValue.RestructureStatus = model.ContractRestructureStatusPreviouslyRestructured
+
+	// Save the new contract
+	u.Client.Collection(firestore.LeaguesCollection).Doc(*leagueID).Collection(firestore.PlayerContractsCollection).Doc(restructureDetails.ContractID).Set(ctx, contractValue)
+
+	// Save the transaction
+	inputData, err := json.Marshal(restructureDetails)
+	if err != nil {
+		graphql.AddError(ctx, gqlerror.Errorf("Unable to marshal JSON of restructure object, err: %v", err))
+	} else {
+		transactionInput := model.TransactionInput{
+			TransactionType: model.TransactionTypeContractRestructure,
+			TransactionData: string(inputData),
+		}
+		err = u.TransactionImpl.CreateTransaction(ctx, leagueID, &transactionInput)
+	}
+
+	// TODO: Recalculate team metadata
 
 	return contractValue, nil
 }

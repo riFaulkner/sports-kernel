@@ -22,7 +22,7 @@ type ContractYear {
 
 enum ContractRestructureStatus {
     ELIGIBLE,
-    INELIGIBLE,
+    INELIGIBLE_FINAL_YEAR,
     PREVIOUSLY_RESTRUCTURED
 }
 
