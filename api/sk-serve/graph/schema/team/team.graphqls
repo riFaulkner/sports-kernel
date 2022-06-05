@@ -42,7 +42,6 @@ type DeadCapYear {
 type DeadCap {
     associatedContractId: ID!
     amount: Int!
-    contract: Contract!
 }
 
 type DraftYear {

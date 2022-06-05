@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/generated"
@@ -13,6 +14,10 @@ import (
 
 func (r *contractResolver) Player(ctx context.Context, obj *contract.Contract) (*model.PlayerNfl, error) {
 	return r.PlayerResolver.GetPlayerById(ctx, &obj.PlayerID) //return dataloader.GetPlayers(ctx, &obj.PlayerID)
+}
+
+func (r *contractResolver) ContractStatus(ctx context.Context, obj *contract.Contract) (*model.ContractStatus, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 // Contract returns generated.ContractResolver implementation.

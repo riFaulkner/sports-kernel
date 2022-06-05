@@ -64,3 +64,12 @@ models:
   ContractInput:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/contract.ContractInput
+  ContractRestructureInput:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/contract.ContractRestructureInput
+  ContractYear:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/contract.ContractYear
+  ContractYearInput:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/contract.ContractYearInput

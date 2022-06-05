@@ -7,32 +7,11 @@ import (
 	"io"
 	"strconv"
 	"time"
-
-	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 )
 
 type CapUtilizationSummary struct {
 	CapUtilization int `json:"capUtilization"`
 	NumContracts   int `json:"numContracts"`
-}
-
-type ContractRestructureInput struct {
-	ContractID                 string               `json:"contractId"`
-	ContractRestructureDetails []*ContractYearInput `json:"contractRestructureDetails"`
-}
-
-type ContractYear struct {
-	Year             int `json:"year"`
-	TotalAmount      int `json:"totalAmount"`
-	PaidAmount       int `json:"paidAmount"`
-	GuaranteedAmount int `json:"guaranteedAmount"`
-}
-
-type ContractYearInput struct {
-	Year             int `json:"year"`
-	TotalAmount      int `json:"totalAmount"`
-	PaidAmount       int `json:"paidAmount"`
-	GuaranteedAmount int `json:"guaranteedAmount"`
 }
 
 type ContractsMetadata struct {
@@ -45,9 +24,8 @@ type ContractsMetadata struct {
 }
 
 type DeadCap struct {
-	AssociatedContractID string             `json:"associatedContractId"`
-	Amount               int                `json:"amount"`
-	Contract             *contract.Contract `json:"contract"`
+	AssociatedContractID string `json:"associatedContractId"`
+	Amount               int    `json:"amount"`
 }
 
 type DeadCapYear struct {

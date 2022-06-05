@@ -2,7 +2,6 @@ package contract
 
 import (
 	"context"
-	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
 )
 
 type Resolver interface {
@@ -10,5 +9,5 @@ type Resolver interface {
 	GetAllTeamContracts(ctx context.Context, leagueID string, teamID string) ([]*Contract, error)
 	CreateContract(ctx context.Context, leagueId string, contractInput *ContractInput) (*Contract, error)
 	DropContract(ctx context.Context, leagueID string, teamID string, contractID string) (bool, error)
-	RestructureContract(ctx context.Context, leagueID *string, restructureDetails *model.ContractRestructureInput) (*Contract, error)
+	RestructureContract(ctx context.Context, leagueID *string, restructureDetails *ContractRestructureInput) (*Contract, error)
 }

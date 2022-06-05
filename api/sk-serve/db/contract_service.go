@@ -124,7 +124,7 @@ func (u *ContractImpl) CreateContract(ctx context.Context, leagueId string, cont
 	return contract, nil
 }
 
-func (u *ContractImpl) RestructureContract(ctx context.Context, leagueID *string, restructureDetails *model.ContractRestructureInput) (*contract.Contract, error) {
+func (u *ContractImpl) RestructureContract(ctx context.Context, leagueID *string, restructureDetails *contract.ContractRestructureInput) (*contract.Contract, error) {
 	// Get the contract
 	contractRef, err := u.Client.Collection(firestore.LeaguesCollection).
 		Doc(*leagueID).
@@ -183,9 +183,9 @@ func (u *ContractImpl) RestructureContract(ctx context.Context, leagueID *string
 
 	contractHistory = append(contractHistory, &mostRecentHistory)
 
-	newContractDetails := make([]*model.ContractYear, 0, len(restructureDetails.ContractRestructureDetails))
+	newContractDetails := make([]*contract.ContractYear, 0, len(restructureDetails.ContractRestructureDetails))
 	for _, yearDetailsInput := range restructureDetails.ContractRestructureDetails {
-		yearDetails := model.ContractYear{
+		yearDetails := contract.ContractYear{
 			Year:             yearDetailsInput.Year,
 			TotalAmount:      yearDetailsInput.TotalAmount,
 			PaidAmount:       yearDetailsInput.PaidAmount,
@@ -280,7 +280,7 @@ func (u *ContractImpl) validateTeam(ctx context.Context, leagueId *string, teamI
 	//result, _ := u.GetAllTeamContracts(ctx, *leagueId, *teamId)
 }
 
-func getAndValidateContractTotalValue(ctx context.Context, contractYears []*model.ContractYearInput) *int {
+func getAndValidateContractTotalValue(ctx context.Context, contractYears []*contract.ContractYearInput) *int {
 	totalContractValue := 0
 	for _, value := range contractYears {
 		totalContractValue += value.TotalAmount

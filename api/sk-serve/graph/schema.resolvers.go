@@ -109,7 +109,7 @@ func (r *mutationResolver) ContractActionDrop(ctx context.Context, leagueID stri
 	return r.ContractResolver.DropContract(ctx, leagueID, teamID, contractID)
 }
 
-func (r *mutationResolver) ContractActionRestructure(ctx context.Context, leagueID string, restructureDetails model.ContractRestructureInput) (*contract.Contract, error) {
+func (r *mutationResolver) ContractActionRestructure(ctx context.Context, leagueID string, restructureDetails contract.ContractRestructureInput) (*contract.Contract, error) {
 	return r.ContractResolver.RestructureContract(ctx, &leagueID, &restructureDetails)
 }
 

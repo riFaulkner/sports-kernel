@@ -12,13 +12,13 @@ type Contract struct {
 	TotalRemainingValue int                             `json:"totalRemainingValue"`
 	ContractLength      int                             `json:"contractLength"`
 	PlayerPosition      *string                         `json:"playerPosition"`
-	ContractDetails     []*model.ContractYear           `json:"contractDetails"`
+	ContractDetails     []*ContractYear                 `json:"contractDetails"`
 	ContractHistory     []*HistoryRecord                `json:"contractHistory"`
 }
 
 type HistoryRecord struct {
-	DateUpdated     int64                 `json:"dateUpdated"`
-	ContractDetails []*model.ContractYear `json:"contractDetails"`
+	DateUpdated     int64           `json:"dateUpdated"`
+	ContractDetails []*ContractYear `json:"contractDetails"`
 }
 
 type ContractInput struct {
@@ -30,5 +30,24 @@ type ContractInput struct {
 	TotalRemainingValue *int                            `json:"totalRemainingValue"`
 	ContractLength      *int                            `json:"contractLength"`
 	PlayerPosition      string                          `json:"playerPosition"`
-	ContractDetails     []*model.ContractYearInput      `json:"contractDetails"`
+	ContractDetails     []*ContractYearInput            `json:"contractDetails"`
+}
+
+type ContractRestructureInput struct {
+	ContractID                 string               `json:"contractId"`
+	ContractRestructureDetails []*ContractYearInput `json:"contractRestructureDetails"`
+}
+
+type ContractYear struct {
+	Year             int `json:"year"`
+	TotalAmount      int `json:"totalAmount"`
+	PaidAmount       int `json:"paidAmount"`
+	GuaranteedAmount int `json:"guaranteedAmount"`
+}
+
+type ContractYearInput struct {
+	Year             int `json:"year"`
+	TotalAmount      int `json:"totalAmount"`
+	PaidAmount       int `json:"paidAmount"`
+	GuaranteedAmount int `json:"guaranteedAmount"`
 }
