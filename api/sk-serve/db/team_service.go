@@ -19,7 +19,12 @@ type TeamImpl struct {
 	Client firestore.Client
 }
 
-func (u *TeamImpl) GetAll(ctx context.Context, leagueId string) ([]*model.Team, error) {
+func (u *TeamImpl) AddDeadCapToTeam(ctx context.Context, leagueID string, teamID string) (bool, error) {
+
+	return false, nil
+}
+
+func (u *TeamImpl) GetAllLeagueTeams(ctx context.Context, leagueId string) ([]*model.Team, error) {
 	teams := make([]*model.Team, 0)
 
 	//Create Document Ref - There is no traffic associated with this...

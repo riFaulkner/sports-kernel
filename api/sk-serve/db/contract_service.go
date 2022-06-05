@@ -17,7 +17,7 @@ import (
 
 type ContractImpl struct {
 	Client          firestore.Client
-	PlayerResolver  PlayerImpl
+	TeamImpl        TeamImpl
 	TransactionImpl TransactionImpl
 }
 
@@ -91,7 +91,7 @@ func (u *ContractImpl) GetContractByLeagueAndPlayerId(ctx context.Context, leagu
 	return contract, nil
 }
 
-func (u *ContractImpl) CreateContract(ctx context.Context, leagueId string, contractInput *model.ContractInput) (*contract.Contract, error) {
+func (u *ContractImpl) CreateContract(ctx context.Context, leagueId string, contractInput *contract.ContractInput) (*contract.Contract, error) {
 	u.validateContract(ctx, &leagueId, contractInput)
 
 	if len(graphql.GetErrors(ctx)) > 0 {
@@ -218,7 +218,39 @@ func (u *ContractImpl) RestructureContract(ctx context.Context, leagueID *string
 	return contractValue, nil
 }
 
-func (u *ContractImpl) validateContract(ctx context.Context, leagueId *string, contractInput *model.ContractInput) {
+func (u *ContractImpl) DropContract(ctx context.Context, leagueID string, teamID string, contractID string) (bool, error) {
+	playerContractRef, _ := u.Client.
+		Collection(firestore.LeaguesCollection).
+		Doc(leagueID).
+		Collection(firestore.PlayerContractsCollection).
+		Doc(contractID).
+		Get(ctx)
+
+	playerContract := new(contract.Contract)
+
+	playerContractRef.DataTo(&playerContract)
+	playerContract.PlayerID = playerContractRef.Ref.ID
+
+	// teamID was used for security validate, make sure it's the same team ID that is on the contract
+	if playerContract.TeamID != teamID {
+		return false, gqlerror.Errorf("TeamId provided did not match the contract's teamID")
+	}
+
+	// Validate that the team won't go over cap with this change
+	// team.GetTeamData
+
+	// Validate that team can take the hit
+	// Calculate the dead cap
+	// Input the deadcap to the team.
+	// team.AddDeadCap
+
+	// Move the contract to new status
+	// Add transaction
+	// return bool?
+	return true, nil
+}
+
+func (u *ContractImpl) validateContract(ctx context.Context, leagueId *string, contractInput *contract.ContractInput) {
 	contractInput.TotalContractValue = getAndValidateContractTotalValue(ctx, contractInput.ContractDetails)
 
 	u.validatePlayer(ctx, leagueId, &contractInput.PlayerID)

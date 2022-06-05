@@ -6,7 +6,9 @@ type Team {
     ownerID: String!
     division: String
     currentContractsMetadata: ContractsMetadata
+    futureContractsMetadata: [ContractsMetadata!]
     teamAssets: TeamAssets
+    teamLiabilities: TeamLiabilities
 }
 
 input NewTeam {
@@ -27,6 +29,20 @@ type ContractsMetadata {
 
 type TeamAssets {
     draftPicks: [DraftYear]!
+}
+
+type TeamLiabilities {
+    deadCap: [DeadCapYear]
+}
+type DeadCapYear {
+    year: Int!
+    deadCapAccrued: [DeadCap!]
+}
+
+type DeadCap {
+    associatedContractId: ID!
+    amount: Int!
+    contract: Contract!
 }
 
 type DraftYear {

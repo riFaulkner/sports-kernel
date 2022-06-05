@@ -55,7 +55,7 @@ func (r *mutationResolver) UpdateTeamMetaData(ctx context.Context, leagueID stri
 	return team, nil
 }
 
-func (r *mutationResolver) CreateContract(ctx context.Context, leagueID *string, input *model.ContractInput) (*contract.Contract, error) {
+func (r *mutationResolver) CreateContract(ctx context.Context, leagueID *string, input *contract.ContractInput) (*contract.Contract, error) {
 	document, err := r.ContractResolver.CreateContract(ctx, *leagueID, input)
 
 	if err != nil {
@@ -105,8 +105,12 @@ func (r *mutationResolver) CreateUserRole(ctx context.Context, leagueID *string,
 	return r.UserResolver.CreateUserRole(ctx, newUserRole)
 }
 
-func (r *mutationResolver) ContractActionRestructure(ctx context.Context, leagueID *string, restructureDetails model.ContractRestructureInput) (*contract.Contract, error) {
-	return r.ContractResolver.RestructureContract(ctx, leagueID, &restructureDetails)
+func (r *mutationResolver) ContractActionDrop(ctx context.Context, leagueID string, teamID string, contractID string) (bool, error) {
+	return r.ContractResolver.DropContract(ctx, leagueID, teamID, contractID)
+}
+
+func (r *mutationResolver) ContractActionRestructure(ctx context.Context, leagueID string, restructureDetails model.ContractRestructureInput) (*contract.Contract, error) {
+	return r.ContractResolver.RestructureContract(ctx, &leagueID, &restructureDetails)
 }
 
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
@@ -141,7 +145,7 @@ func (r *queryResolver) LeagueContracts(ctx context.Context, leagueID string) ([
 }
 
 func (r *queryResolver) Teams(ctx context.Context, leagueID *string) ([]*model.Team, error) {
-	teams, err := r.TeamResolver.GetAll(ctx, *leagueID)
+	teams, err := r.TeamResolver.GetAllLeagueTeams(ctx, *leagueID)
 	if err != nil {
 		return nil, err
 	}

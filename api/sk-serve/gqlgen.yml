@@ -61,3 +61,6 @@ models:
     fields:
       Player:
         resolver: true
+  ContractInput:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/contract.ContractInput

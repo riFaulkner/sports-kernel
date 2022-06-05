@@ -5,6 +5,7 @@ type Contract {
     player: PlayerNFL!
     teamId: String!
     currentYear: Int!
+    contractStatus: ContractStatus # TODO: Once the contract script is run again, make this required
     restructureStatus: ContractRestructureStatus!
     totalContractValue: Int!
     totalRemainingValue: Int!
@@ -18,6 +19,12 @@ type ContractYear {
     totalAmount: Int!
     paidAmount: Int!
     guaranteedAmount: Int!
+}
+
+enum ContractStatus {
+    ACTIVE,
+    INACTIVE_EXPIRED,
+    INACTIVE_DROPPED,
 }
 
 enum ContractRestructureStatus {

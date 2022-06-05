@@ -7,23 +7,13 @@ import (
 	"io"
 	"strconv"
 	"time"
+
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 )
 
 type CapUtilizationSummary struct {
 	CapUtilization int `json:"capUtilization"`
 	NumContracts   int `json:"numContracts"`
-}
-
-type ContractInput struct {
-	PlayerID            string                    `json:"playerId"`
-	TeamID              string                    `json:"teamId"`
-	CurrentYear         int                       `json:"currentYear"`
-	RestructureStatus   ContractRestructureStatus `json:"restructureStatus"`
-	TotalContractValue  *int                      `json:"totalContractValue"`
-	TotalRemainingValue *int                      `json:"totalRemainingValue"`
-	ContractLength      *int                      `json:"contractLength"`
-	PlayerPosition      string                    `json:"playerPosition"`
-	ContractDetails     []*ContractYearInput      `json:"contractDetails"`
 }
 
 type ContractRestructureInput struct {
@@ -52,6 +42,17 @@ type ContractsMetadata struct {
 	RbUtilizedCap     *CapUtilizationSummary `json:"rbUtilizedCap"`
 	WrUtilizedCap     *CapUtilizationSummary `json:"wrUtilizedCap"`
 	TeUtilizedCap     *CapUtilizationSummary `json:"teUtilizedCap"`
+}
+
+type DeadCap struct {
+	AssociatedContractID string             `json:"associatedContractId"`
+	Amount               int                `json:"amount"`
+	Contract             *contract.Contract `json:"contract"`
+}
+
+type DeadCapYear struct {
+	Year           int        `json:"year"`
+	DeadCapAccrued []*DeadCap `json:"deadCapAccrued"`
 }
 
 type Division struct {
@@ -146,17 +147,23 @@ type PostComment struct {
 }
 
 type Team struct {
-	ID                       string             `json:"id"`
-	FoundedDate              time.Time          `json:"foundedDate"`
-	TeamName                 string             `json:"teamName"`
-	OwnerID                  string             `json:"ownerID"`
-	Division                 *string            `json:"division"`
-	CurrentContractsMetadata *ContractsMetadata `json:"currentContractsMetadata"`
-	TeamAssets               *TeamAssets        `json:"teamAssets"`
+	ID                       string               `json:"id"`
+	FoundedDate              time.Time            `json:"foundedDate"`
+	TeamName                 string               `json:"teamName"`
+	OwnerID                  string               `json:"ownerID"`
+	Division                 *string              `json:"division"`
+	CurrentContractsMetadata *ContractsMetadata   `json:"currentContractsMetadata"`
+	FutureContractsMetadata  []*ContractsMetadata `json:"futureContractsMetadata"`
+	TeamAssets               *TeamAssets          `json:"teamAssets"`
+	TeamLiabilities          *TeamLiabilities     `json:"teamLiabilities"`
 }
 
 type TeamAssets struct {
 	DraftPicks []*DraftYear `json:"draftPicks"`
+}
+
+type TeamLiabilities struct {
+	DeadCap []*DeadCapYear `json:"deadCap"`
 }
 
 type Transaction struct {
@@ -231,6 +238,49 @@ func (e *ContractRestructureStatus) UnmarshalGQL(v interface{}) error {
 }
 
 func (e ContractRestructureStatus) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type ContractStatus string
+
+const (
+	ContractStatusActive          ContractStatus = "ACTIVE"
+	ContractStatusInactiveExpired ContractStatus = "INACTIVE_EXPIRED"
+	ContractStatusInactiveDropped ContractStatus = "INACTIVE_DROPPED"
+)
+
+var AllContractStatus = []ContractStatus{
+	ContractStatusActive,
+	ContractStatusInactiveExpired,
+	ContractStatusInactiveDropped,
+}
+
+func (e ContractStatus) IsValid() bool {
+	switch e {
+	case ContractStatusActive, ContractStatusInactiveExpired, ContractStatusInactiveDropped:
+		return true
+	}
+	return false
+}
+
+func (e ContractStatus) String() string {
+	return string(e)
+}
+
+func (e *ContractStatus) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ContractStatus(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ContractStatus", str)
+	}
+	return nil
+}
+
+func (e ContractStatus) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

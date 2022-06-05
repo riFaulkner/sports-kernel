@@ -43,7 +43,6 @@
             </template>
           </v-data-table>
         </v-card-text>
-
         <v-card-actions>
           <v-btn
               :disabled="!canRestructure"
@@ -52,7 +51,8 @@
             Restructure
           </v-btn>
           <v-btn
-              disabled
+              :disabled="!canDropPlayer"
+              @click="dropContract"
           >
             Drop
           </v-btn>
@@ -99,11 +99,9 @@
         <v-card-title>
           Restructure Contract
         </v-card-title>
-
         <v-card-subtitle>
           *Restructuring will make all money guaranteed.
         </v-card-subtitle>
-
         <v-card-text>
           <v-form
               v-model="formValidation"
@@ -160,7 +158,6 @@
           </v-btn>
         </v-card-actions>
       </v-card>
-
     </v-dialog>
   </div>
 
@@ -205,6 +202,9 @@ export default {
     }
   },
   computed: {
+    canDropPlayer() {
+      return true
+    },
     canRestructure() {
       return this.contract.restructureStatus === 'ELIGIBLE'
     },
@@ -276,6 +276,18 @@ export default {
         this.$store.dispatch('application/alertError', {message: "This contract cannot be restructured"})
       }
       this.contractRestructureDialog = true
+    },
+    dropContract() {
+      if (!this.canDropPlayer) {
+        this.$store.dispatch('application/alertError', {message: "This contract cannot be dropped"})
+      }
+
+      // Setup request
+      this.actionToPerform = () => {
+        console.log("Performing!")
+      }
+
+      this.confirmationDialog = true
     },
     submitRestructure() {
       // Todo: generate the function call to make
