@@ -3,7 +3,7 @@ package db
 import (
 	"context"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
-	"log"
+	"sort"
 	"time"
 
 	firestoreMain "cloud.google.com/go/firestore"
@@ -19,7 +19,30 @@ type TeamImpl struct {
 	Client firestore.Client
 }
 
-func (u *TeamImpl) AddDeadCapToTeam(ctx context.Context, leagueID string, teamID string) (bool, error) {
+func (u *TeamImpl) AddDeadCapToTeam(ctx context.Context, leagueID string, teamID string, deadCap []*model.DeadCap) (bool, error) {
+	team, err := u.GetTeamById(ctx, leagueID, teamID)
+	if err != nil {
+		return false, err
+	}
+	teamDeadCap := team.TeamLiabilities.DeadCap
+	if len(teamDeadCap) != 0 {
+		sort.Slice(teamDeadCap, func(i, j int) bool {
+			return teamDeadCap[i].Year < teamDeadCap[j].Year
+		})
+	}
+
+	for i, value := range deadCap {
+		if value.Amount != 0 {
+			deadCapYear := &model.DeadCapYear{
+				Year:           time.Now().Year() + i,
+				DeadCapAccrued: make([]*model.DeadCap, 0, 1),
+			}
+			if len(teamDeadCap) >= i {
+				deadCapYear = teamDeadCap[i]
+			}
+			deadCapYear.DeadCapAccrued = append(deadCapYear.DeadCapAccrued, value)
+		}
+	}
 
 	return false, nil
 }
@@ -90,27 +113,15 @@ func (u *TeamImpl) Create(ctx context.Context, leagueId string, teamInput model.
 	return &team, nil
 }
 
-func (u *TeamImpl) UpdateTeamContractMetaData(ctx context.Context, leagueId string, teamContracts []*contract.Contract) error {
-	currentContractsMetadataDefault := model.ContractsMetadata{
-		TotalUtilizedCap:  0,
-		TotalAvailableCap: 200000000,
-		QbUtilizedCap: &model.CapUtilizationSummary{
-			CapUtilization: 0,
-			NumContracts:   0,
-		},
-		RbUtilizedCap: &model.CapUtilizationSummary{
-			CapUtilization: 0,
-			NumContracts:   0,
-		},
-		WrUtilizedCap: &model.CapUtilizationSummary{
-			CapUtilization: 0,
-			NumContracts:   0,
-		},
-		TeUtilizedCap: &model.CapUtilizationSummary{
-			CapUtilization: 0,
-			NumContracts:   0,
-		},
+func (u *TeamImpl) UpdateTeamContractMetaData(ctx context.Context, leagueID string, teamContracts []*contract.Contract) error {
+	contractsMetadata := make([]*model.ContractsMetadata, 0, 4)
+	for i, _ := range contractsMetadata {
+		yearMetadata := generateDefaultTeamContractsMetadata()
+		yearMetadata.Year = yearMetadata.Year + i
+		contractsMetadata[i] = yearMetadata
 	}
+
+	currentContractsMetadataDefault := generateDefaultTeamContractsMetadata()
 
 	if len(teamContracts) == 0 {
 		return nil
@@ -138,26 +149,44 @@ func (u *TeamImpl) UpdateTeamContractMetaData(ctx context.Context, leagueId stri
 		}
 	}
 
-	teamId := teamContracts[0].TeamID
+	teamID := teamContracts[0].TeamID
 
-	league := u.Client.Collection(firestore.LeaguesCollection).Doc(leagueId)
-
-	_, err := league.Collection(teamCollection).Doc(teamId).Update(ctx, []firestoreMain.Update{
-		{
-			Path:  "CurrentContractsMetadata",
-			Value: currentContractsMetadataDefault,
-		},
-	})
-
+	team, err := u.GetTeamById(ctx, leagueID, teamID)
 	if err != nil {
-		log.Printf("An error has occurred: %s", err)
 		return err
 	}
-	return nil
+
+	for i, deadCapYear := range team.TeamLiabilities.DeadCap {
+		deadCapTotal := 0
+		totalContracts := 0
+		for _, deadCap := range deadCapYear.DeadCapAccrued {
+			totalContracts++
+			deadCapTotal += deadCap.Amount
+		}
+		contractsMetadata[i].DeadCap = &model.CapUtilizationSummary{
+			CapUtilization: deadCapTotal,
+			NumContracts:   totalContracts,
+		}
+	}
+
+	league := u.Client.Collection(firestore.LeaguesCollection).Doc(leagueID)
+
+	_, err = league.
+		Collection(teamCollection).
+		Doc(teamID).
+		Update(ctx, []firestoreMain.Update{
+			{
+				Path:  "CurrentContractsMetadata",
+				Value: currentContractsMetadataDefault,
+			},
+		})
+
+	return err
 }
 
 func generateDefaultTeamContractsMetadata() *model.ContractsMetadata {
 	return &model.ContractsMetadata{
+		Year:              time.Now().Year(),
 		TotalUtilizedCap:  0,
 		TotalAvailableCap: 200000000,
 		QbUtilizedCap: &model.CapUtilizationSummary{
@@ -173,6 +202,10 @@ func generateDefaultTeamContractsMetadata() *model.ContractsMetadata {
 			NumContracts:   0,
 		},
 		TeUtilizedCap: &model.CapUtilizationSummary{
+			CapUtilization: 0,
+			NumContracts:   0,
+		},
+		DeadCap: &model.CapUtilizationSummary{
 			CapUtilization: 0,
 			NumContracts:   0,
 		},

@@ -15,12 +15,14 @@ type CapUtilizationSummary struct {
 }
 
 type ContractsMetadata struct {
+	Year              int                    `json:"year"`
 	TotalUtilizedCap  int                    `json:"totalUtilizedCap"`
 	TotalAvailableCap int                    `json:"totalAvailableCap"`
 	QbUtilizedCap     *CapUtilizationSummary `json:"qbUtilizedCap"`
 	RbUtilizedCap     *CapUtilizationSummary `json:"rbUtilizedCap"`
 	WrUtilizedCap     *CapUtilizationSummary `json:"wrUtilizedCap"`
 	TeUtilizedCap     *CapUtilizationSummary `json:"teUtilizedCap"`
+	DeadCap           *CapUtilizationSummary `json:"deadCap"`
 }
 
 type DeadCap struct {
@@ -311,15 +313,17 @@ type TransactionType string
 
 const (
 	TransactionTypeContractRestructure TransactionType = "CONTRACT_RESTRUCTURE"
+	TransactionTypeDropPlayer          TransactionType = "DROP_PLAYER"
 )
 
 var AllTransactionType = []TransactionType{
 	TransactionTypeContractRestructure,
+	TransactionTypeDropPlayer,
 }
 
 func (e TransactionType) IsValid() bool {
 	switch e {
-	case TransactionTypeContractRestructure:
+	case TransactionTypeContractRestructure, TransactionTypeDropPlayer:
 		return true
 	}
 	return false

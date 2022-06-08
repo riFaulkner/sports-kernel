@@ -19,12 +19,14 @@ input NewTeam {
 }
 
 type ContractsMetadata {
+    year: Int!
     totalUtilizedCap: Int!
     totalAvailableCap: Int!
     qbUtilizedCap: CapUtilizationSummary!
     rbUtilizedCap: CapUtilizationSummary!
     wrUtilizedCap: CapUtilizationSummary!
     teUtilizedCap: CapUtilizationSummary!
+    deadCap: CapUtilizationSummary!
 }
 
 type TeamAssets {

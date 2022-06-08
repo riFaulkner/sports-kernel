@@ -1,6 +1,7 @@
 package db
 
 import (
+	gfirestore "cloud.google.com/go/firestore"
 	"context"
 	"encoding/json"
 	"github.com/99designs/gqlgen/graphql"
@@ -199,7 +200,12 @@ func (u *ContractImpl) RestructureContract(ctx context.Context, leagueID *string
 	contractValue.ContractHistory = contractHistory
 
 	// Save the new contract
-	u.Client.Collection(firestore.LeaguesCollection).Doc(*leagueID).Collection(firestore.PlayerContractsCollection).Doc(restructureDetails.ContractID).Set(ctx, contractValue)
+	u.Client.
+		Collection(firestore.LeaguesCollection).
+		Doc(*leagueID).
+		Collection(firestore.PlayerContractsCollection).
+		Doc(restructureDetails.ContractID).
+		Set(ctx, contractValue)
 
 	// Save the transaction
 	inputData, err := json.Marshal(restructureDetails)
@@ -211,6 +217,9 @@ func (u *ContractImpl) RestructureContract(ctx context.Context, leagueID *string
 			TransactionData: string(inputData),
 		}
 		err = u.TransactionImpl.CreateTransaction(ctx, leagueID, &transactionInput)
+		if err != nil {
+			return nil, gqlerror.Errorf("Unable to make transaction", err)
+		}
 	}
 
 	// TODO: Recalculate team metadata
@@ -236,17 +245,79 @@ func (u *ContractImpl) DropContract(ctx context.Context, leagueID string, teamID
 		return false, gqlerror.Errorf("TeamId provided did not match the contract's teamID")
 	}
 
-	// Validate that the team won't go over cap with this change
-	// team.GetTeamData
+	deadCapYears := make([]*model.DeadCap, 0, 2)
 
-	// Validate that team can take the hit
-	// Calculate the dead cap
-	// Input the deadcap to the team.
-	// team.AddDeadCap
+	sort.Slice(playerContract.ContractDetails, func(i, j int) bool {
+		return playerContract.ContractDetails[i].Year < playerContract.ContractDetails[j].Year
+	})
+	currentContractYear := playerContract.CurrentYear
+	currentContractDetails := playerContract.ContractDetails[(currentContractYear - 1)]
+
+	deadCapYears = append(deadCapYears, &model.DeadCap{
+		AssociatedContractID: playerContract.ID,
+		Amount:               calculateDeadCap(currentContractDetails),
+	})
+
+	futureAccumulatedDeadCap := 0
+	for _, year := range playerContract.ContractDetails {
+		if year.Year > playerContract.CurrentYear {
+			futureAccumulatedDeadCap += calculateDeadCap(year)
+		}
+	}
+
+	deadCapYears = append(deadCapYears, &model.DeadCap{
+		AssociatedContractID: playerContract.ID,
+		Amount:               futureAccumulatedDeadCap,
+	})
+	// Add dead cap to the team
+	ok, err := u.TeamImpl.AddDeadCapToTeam(ctx, leagueID, teamID, deadCapYears)
+
+	if !ok {
+		// consider using a transaction here to roll back
+		return false, gqlerror.Errorf("Failed to add dead cap to team", err)
+	}
 
 	// Move the contract to new status
-	// Add transaction
-	// return bool?
+	_, err = u.Client.
+		Collection(firestore.LeaguesCollection).
+		Doc(leagueID).
+		Collection(firestore.PlayerContractsCollection).
+		Doc(contractID).
+		Update(ctx, []gfirestore.Update{
+			{
+				Path:  "ContractStatus",
+				Value: model.ContractStatusInactiveDropped,
+			},
+		})
+	if err != nil {
+		return false, gqlerror.Errorf("Unable to update contract status: %v", err)
+	}
+
+	// Save the transaction
+	inputData, err := json.Marshal(map[string]interface{}{
+		"contractID":   contractID,
+		"deadCapAdded": deadCapYears,
+	})
+
+	if err != nil {
+		graphql.AddError(ctx, gqlerror.Errorf("Unable to marshal JSON of drop object, err: %v", err))
+	} else {
+		transactionInput := model.TransactionInput{
+			TransactionType: model.TransactionTypeDropPlayer,
+			TransactionData: string(inputData),
+		}
+		err = u.TransactionImpl.CreateTransaction(ctx, &leagueID, &transactionInput)
+		if err != nil {
+			return false, gqlerror.Errorf("Unable to make transaction: %v", err)
+		}
+	}
+
+	teamContracts, err := u.GetAllTeamContracts(ctx, leagueID, teamID)
+	if err != nil {
+		return true, gqlerror.Errorf("Unable to recalculate team metadata")
+	}
+	u.TeamImpl.UpdateTeamContractMetaData(ctx, leagueID, teamContracts)
+
 	return true, nil
 }
 
@@ -289,4 +360,16 @@ func getAndValidateContractTotalValue(ctx context.Context, contractYears []*cont
 		graphql.AddError(ctx, gqlerror.Errorf("Invalid contract, contract total value is 0"))
 	}
 	return &totalContractValue
+}
+
+func calculateDeadCap(contractDetails *contract.ContractYear) int {
+	paid := contractDetails.PaidAmount
+	guaranteed := contractDetails.GuaranteedAmount
+
+	amountPaidOff := guaranteed - paid
+
+	if amountPaidOff < 0 {
+		return 0
+	}
+	return amountPaidOff
 }
