@@ -43,7 +43,9 @@
     <v-tab-item>
       <v-card>
         <v-card-text>
-          <h1>League Discussions</h1>
+          <discussions
+            :league-info=league
+          ></discussions>
         </v-card-text>
       </v-card>
     </v-tab-item>
@@ -64,10 +66,11 @@
 import ContractsOverview from "@/components/league/contracts/ContractsOverview";
 import LeagueManagementTool from "@/components/league/managementTools/LeagueManagementTool";
 import RuleSummary from "@/components/league/RuleSummary";
+import Discussions from "@/components/league/Discussions";
 
 export default {
   name: "league-home.vue",
-  components: {LeagueManagementTool, ContractsOverview, RuleSummary},
+  components: {LeagueManagementTool, ContractsOverview, RuleSummary, Discussions},
   middleware: 'auth',
   data: function () {
     return {
