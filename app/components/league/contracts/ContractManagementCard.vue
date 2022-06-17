@@ -164,7 +164,7 @@
 </template>
 
 <script>
-import {CONTRACT_RESTRUCTURE} from "@/graphql/queries/contract/contractsGraphQL";
+import {CONTRACT_DROP, CONTRACT_RESTRUCTURE} from "@/graphql/queries/contract/contractsGraphQL";
 import {LEAGUE_CONTRACTS} from "@/graphql/queries/league/leagueGraphQL";
 
 export default {
@@ -281,17 +281,43 @@ export default {
       if (!this.canDropPlayer) {
         this.$store.dispatch('application/alertError', {message: "This contract cannot be dropped"})
       }
+      const contractId = this.contract.id
 
-      // Setup request
       this.actionToPerform = () => {
-        console.log("Performing!")
+        this.$apollo.mutate({
+          mutation: CONTRACT_DROP,
+          variables: {
+            leagueId: this.leagueId,
+            teamId: this.contract.teamId,
+            contractId: contractId
+          },
+          // Update the cache with the result
+          update: (store, {data: {contractActionDrop}}) => {
+            const allContractsQuery = {
+              query: LEAGUE_CONTRACTS,
+              variables: {leagueId: this.leagueId}
+            }
+            // Read the data from our cache for this query.
+            const {leagueContracts} = store.readQuery(allContractsQuery)
+
+            const contractsCopy = leagueContracts.slice().filter(contract => contract.id !== contractId)
+
+            // Write our data back to the cache.
+            store.writeQuery({...allContractsQuery, data: {leagueContracts: contractsCopy}})
+          },
+          // TODO: Update both drop and restructure to remove the contract from the team view
+        }).then(() => {
+          this.$store.dispatch("application/alertSuccess", {message: "Contract dropped"})
+          this.$emit("contractDropped", {contractId: contractId})
+        }).catch((data) => {
+          this.$store.dispatch("application/alertError", {message: "Failed to drop contract"})
+          console.error("Failed to restructure contract ", data)
+        })
       }
 
       this.confirmationDialog = true
     },
     submitRestructure() {
-      // Todo: generate the function call to make
-
       // load function call into the action to perform data field
       const contractRestructure = {
         contractId: this.contract.id,

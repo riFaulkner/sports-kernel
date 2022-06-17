@@ -133,7 +133,7 @@ type Team struct {
 	OwnerID                  string               `json:"ownerID"`
 	Division                 *string              `json:"division"`
 	CurrentContractsMetadata *ContractsMetadata   `json:"currentContractsMetadata"`
-	FutureContractsMetadata  []*ContractsMetadata `json:"futureContractsMetadata"`
+	ContractsMetadata        []*ContractsMetadata `json:"contractsMetadata"`
 	TeamAssets               *TeamAssets          `json:"teamAssets"`
 	TeamLiabilities          *TeamLiabilities     `json:"teamLiabilities"`
 }

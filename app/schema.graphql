@@ -15,6 +15,7 @@ type CapUtilizationSummary {
 type Contract {
     contractDetails: [ContractYear!]!
     contractLength: Int!
+    contractStatus: ContractStatus
     currentYear: Int!
     id: ID!
     player: PlayerNFL!
@@ -34,12 +35,24 @@ type ContractYear {
 }
 
 type ContractsMetadata {
+    deadCap: CapUtilizationSummary!
     qbUtilizedCap: CapUtilizationSummary!
     rbUtilizedCap: CapUtilizationSummary!
     teUtilizedCap: CapUtilizationSummary!
     totalAvailableCap: Int!
     totalUtilizedCap: Int!
     wrUtilizedCap: CapUtilizationSummary!
+    year: Int!
+}
+
+type DeadCap {
+    amount: Int!
+    associatedContractId: ID!
+}
+
+type DeadCapYear {
+    deadCapAccrued: [DeadCap!]
+    year: Int!
 }
 
 type Division {
@@ -67,10 +80,22 @@ type League {
     teams: [Team!]!
 }
 
+type LeaguePost {
+    author: String!
+    comments: [PostComment!]
+    content: String!
+    id: ID!
+    postDate: Time!
+    title: String!
+}
+
 type Mutation {
-    contractActionRestructure(leagueId: ID, restructureDetails: ContractRestructureInput!): Contract!
+    addComment(input: NewPostComment, leagueId: ID!, postId: ID!): PostComment!
+    contractActionDrop(contractId: ID!, leagueId: ID!, teamId: ID!): Boolean!
+    contractActionRestructure(leagueId: ID!, restructureDetails: ContractRestructureInput!): Contract!
     createContract(input: ContractInput, leagueId: ID): Contract!
     createPlayer(input: NewPlayerNFL!): PlayerNFL!
+    createPost(input: NewLeaguePost, leagueId: ID!): LeaguePost!
     createTeam(input: NewTeam!, leagueId: ID): Team!
     createUser(input: NewUser!): User!
     createUserRole(leagueId: ID, newUserRole: NewUserRole): UserRoles!
@@ -88,13 +113,22 @@ type PlayerNFL {
     teamNFL: String!
 }
 
+type PostComment {
+    author: String!
+    commentDate: Time!
+    content: String!
+    id: ID!
+}
+
 type Query {
+    comments(leagueId: ID!, postId: ID!): [PostComment!]
     getUserRoles(userId: ID): [UserRoles]
     league(leagueId: ID): League
     leagueContracts(leagueId: ID!): [Contract!]
     leagues: [League]
     player(playerId: ID): PlayerNFL!
     players(numOfResults: Int): [PlayerNFL!]
+    posts(leagueId: ID!, numOfResults: Int): [LeaguePost!]
     teamById(leagueId: ID!, teamId: ID!): Team
     teamContracts(leagueId: ID, teamId: ID): [Contract!]
     teams(leagueId: ID): [Team!]
@@ -103,17 +137,23 @@ type Query {
 }
 
 type Team {
+    contractsMetadata: [ContractsMetadata!]
     currentContractsMetadata: ContractsMetadata
     division: String
     foundedDate: Time!
     id: ID!
     ownerID: String!
     teamAssets: TeamAssets
+    teamLiabilities: TeamLiabilities
     teamName: String!
 }
 
 type TeamAssets {
     draftPicks: [DraftYear]!
+}
+
+type TeamLiabilities {
+    deadCap: [DeadCapYear]
 }
 
 type Transaction {
@@ -149,6 +189,12 @@ enum ContractRestructureStatus {
     PREVIOUSLY_RESTRUCTURED
 }
 
+enum ContractStatus {
+    ACTIVE
+    INACTIVE_DROPPED
+    INACTIVE_EXPIRED
+}
+
 enum Role {
     ADMIN
     LEAGUE_MANAGER
@@ -158,6 +204,7 @@ enum Role {
 
 enum TransactionType {
     CONTRACT_RESTRUCTURE
+    DROP_PLAYER
 }
 
 scalar Time
@@ -186,6 +233,12 @@ input ContractYearInput {
     year: Int!
 }
 
+input NewLeaguePost {
+    author: String!
+    content: String!
+    title: String!
+}
+
 input NewPlayerNFL {
     avatar: String
     birthday: String
@@ -194,6 +247,11 @@ input NewPlayerNFL {
     position: String!
     positionRank: Int
     teamNFL: String
+}
+
+input NewPostComment {
+    author: String!
+    content: String!
 }
 
 input NewTeam {

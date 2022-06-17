@@ -37,7 +37,7 @@ func (r *mutationResolver) CreateTeam(ctx context.Context, leagueID *string, inp
 }
 
 func (r *mutationResolver) UpdateTeamMetaData(ctx context.Context, leagueID string, teamID string) (*model.Team, error) {
-	contracts, err := r.ContractResolver.GetAllTeamContracts(ctx, leagueID, teamID)
+	contracts, err := r.ContractResolver.GetAllActiveTeamContracts(ctx, leagueID, teamID)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func (r *mutationResolver) CreateContract(ctx context.Context, leagueID *string,
 		return nil, err
 	}
 
-	teamContracts, err := r.ContractResolver.GetAllTeamContracts(ctx, *leagueID, document.TeamID)
+	teamContracts, err := r.ContractResolver.GetAllActiveTeamContracts(ctx, *leagueID, document.TeamID)
 	if err != nil {
 		log.Println("Failed to update contract metadata")
 		return nil, err
@@ -162,7 +162,7 @@ func (r *queryResolver) TeamByID(ctx context.Context, leagueID string, teamID st
 }
 
 func (r *queryResolver) TeamContracts(ctx context.Context, leagueID *string, teamID *string) ([]*contract.Contract, error) {
-	contracts, err := r.ContractResolver.GetAllTeamContracts(ctx, *leagueID, *teamID)
+	contracts, err := r.ContractResolver.GetAllActiveTeamContracts(ctx, *leagueID, *teamID)
 	if err != nil {
 		return nil, err
 	}

@@ -48,6 +48,7 @@ export const LEAGUE_CONTRACTS = gql`
         leagueContracts(leagueId:$leagueId) {
             id
             playerId
+            teamId
             player {
                 playerName
                 teamNFL

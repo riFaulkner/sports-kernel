@@ -178,10 +178,10 @@ type ComplexityRoot struct {
 	}
 
 	Team struct {
+		ContractsMetadata        func(childComplexity int) int
 		CurrentContractsMetadata func(childComplexity int) int
 		Division                 func(childComplexity int) int
 		FoundedDate              func(childComplexity int) int
-		FutureContractsMetadata  func(childComplexity int) int
 		ID                       func(childComplexity int) int
 		OwnerID                  func(childComplexity int) int
 		TeamAssets               func(childComplexity int) int
@@ -966,6 +966,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Users(childComplexity), true
 
+	case "Team.contractsMetadata":
+		if e.complexity.Team.ContractsMetadata == nil {
+			break
+		}
+
+		return e.complexity.Team.ContractsMetadata(childComplexity), true
+
 	case "Team.currentContractsMetadata":
 		if e.complexity.Team.CurrentContractsMetadata == nil {
 			break
@@ -986,13 +993,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Team.FoundedDate(childComplexity), true
-
-	case "Team.futureContractsMetadata":
-		if e.complexity.Team.FutureContractsMetadata == nil {
-			break
-		}
-
-		return e.complexity.Team.FutureContractsMetadata(childComplexity), true
 
 	case "Team.id":
 		if e.complexity.Team.ID == nil {
@@ -1389,7 +1389,7 @@ type Team {
     ownerID: String!
     division: String
     currentContractsMetadata: ContractsMetadata
-    futureContractsMetadata: [ContractsMetadata!]
+    contractsMetadata: [ContractsMetadata!]
     teamAssets: TeamAssets
     teamLiabilities: TeamLiabilities
 }
@@ -3920,8 +3920,8 @@ func (ec *executionContext) fieldContext_League_teams(ctx context.Context, field
 				return ec.fieldContext_Team_division(ctx, field)
 			case "currentContractsMetadata":
 				return ec.fieldContext_Team_currentContractsMetadata(ctx, field)
-			case "futureContractsMetadata":
-				return ec.fieldContext_Team_futureContractsMetadata(ctx, field)
+			case "contractsMetadata":
+				return ec.fieldContext_Team_contractsMetadata(ctx, field)
 			case "teamAssets":
 				return ec.fieldContext_Team_teamAssets(ctx, field)
 			case "teamLiabilities":
@@ -4418,8 +4418,8 @@ func (ec *executionContext) fieldContext_Mutation_createTeam(ctx context.Context
 				return ec.fieldContext_Team_division(ctx, field)
 			case "currentContractsMetadata":
 				return ec.fieldContext_Team_currentContractsMetadata(ctx, field)
-			case "futureContractsMetadata":
-				return ec.fieldContext_Team_futureContractsMetadata(ctx, field)
+			case "contractsMetadata":
+				return ec.fieldContext_Team_contractsMetadata(ctx, field)
 			case "teamAssets":
 				return ec.fieldContext_Team_teamAssets(ctx, field)
 			case "teamLiabilities":
@@ -4517,8 +4517,8 @@ func (ec *executionContext) fieldContext_Mutation_updateTeamMetaData(ctx context
 				return ec.fieldContext_Team_division(ctx, field)
 			case "currentContractsMetadata":
 				return ec.fieldContext_Team_currentContractsMetadata(ctx, field)
-			case "futureContractsMetadata":
-				return ec.fieldContext_Team_futureContractsMetadata(ctx, field)
+			case "contractsMetadata":
+				return ec.fieldContext_Team_contractsMetadata(ctx, field)
 			case "teamAssets":
 				return ec.fieldContext_Team_teamAssets(ctx, field)
 			case "teamLiabilities":
@@ -6070,8 +6070,8 @@ func (ec *executionContext) fieldContext_Query_teams(ctx context.Context, field 
 				return ec.fieldContext_Team_division(ctx, field)
 			case "currentContractsMetadata":
 				return ec.fieldContext_Team_currentContractsMetadata(ctx, field)
-			case "futureContractsMetadata":
-				return ec.fieldContext_Team_futureContractsMetadata(ctx, field)
+			case "contractsMetadata":
+				return ec.fieldContext_Team_contractsMetadata(ctx, field)
 			case "teamAssets":
 				return ec.fieldContext_Team_teamAssets(ctx, field)
 			case "teamLiabilities":
@@ -6166,8 +6166,8 @@ func (ec *executionContext) fieldContext_Query_teamById(ctx context.Context, fie
 				return ec.fieldContext_Team_division(ctx, field)
 			case "currentContractsMetadata":
 				return ec.fieldContext_Team_currentContractsMetadata(ctx, field)
-			case "futureContractsMetadata":
-				return ec.fieldContext_Team_futureContractsMetadata(ctx, field)
+			case "contractsMetadata":
+				return ec.fieldContext_Team_contractsMetadata(ctx, field)
 			case "teamAssets":
 				return ec.fieldContext_Team_teamAssets(ctx, field)
 			case "teamLiabilities":
@@ -7092,8 +7092,8 @@ func (ec *executionContext) fieldContext_Team_currentContractsMetadata(ctx conte
 	return fc, nil
 }
 
-func (ec *executionContext) _Team_futureContractsMetadata(ctx context.Context, field graphql.CollectedField, obj *model.Team) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Team_futureContractsMetadata(ctx, field)
+func (ec *executionContext) _Team_contractsMetadata(ctx context.Context, field graphql.CollectedField, obj *model.Team) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Team_contractsMetadata(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -7106,7 +7106,7 @@ func (ec *executionContext) _Team_futureContractsMetadata(ctx context.Context, f
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.FutureContractsMetadata, nil
+		return obj.ContractsMetadata, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7120,7 +7120,7 @@ func (ec *executionContext) _Team_futureContractsMetadata(ctx context.Context, f
 	return ec.marshalOContractsMetadata2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐContractsMetadataᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Team_futureContractsMetadata(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Team_contractsMetadata(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Team",
 		Field:      field,
@@ -11417,9 +11417,9 @@ func (ec *executionContext) _Team(ctx context.Context, sel ast.SelectionSet, obj
 
 			out.Values[i] = ec._Team_currentContractsMetadata(ctx, field, obj)
 
-		case "futureContractsMetadata":
+		case "contractsMetadata":
 
-			out.Values[i] = ec._Team_futureContractsMetadata(ctx, field, obj)
+			out.Values[i] = ec._Team_contractsMetadata(ctx, field, obj)
 
 		case "teamAssets":
 

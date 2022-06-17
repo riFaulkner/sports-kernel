@@ -6,7 +6,7 @@ type Team {
     ownerID: String!
     division: String
     currentContractsMetadata: ContractsMetadata
-    futureContractsMetadata: [ContractsMetadata!]
+    contractsMetadata: [ContractsMetadata!]
     teamAssets: TeamAssets
     teamLiabilities: TeamLiabilities
 }
