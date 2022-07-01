@@ -1,4 +1,4 @@
-name: Go
+name: Test
 
 on:
   push:
@@ -19,7 +19,7 @@ jobs:
         go-version: 1.18
 
     - name: Build
-      run: go build -v ./...
+      run: cd api/sk-serve && go build -v ./...
 
     - name: Test
-      run: go test -v ./... --cover
+      run: cd api/sk-serve && go test -v ./... --cover
