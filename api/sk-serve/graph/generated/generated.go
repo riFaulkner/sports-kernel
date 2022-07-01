@@ -227,8 +227,6 @@ type ComplexityRoot struct {
 
 type ContractResolver interface {
 	Player(ctx context.Context, obj *contract.Contract) (*model.PlayerNfl, error)
-
-	ContractStatus(ctx context.Context, obj *contract.Contract) (*model.ContractStatus, error)
 }
 type MutationResolver interface {
 	CreateUser(ctx context.Context, input model.NewUser) (*model.User, error)
@@ -1233,7 +1231,7 @@ type Contract {
     player: PlayerNFL!
     teamId: String!
     currentYear: Int!
-    contractStatus: ContractStatus # TODO: Once the contract script is run again, make this required
+    contractStatus: ContractStatus!
     restructureStatus: ContractRestructureStatus!
     totalContractValue: Int!
     totalRemainingValue: Int!
@@ -1265,7 +1263,8 @@ input ContractInput {
     playerId: String!
     teamId: String!
     currentYear: Int!
-    restructureStatus: ContractRestructureStatus!
+    contractStatus: ContractStatus
+    restructureStatus: ContractRestructureStatus
     totalContractValue: Int
     totalRemainingValue: Int
     contractLength: Int
@@ -2351,26 +2350,29 @@ func (ec *executionContext) _Contract_contractStatus(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Contract().ContractStatus(rctx, obj)
+		return obj.ContractStatus, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.ContractStatus)
+	res := resTmp.(model.ContractStatus)
 	fc.Result = res
-	return ec.marshalOContractStatus2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐContractStatus(ctx, field.Selections, res)
+	return ec.marshalNContractStatus2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐContractStatus(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Contract_contractStatus(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Contract",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type ContractStatus does not have child fields")
 		},
@@ -9812,11 +9814,19 @@ func (ec *executionContext) unmarshalInputContractInput(ctx context.Context, obj
 			if err != nil {
 				return it, err
 			}
+		case "contractStatus":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contractStatus"))
+			it.ContractStatus, err = ec.unmarshalOContractStatus2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐContractStatus(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "restructureStatus":
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("restructureStatus"))
-			it.RestructureStatus, err = ec.unmarshalNContractRestructureStatus2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐContractRestructureStatus(ctx, v)
+			it.RestructureStatus, err = ec.unmarshalOContractRestructureStatus2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐContractRestructureStatus(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10335,22 +10345,12 @@ func (ec *executionContext) _Contract(ctx context.Context, sel ast.SelectionSet,
 				atomic.AddUint32(&invalids, 1)
 			}
 		case "contractStatus":
-			field := field
 
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Contract_contractStatus(ctx, field, obj)
-				return res
+			out.Values[i] = ec._Contract_contractStatus(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
 			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
-
-			})
 		case "restructureStatus":
 
 			out.Values[i] = ec._Contract_restructureStatus(ctx, field, obj)
@@ -12048,6 +12048,16 @@ func (ec *executionContext) marshalNContractRestructureStatus2githubᚗcomᚋrif
 	return v
 }
 
+func (ec *executionContext) unmarshalNContractStatus2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐContractStatus(ctx context.Context, v interface{}) (model.ContractStatus, error) {
+	var res model.ContractStatus
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNContractStatus2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐContractStatus(ctx context.Context, sel ast.SelectionSet, v model.ContractStatus) graphql.Marshaler {
+	return v
+}
+
 func (ec *executionContext) marshalNContractYear2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋcontractᚐContractYearᚄ(ctx context.Context, sel ast.SelectionSet, v []*contract.ContractYear) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -12883,6 +12893,22 @@ func (ec *executionContext) unmarshalOContractInput2ᚖgithubᚗcomᚋrifaulkner
 	}
 	res, err := ec.unmarshalInputContractInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOContractRestructureStatus2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐContractRestructureStatus(ctx context.Context, v interface{}) (*model.ContractRestructureStatus, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.ContractRestructureStatus)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOContractRestructureStatus2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐContractRestructureStatus(ctx context.Context, sel ast.SelectionSet, v *model.ContractRestructureStatus) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalOContractStatus2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐContractStatus(ctx context.Context, v interface{}) (*model.ContractStatus, error) {

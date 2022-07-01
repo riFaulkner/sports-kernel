@@ -5,7 +5,7 @@ type Contract {
     player: PlayerNFL!
     teamId: String!
     currentYear: Int!
-    contractStatus: ContractStatus # TODO: Once the contract script is run again, make this required
+    contractStatus: ContractStatus!
     restructureStatus: ContractRestructureStatus!
     totalContractValue: Int!
     totalRemainingValue: Int!
@@ -37,7 +37,8 @@ input ContractInput {
     playerId: String!
     teamId: String!
     currentYear: Int!
-    restructureStatus: ContractRestructureStatus!
+    contractStatus: ContractStatus
+    restructureStatus: ContractRestructureStatus
     totalContractValue: Int
     totalRemainingValue: Int
     contractLength: Int

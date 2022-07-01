@@ -8,6 +8,7 @@ type Contract struct {
 	TeamID              string                          `json:"teamId"`
 	CurrentYear         int                             `json:"currentYear"`
 	RestructureStatus   model.ContractRestructureStatus `json:"restructureStatus"`
+	ContractStatus      model.ContractStatus            `json:"contractStatus"`
 	TotalContractValue  int                             `json:"totalContractValue"`
 	TotalRemainingValue int                             `json:"totalRemainingValue"`
 	ContractLength      int                             `json:"contractLength"`
@@ -22,15 +23,16 @@ type HistoryRecord struct {
 }
 
 type ContractInput struct {
-	PlayerID            string                          `json:"playerId"`
-	TeamID              string                          `json:"teamId"`
-	CurrentYear         int                             `json:"currentYear"`
-	RestructureStatus   model.ContractRestructureStatus `json:"restructureStatus"`
-	TotalContractValue  *int                            `json:"totalContractValue"`
-	TotalRemainingValue *int                            `json:"totalRemainingValue"`
-	ContractLength      *int                            `json:"contractLength"`
-	PlayerPosition      string                          `json:"playerPosition"`
-	ContractDetails     []*ContractYearInput            `json:"contractDetails"`
+	PlayerID            string                           `json:"playerId"`
+	TeamID              string                           `json:"teamId"`
+	CurrentYear         int                              `json:"currentYear"`
+	TotalContractValue  *int                             `json:"totalContractValue"`
+	TotalRemainingValue *int                             `json:"totalRemainingValue"`
+	ContractLength      *int                             `json:"contractLength"`
+	PlayerPosition      string                           `json:"playerPosition"`
+	ContractDetails     []*ContractYearInput             `json:"contractDetails"`
+	ContractStatus      *model.ContractStatus            `json:"contractStatus"`
+	RestructureStatus   *model.ContractRestructureStatus `json:"contractRestructureStatus"`
 }
 
 type ContractRestructureInput struct {
