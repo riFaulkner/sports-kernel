@@ -17,8 +17,6 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
-const teamCollection = "teams"
-
 type TeamImpl struct {
 	Client firestore.Client
 }
@@ -94,7 +92,7 @@ func (u *TeamImpl) GetAllLeagueTeams(ctx context.Context, leagueId string) ([]*m
 	//Create Document Ref - There is no traffic associated with this...
 	league := u.Client.Collection(firestore.LeaguesCollection).Doc(leagueId)
 
-	results, err := league.Collection(teamCollection).Documents(ctx).GetAll()
+	results, err := league.Collection(firestore.TeamsCollection).Documents(ctx).GetAll()
 
 	if err != nil {
 		graphql.AddError(ctx, gqlerror.Errorf("Error fetching teams from league")) //TODO (@kbthree13): This doesn't seem to be sending the error to the client
@@ -116,7 +114,7 @@ func (u *TeamImpl) GetAllLeagueTeams(ctx context.Context, leagueId string) ([]*m
 func (u *TeamImpl) GetTeamById(ctx context.Context, leagueId string, teamId string) (*model.Team, error) {
 	league := u.Client.Collection(firestore.LeaguesCollection).Doc(leagueId)
 
-	result, err := league.Collection(teamCollection).Doc(teamId).Get(ctx)
+	result, err := league.Collection(firestore.TeamsCollection).Doc(teamId).Get(ctx)
 
 	if err != nil {
 		return nil, err
@@ -135,7 +133,7 @@ func (u *TeamImpl) GetTeamById(ctx context.Context, leagueId string, teamId stri
 func (u *TeamImpl) GetTeamByIdOk(ctx context.Context, leagueId string, teamId string) (*model.Team, bool) {
 	teamReference, err := u.Client.
 		Collection(firestore.LeaguesCollection).
-		Doc(leagueId).Collection(teamCollection).
+		Doc(leagueId).Collection(firestore.TeamsCollection).
 		Doc(teamId).
 		Get(ctx)
 
@@ -258,7 +256,7 @@ func (u *TeamImpl) UpdateTeamContractMetaData(ctx context.Context, leagueID stri
 	league := u.Client.Collection(firestore.LeaguesCollection).Doc(leagueID)
 
 	_, err = league.
-		Collection(teamCollection).
+		Collection(firestore.TeamsCollection).
 		Doc(team.ID).
 		Update(ctx, []gFirestore.Update{
 			{
