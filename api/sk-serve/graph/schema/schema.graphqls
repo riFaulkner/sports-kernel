@@ -65,13 +65,14 @@ input NewLeaguePost {
 }
 
 type Mutation {
-  createUser(input: NewUser!): User!
-  createTeam(leagueId: ID, input: NewTeam!): Team!
-  updateTeamMetaData(leagueId: ID!, teamId: ID!): Team!
-  createContract(leagueId: ID, input: ContractInput): Contract!
-  createPlayer(input: NewPlayerNFL!): PlayerNFL!
-  createPost(leagueId: ID!, input: NewLeaguePost): LeaguePost!
-  addComment(leagueId: ID!, postId: ID!, input: NewPostComment): PostComment!
-  createUserRole(leagueId: ID, newUserRole: NewUserRole): UserRoles!
-  contractActionRestructure(leagueId: ID, restructureDetails: ContractRestructureInput!): Contract!
+  createUser(input: NewUser!): User! @hasRole(role: LEAGUE_MANAGER)
+  createTeam(leagueId: ID, input: NewTeam!): Team! @hasRole(role: LEAGUE_MANAGER)
+  updateTeamMetaData(leagueId: ID!, teamId: ID!): Team! @hasRole(role: LEAGUE_MEMBER)
+  createContract(leagueId: ID, input: ContractInput): Contract! @hasRole(role: LEAGUE_MEMBER)
+  createPlayer(input: NewPlayerNFL!): PlayerNFL! @hasRole(role: LEAGUE_MANAGER)
+  createPost(leagueId: ID!, input: NewLeaguePost): LeaguePost! @hasRole(role: LEAGUE_MEMBER)
+  addComment(leagueId: ID!, postId: ID!, input: NewPostComment): PostComment! @hasRole(role: LEAGUE_MEMBER)
+  createUserRole(leagueId: ID, newUserRole: NewUserRole): UserRoles! @hasRole(role: LEAGUE_MANAGER)
+  contractActionDrop(leagueId: ID!, teamId: ID!, contractId: ID!): Boolean! @hasRole(role: TEAM_OWNER)
+  contractActionRestructure(leagueId: ID!, restructureDetails: ContractRestructureInput!): Contract! @hasRole(role: TEAM_OWNER)
 }

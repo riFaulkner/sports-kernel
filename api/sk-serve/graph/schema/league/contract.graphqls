@@ -5,6 +5,7 @@ type Contract {
     player: PlayerNFL!
     teamId: String!
     currentYear: Int!
+    contractStatus: ContractStatus!
     restructureStatus: ContractRestructureStatus!
     totalContractValue: Int!
     totalRemainingValue: Int!
@@ -20,6 +21,12 @@ type ContractYear {
     guaranteedAmount: Int!
 }
 
+enum ContractStatus {
+    ACTIVE,
+    INACTIVE_EXPIRED,
+    INACTIVE_DROPPED,
+}
+
 enum ContractRestructureStatus {
     ELIGIBLE,
     INELIGIBLE_FINAL_YEAR,
@@ -30,7 +37,8 @@ input ContractInput {
     playerId: String!
     teamId: String!
     currentYear: Int!
-    restructureStatus: ContractRestructureStatus!
+    contractStatus: ContractStatus
+    restructureStatus: ContractRestructureStatus
     totalContractValue: Int
     totalRemainingValue: Int
     contractLength: Int

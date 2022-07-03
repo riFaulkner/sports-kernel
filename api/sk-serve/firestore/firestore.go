@@ -13,6 +13,7 @@ const (
 	PlayerCollection          = "playersNFL"
 	PostCollection            = "posts"
 	PlayerContractsCollection = "playerContracts"
+	TeamsCollection           = "teams"
 	TransactionCollection     = "transactions"
 	UserRolesCollection       = "user-roles"
 	UsersCollection           = "users"

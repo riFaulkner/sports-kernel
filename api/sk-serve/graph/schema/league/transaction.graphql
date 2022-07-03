@@ -6,6 +6,7 @@ type Transaction {
 
 enum TransactionType {
     CONTRACT_RESTRUCTURE
+    DROP_PLAYER
 }
 
 input TransactionInput {

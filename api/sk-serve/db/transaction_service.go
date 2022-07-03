@@ -16,7 +16,7 @@ func (u *TransactionImpl) CreateTransaction(ctx context.Context, leagueID *strin
 	transaction := transactions.Transaction{
 		TransactionType: input.TransactionType,
 		TransactionData: input.TransactionData,
-		OccurrenceDate:  time.Now().UnixMilli(),
+		OccurrenceDate:  time.Now(),
 	}
 
 	_, _, err := u.Client.Collection(firestore.LeaguesCollection).

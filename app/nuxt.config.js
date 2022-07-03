@@ -6,7 +6,7 @@ export default {
         meta: [
             {charset: 'utf-8'},
             {name: 'viewport', content: 'width=device-width, initial-scale=1'},
-            {hid: 'description', name: 'description', content: ''},
+            {hid: 'description', name: 'description', content: 'The worlds best most fun fantasy football'},
             {name: 'format-detection', content: 'telephone=no'}
         ],
         link: [
@@ -62,14 +62,6 @@ export default {
     apollo: {
         tokenName: "auth._token.auth0", // specify token name
         authenticationType: '',
-        // defaultOptions: {
-        //     $query: {
-        //         fetchPolicy: "network-only",
-        //         errorPolicy: "all"
-        //     }
-        // },
-
-        // watchLoading: "@/apollo/loadingHandler.js",
         errorHandler: "@/graphql/config/errorHandler.js",
         clientConfigs: {
             default: {

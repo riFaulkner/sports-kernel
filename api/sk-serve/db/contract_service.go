@@ -1,6 +1,7 @@
 package db
 
 import (
+	gfirestore "cloud.google.com/go/firestore"
 	"context"
 	"encoding/json"
 	"github.com/99designs/gqlgen/graphql"
@@ -11,13 +12,14 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"log"
 	"sort"
 	"time"
 )
 
 type ContractImpl struct {
 	Client          firestore.Client
-	PlayerResolver  PlayerImpl
+	TeamImpl        TeamImpl
 	TransactionImpl TransactionImpl
 }
 
@@ -76,6 +78,40 @@ func (u *ContractImpl) GetAllTeamContracts(ctx context.Context, leagueID string,
 	return contracts, nil
 }
 
+func (u *ContractImpl) GetAllActiveTeamContracts(ctx context.Context, leagueID string, teamID string) ([]*contract.Contract, error) {
+	contracts := make([]*contract.Contract, 0)
+
+	results, err := u.Client.
+		Collection(firestore.LeaguesCollection).
+		Doc(leagueID).
+		Collection(firestore.PlayerContractsCollection).
+		Where("TeamID", "==", teamID).
+		Where("ContractStatus", "==", model.ContractStatusActive).
+		Documents(ctx).
+		GetAll()
+
+	if err != nil {
+		graphql.AddError(ctx, gqlerror.Errorf("Error fetching teams from league")) //TODO (@kbthree13): This doesn't seem to be sending the error to the client
+		return nil, err
+	}
+
+	for _, result := range results {
+		contract := new(contract.Contract)
+		err = result.DataTo(&contract)
+		if err != nil {
+			return nil, err
+		}
+		contract.ID = result.Ref.ID
+		contracts = append(contracts, contract)
+	}
+
+	sort.SliceStable(contracts, func(i, j int) bool {
+		return contracts[i].TotalContractValue > contracts[j].TotalContractValue
+	})
+
+	return contracts, nil
+}
+
 func (u *ContractImpl) GetContractByLeagueAndPlayerId(ctx context.Context, leagueId string, playerId string) (*contract.Contract, error) {
 	// Todo add a filter for active filters
 	result, err := u.Client.Collection(firestore.LeaguesCollection).Doc(leagueId).Collection(firestore.PlayerContractsCollection).Doc(playerId).Get(ctx)
@@ -91,7 +127,7 @@ func (u *ContractImpl) GetContractByLeagueAndPlayerId(ctx context.Context, leagu
 	return contract, nil
 }
 
-func (u *ContractImpl) CreateContract(ctx context.Context, leagueId string, contractInput *model.ContractInput) (*contract.Contract, error) {
+func (u *ContractImpl) CreateContract(ctx context.Context, leagueId string, contractInput *contract.ContractInput) (*contract.Contract, error) {
 	u.validateContract(ctx, &leagueId, contractInput)
 
 	if len(graphql.GetErrors(ctx)) > 0 {
@@ -124,7 +160,7 @@ func (u *ContractImpl) CreateContract(ctx context.Context, leagueId string, cont
 	return contract, nil
 }
 
-func (u *ContractImpl) RestructureContract(ctx context.Context, leagueID *string, restructureDetails *model.ContractRestructureInput) (*contract.Contract, error) {
+func (u *ContractImpl) RestructureContract(ctx context.Context, leagueID *string, restructureDetails *contract.ContractRestructureInput) (*contract.Contract, error) {
 	// Get the contract
 	contractRef, err := u.Client.Collection(firestore.LeaguesCollection).
 		Doc(*leagueID).
@@ -183,9 +219,9 @@ func (u *ContractImpl) RestructureContract(ctx context.Context, leagueID *string
 
 	contractHistory = append(contractHistory, &mostRecentHistory)
 
-	newContractDetails := make([]*model.ContractYear, 0, len(restructureDetails.ContractRestructureDetails))
+	newContractDetails := make([]*contract.ContractYear, 0, len(restructureDetails.ContractRestructureDetails))
 	for _, yearDetailsInput := range restructureDetails.ContractRestructureDetails {
-		yearDetails := model.ContractYear{
+		yearDetails := contract.ContractYear{
 			Year:             yearDetailsInput.Year,
 			TotalAmount:      yearDetailsInput.TotalAmount,
 			PaidAmount:       yearDetailsInput.PaidAmount,
@@ -199,7 +235,12 @@ func (u *ContractImpl) RestructureContract(ctx context.Context, leagueID *string
 	contractValue.ContractHistory = contractHistory
 
 	// Save the new contract
-	u.Client.Collection(firestore.LeaguesCollection).Doc(*leagueID).Collection(firestore.PlayerContractsCollection).Doc(restructureDetails.ContractID).Set(ctx, contractValue)
+	u.Client.
+		Collection(firestore.LeaguesCollection).
+		Doc(*leagueID).
+		Collection(firestore.PlayerContractsCollection).
+		Doc(restructureDetails.ContractID).
+		Set(ctx, contractValue)
 
 	// Save the transaction
 	inputData, err := json.Marshal(restructureDetails)
@@ -211,6 +252,9 @@ func (u *ContractImpl) RestructureContract(ctx context.Context, leagueID *string
 			TransactionData: string(inputData),
 		}
 		err = u.TransactionImpl.CreateTransaction(ctx, leagueID, &transactionInput)
+		if err != nil {
+			return nil, gqlerror.Errorf("Unable to make transaction %v", err)
+		}
 	}
 
 	// TODO: Recalculate team metadata
@@ -218,7 +262,132 @@ func (u *ContractImpl) RestructureContract(ctx context.Context, leagueID *string
 	return contractValue, nil
 }
 
-func (u *ContractImpl) validateContract(ctx context.Context, leagueId *string, contractInput *model.ContractInput) {
+func (u *ContractImpl) DropContract(ctx context.Context, leagueID string, teamID string, contractID string) (bool, error) {
+	playerContract, ok := u.GetContractById(ctx, leagueID, contractID)
+
+	if !ok {
+		return false, gqlerror.Errorf("Error fetching contract, try again later")
+	}
+
+	if playerContract == nil {
+		return false, gqlerror.Errorf("Contract does not exist")
+	}
+
+	// teamID was used for security validate, make sure it's the same team ID that is on the contract
+	if playerContract.TeamID != teamID {
+		return false, gqlerror.Errorf("TeamId provided did not match the contract's teamID")
+	}
+
+	deadCapYears := make([]*model.DeadCap, 0, 2)
+
+	sort.Slice(playerContract.ContractDetails, func(i, j int) bool {
+		return playerContract.ContractDetails[i].Year < playerContract.ContractDetails[j].Year
+	})
+	currentContractYear := playerContract.CurrentYear
+	currentContractDetails := playerContract.ContractDetails[(currentContractYear - 1)]
+
+	deadCapYears = append(deadCapYears, &model.DeadCap{
+		AssociatedContractID: playerContract.ID,
+		Amount:               calculateDeadCap(currentContractDetails),
+	})
+
+	futureAccumulatedDeadCap := 0
+	for _, year := range playerContract.ContractDetails {
+		if year.Year > playerContract.CurrentYear {
+			futureAccumulatedDeadCap += calculateDeadCap(year)
+		}
+	}
+
+	deadCapYears = append(deadCapYears, &model.DeadCap{
+		AssociatedContractID: playerContract.ID,
+		Amount:               futureAccumulatedDeadCap,
+	})
+	// Add dead cap to the team
+	ok = u.TeamImpl.AddDeadCapToTeam(ctx, leagueID, teamID, deadCapYears)
+
+	if !ok {
+		// consider using a transaction here to roll back
+		return false, gqlerror.Errorf("Failed to add dead cap to team")
+	}
+
+	// Move the contract to new status
+	_, err := u.Client.
+		Collection(firestore.LeaguesCollection).
+		Doc(leagueID).
+		Collection(firestore.PlayerContractsCollection).
+		Doc(contractID).
+		Update(ctx, []gfirestore.Update{
+			{
+				Path:  "ContractStatus",
+				Value: model.ContractStatusInactiveDropped,
+			},
+		})
+	if err != nil {
+		return false, gqlerror.Errorf("Unable to update contract status: %v", err)
+	}
+
+	// Save the transaction
+	inputData, err := json.Marshal(map[string]interface{}{
+		"contractID":   contractID,
+		"deadCapAdded": deadCapYears,
+	})
+
+	if err != nil {
+		graphql.AddError(ctx, gqlerror.Errorf("Unable to marshal JSON of drop object, err: %v", err))
+	} else {
+		transactionInput := model.TransactionInput{
+			TransactionType: model.TransactionTypeDropPlayer,
+			TransactionData: string(inputData),
+		}
+		err = u.TransactionImpl.CreateTransaction(ctx, &leagueID, &transactionInput)
+		if err != nil {
+			return false, gqlerror.Errorf("Unable to make transaction: %v", err)
+		}
+	}
+
+	// update team contracts metadata
+	teamContracts, err := u.GetAllActiveTeamContracts(ctx, leagueID, teamID)
+	if err != nil {
+		return true, gqlerror.Errorf("Unable to recalculate team metadata")
+	}
+	u.TeamImpl.UpdateTeamContractMetaData(ctx, leagueID, teamContracts)
+
+	return true, nil
+}
+
+// Pull out to interface
+func (u *ContractImpl) GetContractById(ctx context.Context, leagueID string, contractID string) (*contract.Contract, bool) {
+	playerContractRef, err := u.Client.
+		Collection(firestore.LeaguesCollection).
+		Doc(leagueID).
+		Collection(firestore.PlayerContractsCollection).
+		Doc(contractID).
+		Get(ctx)
+
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			return nil, true
+		}
+		// print out log warning
+		log.Printf("WARN: error fetching contract: %v", err)
+		return nil, false
+	}
+
+	playerContract := new(contract.Contract)
+
+	err = playerContractRef.DataTo(&playerContract)
+	if err != nil {
+		// print out log warning
+		log.Printf("WARN: error marshalling contract to object: %v", err)
+		return nil, false
+	}
+
+	playerContract.ID = playerContractRef.Ref.ID
+
+	return playerContract, true
+}
+
+func (u *ContractImpl) validateContract(ctx context.Context, leagueId *string, contractInput *contract.ContractInput) {
 	contractInput.TotalContractValue = getAndValidateContractTotalValue(ctx, contractInput.ContractDetails)
 
 	u.validatePlayer(ctx, leagueId, &contractInput.PlayerID)
@@ -248,7 +417,7 @@ func (u *ContractImpl) validateTeam(ctx context.Context, leagueId *string, teamI
 	//result, _ := u.GetAllTeamContracts(ctx, *leagueId, *teamId)
 }
 
-func getAndValidateContractTotalValue(ctx context.Context, contractYears []*model.ContractYearInput) *int {
+func getAndValidateContractTotalValue(ctx context.Context, contractYears []*contract.ContractYearInput) *int {
 	totalContractValue := 0
 	for _, value := range contractYears {
 		totalContractValue += value.TotalAmount
@@ -257,4 +426,16 @@ func getAndValidateContractTotalValue(ctx context.Context, contractYears []*mode
 		graphql.AddError(ctx, gqlerror.Errorf("Invalid contract, contract total value is 0"))
 	}
 	return &totalContractValue
+}
+
+func calculateDeadCap(contractDetails *contract.ContractYear) int {
+	paid := contractDetails.PaidAmount
+	guaranteed := contractDetails.GuaranteedAmount
+
+	amountPaidOff := guaranteed - paid
+
+	if amountPaidOff < 0 {
+		return 0
+	}
+	return amountPaidOff
 }

@@ -1,9 +1,12 @@
 package transactions
 
-import "github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
+import (
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
+	"time"
+)
 
 type Transaction struct {
 	TransactionType model.TransactionType `json:"transactionType"`
-	OccurrenceDate  int64                 `json:"occurrenceDate"`
+	OccurrenceDate  time.Time             `json:"occurrenceDate"`
 	TransactionData string                `json:"transactionData"`
 }
