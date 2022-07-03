@@ -1,5 +1,8 @@
 {
-  "name": "frontend",
+  "name": "Sports Kernel",
+  "author": {
+    "name": "Sports Kernel Team"
+  },
   "version": "1.0.0",
   "private": true,
   "scripts": {
