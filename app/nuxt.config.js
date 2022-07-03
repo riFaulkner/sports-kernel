@@ -78,6 +78,9 @@ export default {
     pwa: {
         manifest: {
             lang: 'en'
+        },
+        meta: {
+           name: 'Sports Kernel'
         }
     },
 
