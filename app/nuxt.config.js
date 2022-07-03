@@ -77,7 +77,12 @@ export default {
     // PWA module configuration: https://go.nuxtjs.dev/pwa
     pwa: {
         manifest: {
-            lang: 'en'
+            lang: 'en',
+            name: 'Sports Kernel',
+            short_name: 'SK'
+        },
+        meta: {
+           name: 'Sports Kernel'
         }
     },
 
