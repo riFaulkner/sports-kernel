@@ -1,17 +1,6 @@
 #Data types and Queries
 scalar Time
 
-type PlayerNFL {
-  id: ID!
-  overallRank: Int!
-  playerName: String!
-  position: String!
-  positionRank: Int!
-  teamNFL: String!  
-  birthday: String!
-  avatar: String!
-}
-
 type LeaguePost {
   id: ID!
   author: String!
@@ -69,7 +58,7 @@ type Mutation {
   createTeam(leagueId: ID, input: NewTeam!): Team! @hasRole(role: LEAGUE_MANAGER)
   updateTeamMetaData(leagueId: ID!, teamId: ID!): Team! @hasRole(role: LEAGUE_MEMBER)
   createContract(leagueId: ID, input: ContractInput): Contract! @hasRole(role: LEAGUE_MEMBER)
-  createPlayer(input: NewPlayerNFL!): PlayerNFL! @hasRole(role: LEAGUE_MANAGER)
+  createPlayer(input: NewPlayerNFL!): PlayerNFL! @hasRole(role: ADMIN)
   createPost(leagueId: ID!, input: NewLeaguePost): LeaguePost! @hasRole(role: LEAGUE_MEMBER)
   addComment(leagueId: ID!, postId: ID!, input: NewPostComment): PostComment! @hasRole(role: LEAGUE_MEMBER)
   createUserRole(leagueId: ID, newUserRole: NewUserRole): UserRoles! @hasRole(role: LEAGUE_MANAGER)

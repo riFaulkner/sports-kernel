@@ -64,8 +64,14 @@ func GetUserRolesFromContext(ctx context.Context) UserRoles {
 
 func (r UserRoles) ContainsRole(role model.Role, ctx context.Context) bool {
 	graphVariables := graphql.GetOperationContext(ctx).Variables
-	leagueID := fmt.Sprintf("%s", graphVariables["leagueId"])
-	teamID := fmt.Sprintf("%s", graphVariables["teamId"])
+	leagueID := ""
+	if graphVariables["leagueId"] != nil {
+		leagueID = fmt.Sprintf("%s", graphVariables["leagueId"])
+	}
+	teamID := ""
+	if graphVariables["teamId"] != nil {
+		teamID = fmt.Sprintf("%s", graphVariables["teamId"])
+	}
 	acceptableRoles := getAcceptableRoleStrings(role, leagueID, teamID)
 	for _, item := range r {
 		for _, role := range acceptableRoles {
@@ -102,8 +108,14 @@ func getUserRolesByID(cxt context.Context, client firestore.Client, userId strin
 }
 
 func getAcceptableRoleStrings(role model.Role, leagueID string, teamID string) []*string {
-	acceptableRoles := make([]*string, 0)
-	acceptableRoles = append(acceptableRoles, getLeagueManagerRole(leagueID))
+	acceptableRoles := make([]*string, 0, 2)
+	// Admin is always accepted
+	acceptableRoles = append(acceptableRoles, getAdminRole())
+
+	// league managers can do any action that concerns their league
+	if leagueID != "" {
+		acceptableRoles = append(acceptableRoles, getLeagueManagerRole(leagueID))
+	}
 
 	if leagueID != "" && strings.Contains(strings.ToLower(role.String()), "league") {
 		acceptableRoles = append(acceptableRoles, getLeagueMemberRole(leagueID))
@@ -115,6 +127,10 @@ func getAcceptableRoleStrings(role model.Role, leagueID string, teamID string) [
 	return acceptableRoles
 }
 
+func getAdminRole() *string {
+	role := fmt.Sprintf("skAdmin")
+	return &role
+}
 func getTeamManagerRole(teamID string) *string {
 	role := fmt.Sprintf("teamOwner:%s", teamID)
 	return &role

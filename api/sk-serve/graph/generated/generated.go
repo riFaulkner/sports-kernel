@@ -1305,17 +1305,6 @@ type Division {
 	{Name: "graph/schema/schema.graphqls", Input: `#Data types and Queries
 scalar Time
 
-type PlayerNFL {
-  id: ID!
-  overallRank: Int!
-  playerName: String!
-  position: String!
-  positionRank: Int!
-  teamNFL: String!  
-  birthday: String!
-  avatar: String!
-}
-
 type LeaguePost {
   id: ID!
   author: String!
@@ -1373,7 +1362,7 @@ type Mutation {
   createTeam(leagueId: ID, input: NewTeam!): Team! @hasRole(role: LEAGUE_MANAGER)
   updateTeamMetaData(leagueId: ID!, teamId: ID!): Team! @hasRole(role: LEAGUE_MEMBER)
   createContract(leagueId: ID, input: ContractInput): Contract! @hasRole(role: LEAGUE_MEMBER)
-  createPlayer(input: NewPlayerNFL!): PlayerNFL! @hasRole(role: LEAGUE_MANAGER)
+  createPlayer(input: NewPlayerNFL!): PlayerNFL! @hasRole(role: ADMIN)
   createPost(leagueId: ID!, input: NewLeaguePost): LeaguePost! @hasRole(role: LEAGUE_MEMBER)
   addComment(leagueId: ID!, postId: ID!, input: NewPostComment): PostComment! @hasRole(role: LEAGUE_MEMBER)
   createUserRole(leagueId: ID, newUserRole: NewUserRole): UserRoles! @hasRole(role: LEAGUE_MANAGER)
@@ -1470,6 +1459,41 @@ input NewUser {
     email: String!
     avatar: String!
 }`, BuiltIn: false},
+	{Name: "graph/schema/global/nflTeam.graphql", Input: `enum nflTeam {
+    ARI
+    ATL
+    BAL
+    BUF
+    CAR
+    CHI
+    CIN
+    CLE
+    DAL
+    DEN
+    DET
+    FA
+    GB
+    KC
+    HOU
+    IND
+    JAC
+    LAC
+    LAR
+    LV
+    MIN
+    MIA
+    NE
+    NO
+    NYG
+    NYJ
+    PIT
+    PHI
+    SEA
+    SF
+    TB
+    TEN
+    WAS
+}`, BuiltIn: false},
 	{Name: "graph/schema/league/transaction.graphql", Input: `type Transaction {
     transactionType: TransactionType!
     occurrenceDate: Int!
@@ -1485,11 +1509,22 @@ input TransactionInput {
     transactionType: TransactionType!
     transactionData: String!
 }`, BuiltIn: false},
-	{Name: "graph/schema/player/player.graphql", Input: `input NewPlayerNFL {
+	{Name: "graph/schema/player/player.graphql", Input: `type PlayerNFL {
+    id: ID!
+    overallRank: Int!
+    playerName: String!
+    position: String!
+    positionRank: Int!
+    teamNFL: nflTeam!
+    birthday: String!
+    avatar: String!
+}
+
+input NewPlayerNFL {
     playerName: String!
     position: String!
     positionRank: Int
-    teamNFL: String
+    teamNFL: nflTeam!
     birthday: String
     avatar: String
     overallRank: Int
@@ -4666,7 +4701,7 @@ func (ec *executionContext) _Mutation_createPlayer(ctx context.Context, field gr
 			return ec.resolvers.Mutation().CreatePlayer(rctx, fc.Args["input"].(model.NewPlayerNfl))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalNRole2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐRole(ctx, "LEAGUE_MANAGER")
+			role, err := ec.unmarshalNRole2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐRole(ctx, "ADMIN")
 			if err != nil {
 				return nil, err
 			}
@@ -5444,9 +5479,9 @@ func (ec *executionContext) _PlayerNFL_teamNFL(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(model.NflTeam)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNnflTeam2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐNflTeam(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_PlayerNFL_teamNFL(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5456,7 +5491,7 @@ func (ec *executionContext) fieldContext_PlayerNFL_teamNFL(ctx context.Context, 
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type nflTeam does not have child fields")
 		},
 	}
 	return fc, nil
@@ -10030,7 +10065,7 @@ func (ec *executionContext) unmarshalInputNewPlayerNFL(ctx context.Context, obj 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("teamNFL"))
-			it.TeamNfl, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			it.TeamNfl, err = ec.unmarshalNnflTeam2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐNflTeam(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12812,6 +12847,16 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNnflTeam2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐNflTeam(ctx context.Context, v interface{}) (model.NflTeam, error) {
+	var res model.NflTeam
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNnflTeam2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐNflTeam(ctx context.Context, sel ast.SelectionSet, v model.NflTeam) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v interface{}) (bool, error) {

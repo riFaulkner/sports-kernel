@@ -12,6 +12,7 @@ require (
 	github.com/rs/cors v1.6.0
 	github.com/vektah/gqlparser/v2 v2.4.2
 	google.golang.org/api v0.59.0
+	google.golang.org/appengine v1.6.7
 	google.golang.org/grpc v1.40.0
 )
 
@@ -38,7 +39,6 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.10 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
-	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20211028162531-8db9c33dc351 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect

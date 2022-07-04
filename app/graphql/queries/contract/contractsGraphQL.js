@@ -5,6 +5,7 @@ export const CONTRACT_DROP = gql`
         contractActionDrop(leagueId: $leagueId, teamId: $teamId, contractId: $contractId)
     }
 `
+
 export const CONTRACT_RESTRUCTURE = gql`
     mutation restructureContract(
         $leagueId: ID!, 

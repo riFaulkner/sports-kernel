@@ -73,7 +73,7 @@ func (r *mutationResolver) CreateContract(ctx context.Context, leagueID *string,
 }
 
 func (r *mutationResolver) CreatePlayer(ctx context.Context, input model.NewPlayerNfl) (*model.PlayerNfl, error) {
-	player, err := r.PlayerResolver.Create(ctx, input)
+	player, err := r.PlayerService.CreatePlayer(ctx, input)
 	if err != nil {
 		return nil, err
 	}
@@ -171,22 +171,11 @@ func (r *queryResolver) TeamContracts(ctx context.Context, leagueID *string, tea
 }
 
 func (r *queryResolver) Players(ctx context.Context, numOfResults *int) ([]*model.PlayerNfl, error) {
-	players, err := r.PlayerResolver.GetAll(ctx, numOfResults)
-	if err != nil {
-		return nil, err
-	}
-
-	return players, nil
+	return r.PlayerService.GetAllPlayers(ctx, numOfResults)
 }
 
 func (r *queryResolver) Player(ctx context.Context, playerID *string) (*model.PlayerNfl, error) {
-	player, err := r.PlayerResolver.GetPlayerById(ctx, playerID)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return player, nil
+	return r.PlayerService.GetPlayerById(ctx, playerID)
 }
 
 func (r *queryResolver) Posts(ctx context.Context, leagueID string, numOfResults *int) ([]*model.LeaguePost, error) {
