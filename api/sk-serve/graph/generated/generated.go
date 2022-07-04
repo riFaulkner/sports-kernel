@@ -1373,7 +1373,7 @@ type Mutation {
   createTeam(leagueId: ID, input: NewTeam!): Team! @hasRole(role: LEAGUE_MANAGER)
   updateTeamMetaData(leagueId: ID!, teamId: ID!): Team! @hasRole(role: LEAGUE_MEMBER)
   createContract(leagueId: ID, input: ContractInput): Contract! @hasRole(role: LEAGUE_MEMBER)
-  createPlayer(input: NewPlayerNFL!): PlayerNFL! @hasRole(role: LEAGUE_MANAGER)
+  createPlayer(input: NewPlayerNFL!): PlayerNFL! @hasRole(role: ADMIN)
   createPost(leagueId: ID!, input: NewLeaguePost): LeaguePost! @hasRole(role: LEAGUE_MEMBER)
   addComment(leagueId: ID!, postId: ID!, input: NewPostComment): PostComment! @hasRole(role: LEAGUE_MEMBER)
   createUserRole(leagueId: ID, newUserRole: NewUserRole): UserRoles! @hasRole(role: LEAGUE_MANAGER)
@@ -1469,6 +1469,41 @@ input NewUser {
     ownerName: String!
     email: String!
     avatar: String!
+}`, BuiltIn: false},
+	{Name: "graph/schema/global/nflTeam.graphql", Input: `enum nflTeam {
+    ARI
+    ATL
+    BAL
+    BUF
+    CAR
+    CHI
+    CIN
+    CLE
+    DAL
+    DEN
+    DET
+    FA
+    GB
+    KC
+    HOU
+    IND
+    JAC
+    LAC
+    LAR
+    LV
+    MIN
+    MIA
+    NE
+    NO
+    NYG
+    NYJ
+    PIT
+    PHI
+    SEA
+    SF
+    TB
+    TEN
+    WAS
 }`, BuiltIn: false},
 	{Name: "graph/schema/league/transaction.graphql", Input: `type Transaction {
     transactionType: TransactionType!
@@ -4666,7 +4701,7 @@ func (ec *executionContext) _Mutation_createPlayer(ctx context.Context, field gr
 			return ec.resolvers.Mutation().CreatePlayer(rctx, fc.Args["input"].(model.NewPlayerNfl))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalNRole2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐRole(ctx, "LEAGUE_MANAGER")
+			role, err := ec.unmarshalNRole2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐRole(ctx, "ADMIN")
 			if err != nil {
 				return nil, err
 			}

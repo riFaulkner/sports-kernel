@@ -1,7 +1,7 @@
 <template>
   <v-container fluid>
     <v-row>
-      <v-col md="4"  >
+      <v-col md="4" offset-md="4">
         <v-card>
           <v-select
               :items="toolTypes"
@@ -15,10 +15,14 @@
 
     </v-row>
     <v-row>
-      <v-col>
+      <v-col v-if="selectedTool === 'manageContract'">
         <manage-contract
-            v-if="selectedTool === 'manageContract'"
             :league-id="leagueId"
+        />
+      </v-col>
+      <v-col md="4" offset-md="4" v-if="selectedTool === 'addPlayer'"
+      >
+        <add-player
         />
       </v-col>
     </v-row>
@@ -29,10 +33,11 @@
 <script>
 import RestructureContract from "@/components/league/managementTools/ManageContract";
 import ManageContract from "@/components/league/managementTools/ManageContract";
+import AddPlayer from "@/components/players/AddPlayer"
 
 export default {
   name: "LeagueManagementTool",
-  components: {ManageContract, RestructureContract},
+  components: {AddPlayer, ManageContract, RestructureContract},
   props: {
     leagueId: {
       type: String,

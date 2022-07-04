@@ -349,3 +349,106 @@ func (e *TransactionType) UnmarshalGQL(v interface{}) error {
 func (e TransactionType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
+
+type NflTeam string
+
+const (
+	NflTeamAri NflTeam = "ARI"
+	NflTeamAtl NflTeam = "ATL"
+	NflTeamBal NflTeam = "BAL"
+	NflTeamBuf NflTeam = "BUF"
+	NflTeamCar NflTeam = "CAR"
+	NflTeamChi NflTeam = "CHI"
+	NflTeamCin NflTeam = "CIN"
+	NflTeamCle NflTeam = "CLE"
+	NflTeamDal NflTeam = "DAL"
+	NflTeamDen NflTeam = "DEN"
+	NflTeamDet NflTeam = "DET"
+	NflTeamFa  NflTeam = "FA"
+	NflTeamGb  NflTeam = "GB"
+	NflTeamKc  NflTeam = "KC"
+	NflTeamHou NflTeam = "HOU"
+	NflTeamInd NflTeam = "IND"
+	NflTeamJac NflTeam = "JAC"
+	NflTeamLac NflTeam = "LAC"
+	NflTeamLar NflTeam = "LAR"
+	NflTeamLv  NflTeam = "LV"
+	NflTeamMin NflTeam = "MIN"
+	NflTeamMia NflTeam = "MIA"
+	NflTeamNe  NflTeam = "NE"
+	NflTeamNo  NflTeam = "NO"
+	NflTeamNyg NflTeam = "NYG"
+	NflTeamNyj NflTeam = "NYJ"
+	NflTeamPit NflTeam = "PIT"
+	NflTeamPhi NflTeam = "PHI"
+	NflTeamSea NflTeam = "SEA"
+	NflTeamSf  NflTeam = "SF"
+	NflTeamTb  NflTeam = "TB"
+	NflTeamTen NflTeam = "TEN"
+	NflTeamWas NflTeam = "WAS"
+)
+
+var AllNflTeam = []NflTeam{
+	NflTeamAri,
+	NflTeamAtl,
+	NflTeamBal,
+	NflTeamBuf,
+	NflTeamCar,
+	NflTeamChi,
+	NflTeamCin,
+	NflTeamCle,
+	NflTeamDal,
+	NflTeamDen,
+	NflTeamDet,
+	NflTeamFa,
+	NflTeamGb,
+	NflTeamKc,
+	NflTeamHou,
+	NflTeamInd,
+	NflTeamJac,
+	NflTeamLac,
+	NflTeamLar,
+	NflTeamLv,
+	NflTeamMin,
+	NflTeamMia,
+	NflTeamNe,
+	NflTeamNo,
+	NflTeamNyg,
+	NflTeamNyj,
+	NflTeamPit,
+	NflTeamPhi,
+	NflTeamSea,
+	NflTeamSf,
+	NflTeamTb,
+	NflTeamTen,
+	NflTeamWas,
+}
+
+func (e NflTeam) IsValid() bool {
+	switch e {
+	case NflTeamAri, NflTeamAtl, NflTeamBal, NflTeamBuf, NflTeamCar, NflTeamChi, NflTeamCin, NflTeamCle, NflTeamDal, NflTeamDen, NflTeamDet, NflTeamFa, NflTeamGb, NflTeamKc, NflTeamHou, NflTeamInd, NflTeamJac, NflTeamLac, NflTeamLar, NflTeamLv, NflTeamMin, NflTeamMia, NflTeamNe, NflTeamNo, NflTeamNyg, NflTeamNyj, NflTeamPit, NflTeamPhi, NflTeamSea, NflTeamSf, NflTeamTb, NflTeamTen, NflTeamWas:
+		return true
+	}
+	return false
+}
+
+func (e NflTeam) String() string {
+	return string(e)
+}
+
+func (e *NflTeam) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = NflTeam(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid nflTeam", str)
+	}
+	return nil
+}
+
+func (e NflTeam) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}

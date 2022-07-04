@@ -12,7 +12,7 @@ import (
 )
 
 func (r *contractResolver) Player(ctx context.Context, obj *contract.Contract) (*model.PlayerNfl, error) {
-	return r.PlayerResolver.GetPlayerById(ctx, &obj.PlayerID) //return dataloader.GetPlayers(ctx, &obj.PlayerID)
+	return r.PlayerService.GetPlayerById(ctx, &obj.PlayerID)
 }
 
 // Contract returns generated.ContractResolver implementation.

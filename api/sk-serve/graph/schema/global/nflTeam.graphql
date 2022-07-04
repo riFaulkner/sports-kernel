@@ -1,0 +1,35 @@
+enum nflTeam {
+    ARI
+    ATL
+    BAL
+    BUF
+    CAR
+    CHI
+    CIN
+    CLE
+    DAL
+    DEN
+    DET
+    FA
+    GB
+    KC
+    HOU
+    IND
+    JAC
+    LAC
+    LAR
+    LV
+    MIN
+    MIA
+    NE
+    NO
+    NYG
+    NYJ
+    PIT
+    PHI
+    SEA
+    SF
+    TB
+    TEN
+    WAS
+}
