@@ -79,7 +79,7 @@ type NewPlayerNfl struct {
 	PlayerName   string  `json:"playerName"`
 	Position     string  `json:"position"`
 	PositionRank *int    `json:"positionRank"`
-	TeamNfl      *string `json:"teamNFL"`
+	TeamNfl      NflTeam `json:"teamNFL"`
 	Birthday     *string `json:"birthday"`
 	Avatar       *string `json:"avatar"`
 	OverallRank  *int    `json:"overallRank"`
@@ -109,14 +109,14 @@ type NewUserRole struct {
 }
 
 type PlayerNfl struct {
-	ID           string `json:"id"`
-	OverallRank  int    `json:"overallRank"`
-	PlayerName   string `json:"playerName"`
-	Position     string `json:"position"`
-	PositionRank int    `json:"positionRank"`
-	TeamNfl      string `json:"teamNFL"`
-	Birthday     string `json:"birthday"`
-	Avatar       string `json:"avatar"`
+	ID           string  `json:"id"`
+	OverallRank  int     `json:"overallRank"`
+	PlayerName   string  `json:"playerName"`
+	Position     string  `json:"position"`
+	PositionRank int     `json:"positionRank"`
+	TeamNfl      NflTeam `json:"teamNFL"`
+	Birthday     string  `json:"birthday"`
+	Avatar       string  `json:"avatar"`
 }
 
 type PostComment struct {

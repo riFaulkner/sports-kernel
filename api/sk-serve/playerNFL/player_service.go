@@ -65,7 +65,7 @@ func convertNewPlayerInputToPlayer(newPlayerInput model.NewPlayerNfl) model.Play
 	newPlayer := model.PlayerNfl{
 		ID:           playerId,
 		PlayerName:   newPlayerInput.PlayerName,
-		TeamNfl:      *newPlayerInput.TeamNfl,
+		TeamNfl:      newPlayerInput.TeamNfl,
 		Position:     newPlayerInput.Position,
 		PositionRank: positionRank,
 		Birthday:     playerBirthday,

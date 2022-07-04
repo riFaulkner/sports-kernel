@@ -1,8 +1,19 @@
+type PlayerNFL {
+    id: ID!
+    overallRank: Int!
+    playerName: String!
+    position: String!
+    positionRank: Int!
+    teamNFL: nflTeam!
+    birthday: String!
+    avatar: String!
+}
+
 input NewPlayerNFL {
     playerName: String!
     position: String!
     positionRank: Int
-    teamNFL: String
+    teamNFL: nflTeam!
     birthday: String
     avatar: String
     overallRank: Int

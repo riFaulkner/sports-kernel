@@ -1,17 +1,6 @@
 #Data types and Queries
 scalar Time
 
-type PlayerNFL {
-  id: ID!
-  overallRank: Int!
-  playerName: String!
-  position: String!
-  positionRank: Int!
-  teamNFL: String!  
-  birthday: String!
-  avatar: String!
-}
-
 type LeaguePost {
   id: ID!
   author: String!
