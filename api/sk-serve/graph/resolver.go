@@ -8,7 +8,7 @@ import (
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/firestore"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/generated"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/league"
-	playernfl "github.com/rifaulkner/sports-kernel/api/sk-serve/playerNFL"
+	playernfl "github.com/rifaulkner/sports-kernel/api/sk-serve/nfl"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/post"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/team"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/user"

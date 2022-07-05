@@ -15,6 +15,10 @@
 
     </v-row>
     <v-row>
+      <v-col v-if="selectedTool === 'createContract'">
+        <contract-creation-tool/>
+      </v-col>
+
       <v-col v-if="selectedTool === 'manageContract'">
         <manage-contract
             :league-id="leagueId"
@@ -28,10 +32,11 @@
 <script>
 import RestructureContract from "@/components/league/managementTools/ManageContract";
 import ManageContract from "@/components/league/managementTools/ManageContract";
+import ContractCreationTool from "~/components/league/contracts/ContractCreationTool";
 
 export default {
   name: "LeagueManagementTool",
-  components: { ManageContract, RestructureContract},
+  components: {ContractCreationTool, ManageContract, RestructureContract},
   props: {
     leagueId: {
       type: String,
