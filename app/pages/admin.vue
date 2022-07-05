@@ -7,14 +7,18 @@
       <h1>Manage leagues</h1>
     </v-tab-item>
     <v-tab-item>
-      <h1>Add player</h1>
+      <v-col md="4" offset-md="4">
+        <add-player/>
+      </v-col>
     </v-tab-item>
   </v-tabs-items>
 </template>
 
 <script>
+import AddPlayer from "@/components/players/AddPlayer.vue"
 export default {
   name: "admin.vue",
+  components: {AddPlayer},
   middleware: 'auth',
   data: function() {
     return {
