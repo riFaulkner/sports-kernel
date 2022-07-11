@@ -4,8 +4,9 @@ type PlayerNFL {
     playerName: String!
     position: String!
     positionRank: Int!
-    teamNFL: nflTeam!
+    team: nflTeam!
     birthday: String!
+    age: Int!
     avatar: String!
 }
 
@@ -13,8 +14,15 @@ input NewPlayerNFL {
     playerName: String!
     position: String!
     positionRank: Int
-    teamNFL: nflTeam!
+    team: nflTeam!
     birthday: String
     avatar: String
     overallRank: Int
+}
+
+enum PlayerPosition {
+    QB
+    RB
+    WR
+    TE
 }

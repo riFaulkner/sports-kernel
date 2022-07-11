@@ -79,7 +79,7 @@ type NewPlayerNfl struct {
 	PlayerName   string  `json:"playerName"`
 	Position     string  `json:"position"`
 	PositionRank *int    `json:"positionRank"`
-	TeamNfl      NflTeam `json:"teamNFL"`
+	Team         NflTeam `json:"team"`
 	Birthday     *string `json:"birthday"`
 	Avatar       *string `json:"avatar"`
 	OverallRank  *int    `json:"overallRank"`
@@ -114,8 +114,9 @@ type PlayerNfl struct {
 	PlayerName   string  `json:"playerName"`
 	Position     string  `json:"position"`
 	PositionRank int     `json:"positionRank"`
-	TeamNfl      NflTeam `json:"teamNFL"`
+	Team         NflTeam `json:"team"`
 	Birthday     string  `json:"birthday"`
+	Age          int     `json:"age"`
 	Avatar       string  `json:"avatar"`
 }
 
@@ -261,6 +262,51 @@ func (e *ContractStatus) UnmarshalGQL(v interface{}) error {
 }
 
 func (e ContractStatus) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type PlayerPosition string
+
+const (
+	PlayerPositionQb PlayerPosition = "QB"
+	PlayerPositionRb PlayerPosition = "RB"
+	PlayerPositionWr PlayerPosition = "WR"
+	PlayerPositionTe PlayerPosition = "TE"
+)
+
+var AllPlayerPosition = []PlayerPosition{
+	PlayerPositionQb,
+	PlayerPositionRb,
+	PlayerPositionWr,
+	PlayerPositionTe,
+}
+
+func (e PlayerPosition) IsValid() bool {
+	switch e {
+	case PlayerPositionQb, PlayerPositionRb, PlayerPositionWr, PlayerPositionTe:
+		return true
+	}
+	return false
+}
+
+func (e PlayerPosition) String() string {
+	return string(e)
+}
+
+func (e *PlayerPosition) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = PlayerPosition(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid PlayerPosition", str)
+	}
+	return nil
+}
+
+func (e PlayerPosition) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

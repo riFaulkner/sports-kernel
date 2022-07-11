@@ -55,19 +55,19 @@ func (r *mutationResolver) UpdateTeamMetaData(ctx context.Context, leagueID stri
 	return team, nil
 }
 
-func (r *mutationResolver) CreateContract(ctx context.Context, leagueID *string, input *contract.ContractInput) (*contract.Contract, error) {
-	document, err := r.ContractResolver.CreateContract(ctx, *leagueID, input)
+func (r *mutationResolver) CreateContract(ctx context.Context, leagueID string, input contract.ContractInput) (*contract.Contract, error) {
+	document, err := r.ContractResolver.CreateContract(ctx, leagueID, input)
 
 	if err != nil {
 		return nil, err
 	}
 
-	teamContracts, err := r.ContractResolver.GetAllActiveTeamContracts(ctx, *leagueID, document.TeamID)
+	teamContracts, err := r.ContractResolver.GetAllActiveTeamContracts(ctx, leagueID, document.TeamID)
 	if err != nil {
 		log.Println("Failed to update contract metadata")
 		return nil, err
 	}
-	err = r.TeamResolver.UpdateTeamContractMetaData(ctx, *leagueID, teamContracts)
+	err = r.TeamResolver.UpdateTeamContractMetaData(ctx, leagueID, teamContracts)
 
 	return document, nil
 }
@@ -170,12 +170,16 @@ func (r *queryResolver) TeamContracts(ctx context.Context, leagueID *string, tea
 	return contracts, nil
 }
 
+func (r *queryResolver) Player(ctx context.Context, playerID *string) (*model.PlayerNfl, error) {
+	return r.PlayerService.GetPlayerById(ctx, playerID)
+}
+
 func (r *queryResolver) Players(ctx context.Context, numOfResults *int) ([]*model.PlayerNfl, error) {
 	return r.PlayerService.GetAllPlayers(ctx, numOfResults)
 }
 
-func (r *queryResolver) Player(ctx context.Context, playerID *string) (*model.PlayerNfl, error) {
-	return r.PlayerService.GetPlayerById(ctx, playerID)
+func (r *queryResolver) PlayersByPosition(ctx context.Context, position model.PlayerPosition) ([]*model.PlayerNfl, error) {
+	return r.PlayerService.GetPlayersByPosition(ctx, position)
 }
 
 func (r *queryResolver) Posts(ctx context.Context, leagueID string, numOfResults *int) ([]*model.LeaguePost, error) {

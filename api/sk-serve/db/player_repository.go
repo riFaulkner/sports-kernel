@@ -8,6 +8,7 @@ import (
 	"google.golang.org/appengine/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"time"
 )
 
 type PlayerRepositoryImpl struct {
@@ -26,8 +27,6 @@ func (p *PlayerRepositoryImpl) Create(ctx context.Context, player model.PlayerNf
 }
 
 func (p *PlayerRepositoryImpl) GetAll(ctx context.Context, numberOfResults *int) ([]*model.PlayerNfl, bool) {
-	players := make([]*model.PlayerNfl, 0)
-
 	var results []*firestore.DocumentSnapshot
 	var err error
 
@@ -57,16 +56,22 @@ func (p *PlayerRepositoryImpl) GetAll(ctx context.Context, numberOfResults *int)
 		return nil, false
 	}
 
-	for _, result := range results {
-		player := new(model.PlayerNfl)
-		err = result.DataTo(&player)
-		player.ID = result.Ref.ID
-		if err != nil {
-			log.Errorf(ctx, "Error marshaling data object from firestore result")
-			return nil, false
-		}
-		players = append(players, player)
+	players := transformResultsToPlayers(results, ctx)
+	return players, true
+}
+func (p *PlayerRepositoryImpl) GetPlayersByPosition(ctx context.Context, position model.PlayerPosition) ([]*model.PlayerNfl, bool) {
+	results, err := p.Client.
+		Collection(appFirestore.PlayerCollection).
+		Where("position", "==", position).
+		Documents(ctx).
+		GetAll()
+
+	if err != nil {
+		log.Errorf(ctx, "Failed getting players by position: %v Error: %v", position, err)
+		return nil, false
 	}
+
+	players := transformResultsToPlayers(results, ctx)
 	return players, true
 }
 
@@ -94,4 +99,30 @@ func (p *PlayerRepositoryImpl) GetPlayerById(ctx context.Context, playerId *stri
 	}
 
 	return player, true
+}
+
+func transformResultsToPlayers(results []*firestore.DocumentSnapshot, ctx context.Context) []*model.PlayerNfl {
+	players := make([]*model.PlayerNfl, 0, len(results))
+
+	for _, result := range results {
+		player := new(model.PlayerNfl)
+		err := result.DataTo(&player)
+		player.ID = result.Ref.ID
+		if err != nil {
+			log.Errorf(ctx, "Error marshaling data object from firestore result playerId: %v", result.Ref.ID)
+			continue
+		}
+		birthday, err := time.Parse("2006-01-02", player.Birthday)
+
+		age := 0
+		if err != nil {
+			log.Errorf(ctx, "Error formatting birthday for player %v", player.ID)
+		} else {
+			age = int(time.Now().Sub(birthday).Hours() / 24 / 365)
+		}
+		player.Age = age
+
+		players = append(players, player)
+	}
+	return players
 }

@@ -34,8 +34,9 @@ type Query {
   teams(leagueId: ID): [Team!] @hasRole(role: LEAGUE_MEMBER)
   teamById(leagueId: ID!, teamId: ID!): Team @hasRole(role: LEAGUE_MEMBER)
   teamContracts(leagueId: ID, teamId: ID): [Contract!] @hasRole(role: LEAGUE_MEMBER)
-  players(numOfResults: Int): [PlayerNFL!]
   player(playerId: ID): PlayerNFL!
+  players(numOfResults: Int): [PlayerNFL!]
+  playersByPosition(position: PlayerPosition!): [PlayerNFL!]
   posts(leagueId: ID!, numOfResults: Int): [LeaguePost!]
   comments(leagueId: ID!, postId: ID!): [PostComment!]
   userPreferences(userId: ID): UserPreferences
@@ -57,7 +58,7 @@ type Mutation {
   createUser(input: NewUser!): User! @hasRole(role: LEAGUE_MANAGER)
   createTeam(leagueId: ID, input: NewTeam!): Team! @hasRole(role: LEAGUE_MANAGER)
   updateTeamMetaData(leagueId: ID!, teamId: ID!): Team! @hasRole(role: LEAGUE_MEMBER)
-  createContract(leagueId: ID, input: ContractInput): Contract! @hasRole(role: LEAGUE_MEMBER)
+  createContract(leagueId: ID!, input: ContractInput!): Contract! @hasRole(role: LEAGUE_MEMBER)
   createPlayer(input: NewPlayerNFL!): PlayerNFL! @hasRole(role: ADMIN)
   createPost(leagueId: ID!, input: NewLeaguePost): LeaguePost! @hasRole(role: LEAGUE_MEMBER)
   addComment(leagueId: ID!, postId: ID!, input: NewPostComment): PostComment! @hasRole(role: LEAGUE_MEMBER)
