@@ -15,7 +15,7 @@ type CapUtilizationSummary {
 type Contract {
     contractDetails: [ContractYear!]!
     contractLength: Int!
-    contractStatus: ContractStatus
+    contractStatus: ContractStatus!
     currentYear: Int!
     id: ID!
     player: PlayerNFL!
@@ -103,6 +103,7 @@ type Mutation {
 }
 
 type PlayerNFL {
+    age: Int!
     avatar: String!
     birthday: String!
     id: ID!
@@ -110,7 +111,7 @@ type PlayerNFL {
     playerName: String!
     position: String!
     positionRank: Int!
-    teamNFL: String!
+    team: nflTeam!
 }
 
 type PostComment {
@@ -128,6 +129,7 @@ type Query {
     leagues: [League]
     player(playerId: ID): PlayerNFL!
     players(numOfResults: Int): [PlayerNFL!]
+    playersByPosition(position: PlayerPosition!): [PlayerNFL!]
     posts(leagueId: ID!, numOfResults: Int): [LeaguePost!]
     teamById(leagueId: ID!, teamId: ID!): Team
     teamContracts(leagueId: ID, teamId: ID): [Contract!]
@@ -195,6 +197,13 @@ enum ContractStatus {
     INACTIVE_EXPIRED
 }
 
+enum PlayerPosition {
+    QB
+    RB
+    TE
+    WR
+}
+
 enum Role {
     ADMIN
     LEAGUE_MANAGER
@@ -207,15 +216,52 @@ enum TransactionType {
     DROP_PLAYER
 }
 
+enum nflTeam {
+    ARI
+    ATL
+    BAL
+    BUF
+    CAR
+    CHI
+    CIN
+    CLE
+    DAL
+    DEN
+    DET
+    FA
+    GB
+    HOU
+    IND
+    JAC
+    KC
+    LAC
+    LAR
+    LV
+    MIA
+    MIN
+    NE
+    NO
+    NYG
+    NYJ
+    PHI
+    PIT
+    SEA
+    SF
+    TB
+    TEN
+    WAS
+}
+
 scalar Time
 
 input ContractInput {
     contractDetails: [ContractYearInput!]!
     contractLength: Int
+    contractStatus: ContractStatus
     currentYear: Int!
     playerId: String!
     playerPosition: String!
-    restructureStatus: ContractRestructureStatus!
+    restructureStatus: ContractRestructureStatus
     teamId: String!
     totalContractValue: Int
     totalRemainingValue: Int
@@ -246,7 +292,7 @@ input NewPlayerNFL {
     playerName: String!
     position: String!
     positionRank: Int
-    teamNFL: String
+    team: nflTeam!
 }
 
 input NewPostComment {

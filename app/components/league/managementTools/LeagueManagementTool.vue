@@ -16,7 +16,9 @@
     </v-row>
     <v-row>
       <v-col v-if="selectedTool === 'createContract'">
-        <contract-creation-tool/>
+        <contract-creation-tool
+            :league-id="leagueId"
+        />
       </v-col>
 
       <v-col v-if="selectedTool === 'manageContract'">

@@ -26,11 +26,11 @@
         />
         <v-select
             label="Team"
-            v-model:value="playerData.teamNFL"
+            v-model:value="playerData.team"
             :items="teams"
             item-text="longName"
             item-value="abbreviation"
-            :rules="rules.teamNFL"
+            :rules="rules.team"
         >
           <template
               v-slot:item="{item}"
@@ -115,7 +115,7 @@ export default {
         birthday: "",
         playerName: "",
         position: "",
-        teamNFL: "",
+        team: "",
       },
       rules: {
         playerName: [
@@ -124,7 +124,7 @@ export default {
         position: [
           value => !!value || 'Position required.',
         ],
-        teamNFL: [
+        team: [
           value => !!value || 'Team required.',
         ]
       }
@@ -145,7 +145,7 @@ export default {
         birthday: "",
         playerName: "",
         position: "",
-        teamNFL: "",
+        team: "",
       }
     },
     submitForm() {

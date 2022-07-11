@@ -18,7 +18,7 @@ export const CONTRACT_RESTRUCTURE = gql`
             playerId
             player {
                 playerName
-                teamNFL
+                team
                 position
             }
             contractLength
@@ -34,3 +34,11 @@ export const CONTRACT_RESTRUCTURE = gql`
         }
     }
     `
+
+export const CREATE_CONTRACT = gql`
+    mutation createContract($contract:ContractInput!, $leagueId:ID!) {
+        createContract(leagueId: $leagueId, input: $contract) {
+            id
+        }
+    }
+`

@@ -51,7 +51,7 @@ export const LEAGUE_CONTRACTS = gql`
             teamId
             player {
                 playerName
-                teamNFL
+                team
                 position
             }
             contractLength
