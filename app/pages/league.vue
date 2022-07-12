@@ -13,7 +13,7 @@
     <v-tab-item>
       <v-card>
         <v-card-text>
-          Match up tab!
+          My Team
         </v-card-text>
       </v-card>
     </v-tab-item>
@@ -86,7 +86,7 @@ export default {
   },
   created() {
     this.$store.dispatch("application/updateSubmenu", [
-      'Standings', 'Match up', 'Contracts Overview', 'Trade Center', 'Rules', 'Discussion', 'League Management'
+      'Standings', 'My Team', 'Contracts Overview', 'Trade Center', 'Rules', 'Discussion', 'League Management'
     ]);
     this.$store.dispatch("application/updateActiveTab", "Rules")
   },

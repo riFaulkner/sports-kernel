@@ -37,7 +37,7 @@ export default {
   created() {
     this.$store.dispatch("application/updateActiveTab", 0);
     this.$store.dispatch("application/updateSubmenu", [
-      'Manage League', 'Add Player',
+      'Manage Leagues', 'Add Player',
     ]);
   },
   destroyed() {
