@@ -217,7 +217,7 @@ func (u *TeamImpl) UpdateTeamContractMetaData(ctx context.Context, leagueID stri
 
 			contractMetadataYear.TotalUtilizedCap += contractYear.TotalAmount
 			contractMetadataYear.TotalAvailableCap -= contractYear.TotalAmount
-			playerType := *contract.PlayerPosition
+			playerType := contract.PlayerPosition
 
 			var capUtilization *model.CapUtilizationSummary = nil
 			switch playerType {
