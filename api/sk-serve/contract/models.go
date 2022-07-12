@@ -12,7 +12,7 @@ type Contract struct {
 	TotalContractValue  int                             `json:"totalContractValue"`
 	TotalRemainingValue int                             `json:"totalRemainingValue"`
 	ContractLength      int                             `json:"contractLength"`
-	PlayerPosition      *string                         `json:"playerPosition"`
+	PlayerPosition      model.PlayerPosition            `json:"playerPosition"`
 	ContractDetails     []*ContractYear                 `json:"contractDetails"`
 	ContractHistory     []*HistoryRecord                `json:"contractHistory"`
 }
@@ -29,7 +29,7 @@ type ContractInput struct {
 	TotalContractValue  *int                             `json:"totalContractValue"`
 	TotalRemainingValue *int                             `json:"totalRemainingValue"`
 	ContractLength      *int                             `json:"contractLength"`
-	PlayerPosition      string                           `json:"playerPosition"`
+	PlayerPosition      model.PlayerPosition             `json:"playerPosition"`
 	ContractDetails     []*ContractYearInput             `json:"contractDetails"`
 	ContractStatus      *model.ContractStatus            `json:"contractStatus"`
 	RestructureStatus   *model.ContractRestructureStatus `json:"contractRestructureStatus"`

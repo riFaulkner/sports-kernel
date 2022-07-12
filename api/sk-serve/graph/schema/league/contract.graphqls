@@ -10,7 +10,7 @@ type Contract {
     totalContractValue: Int!
     totalRemainingValue: Int!
     contractLength: Int!
-    playerPosition: String
+    playerPosition: PlayerPosition!
     contractDetails: [ContractYear!]!
 }
 
@@ -42,7 +42,7 @@ input ContractInput {
     totalContractValue: Int
     totalRemainingValue: Int
     contractLength: Int
-    playerPosition: String!
+    playerPosition: PlayerPosition!
     contractDetails: [ContractYearInput!]!
 }
 

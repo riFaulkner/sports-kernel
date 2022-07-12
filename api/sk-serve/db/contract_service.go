@@ -127,8 +127,8 @@ func (u *ContractImpl) GetContractByLeagueAndPlayerId(ctx context.Context, leagu
 	return contract, nil
 }
 
-func (u *ContractImpl) CreateContract(ctx context.Context, leagueId string, contractInput *contract.ContractInput) (*contract.Contract, error) {
-	u.validateContract(ctx, &leagueId, contractInput)
+func (u *ContractImpl) CreateContract(ctx context.Context, leagueId string, contractInput contract.ContractInput) (*contract.Contract, error) {
+	u.validateContract(ctx, &leagueId, &contractInput)
 
 	if len(graphql.GetErrors(ctx)) > 0 {
 		return nil, graphql.GetErrors(ctx)

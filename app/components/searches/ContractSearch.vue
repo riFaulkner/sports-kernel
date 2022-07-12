@@ -6,7 +6,7 @@
         item-key="id"
         :search="search"
         :custom-filter="playerNameMatchesSearch"
-        :loading="$apollo.loading"
+        :loading="this.$apollo.loading"
         v-model="selected"
         show-select
         :single-select="true"
@@ -22,7 +22,6 @@
         <v-btn v-if="isSelected" @click="contractDeselected(item, select)" class="primary">Selected</v-btn>
         <v-btn v-else @click="contractSelected(item,select)">&nbsp Select  &nbsp</v-btn>
       </template>
-
       <template v-slot:item.totalContractValue="{item}">
         ${{ item.totalContractValue.toLocaleString() }}
       </template>
@@ -58,7 +57,6 @@
           {{ getContractYearDetails(item, 4) }}
         </div>
       </template>
-
     </v-data-table>
   </div>
 </template>

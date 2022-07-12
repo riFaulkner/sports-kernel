@@ -33,7 +33,7 @@ export default {
 
     modules: [
         '@nuxtjs/axios',
-        '@nuxtjs/pwa',
+        // '@nuxtjs/pwa',
         '@nuxtjs/auth-next',
         '@nuxtjs/apollo'
     ],
@@ -75,16 +75,16 @@ export default {
 
 
     // PWA module configuration: https://go.nuxtjs.dev/pwa
-    pwa: {
-        manifest: {
-            lang: 'en',
-            name: 'Sports Kernel',
-            short_name: 'SK'
-        },
-        meta: {
-           name: 'Sports Kernel'
-        }
-    },
+    // pwa: {
+    //     manifest: {
+    //         lang: 'en',
+    //         name: 'Sports Kernel',
+    //         short_name: 'SK'
+    //     },
+    //     meta: {
+    //        name: 'Sports Kernel'
+    //     }
+    // },
 
     // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
     vuetify: {

@@ -28,6 +28,14 @@ func (p *PlayerService) GetPlayerById(ctx context.Context, playerId *string) (*m
 	return player, nil
 }
 
+func (p *PlayerService) GetPlayersByPosition(ctx context.Context, position model.PlayerPosition) ([]*model.PlayerNfl, error) {
+	players, ok := p.PlayerRepository.GetPlayersByPosition(ctx, position)
+	if !ok {
+		return nil, gqlerror.Errorf("Unable to fetch players by position: %v", position)
+	}
+	return players, nil
+}
+
 func (p *PlayerService) CreatePlayer(ctx context.Context, playerInput model.NewPlayerNfl) (*model.PlayerNfl, error) {
 	newPlayer := convertNewPlayerInputToPlayer(playerInput)
 
@@ -65,7 +73,7 @@ func convertNewPlayerInputToPlayer(newPlayerInput model.NewPlayerNfl) model.Play
 	newPlayer := model.PlayerNfl{
 		ID:           playerId,
 		PlayerName:   newPlayerInput.PlayerName,
-		TeamNfl:      newPlayerInput.TeamNfl,
+		Team:         newPlayerInput.Team,
 		Position:     newPlayerInput.Position,
 		PositionRank: positionRank,
 		Birthday:     playerBirthday,
