@@ -41,7 +41,6 @@ type ResolverRoot interface {
 	Contract() ContractResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
-	ContractInput() ContractInputResolver
 }
 
 type DirectiveRoot struct {
@@ -258,10 +257,6 @@ type QueryResolver interface {
 	Comments(ctx context.Context, leagueID string, postID string) ([]*model.PostComment, error)
 	UserPreferences(ctx context.Context, userID *string) (*model.UserPreferences, error)
 	GetUserRoles(ctx context.Context, userID *string) ([]*model.UserRoles, error)
-}
-
-type ContractInputResolver interface {
-	PlayerPosition(ctx context.Context, obj *contract.ContractInput, data *model.PlayerPosition) error
 }
 
 type executableSchema struct {
@@ -1263,7 +1258,7 @@ type Contract {
     totalContractValue: Int!
     totalRemainingValue: Int!
     contractLength: Int!
-    playerPosition: String
+    playerPosition: PlayerPosition!
     contractDetails: [ContractYear!]!
 }
 
@@ -1295,7 +1290,7 @@ input ContractInput {
     totalContractValue: Int
     totalRemainingValue: Int
     contractLength: Int
-    playerPosition: PlayerPosition
+    playerPosition: PlayerPosition!
     contractDetails: [ContractYearInput!]!
 }
 
@@ -2665,11 +2660,14 @@ func (ec *executionContext) _Contract_playerPosition(ctx context.Context, field 
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(model.PlayerPosition)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNPlayerPosition2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐPlayerPosition(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Contract_playerPosition(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2679,7 +2677,7 @@ func (ec *executionContext) fieldContext_Contract_playerPosition(ctx context.Con
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type PlayerPosition does not have child fields")
 		},
 	}
 	return fc, nil
@@ -10068,11 +10066,8 @@ func (ec *executionContext) unmarshalInputContractInput(ctx context.Context, obj
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("playerPosition"))
-			data, err := ec.unmarshalOPlayerPosition2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐPlayerPosition(ctx, v)
+			it.PlayerPosition, err = ec.unmarshalNPlayerPosition2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐPlayerPosition(ctx, v)
 			if err != nil {
-				return it, err
-			}
-			if err = ec.resolvers.ContractInput().PlayerPosition(ctx, &it, data); err != nil {
 				return it, err
 			}
 		case "contractDetails":
@@ -10596,6 +10591,9 @@ func (ec *executionContext) _Contract(ctx context.Context, sel ast.SelectionSet,
 
 			out.Values[i] = ec._Contract_playerPosition(ctx, field, obj)
 
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "contractDetails":
 
 			out.Values[i] = ec._Contract_contractDetails(ctx, field, obj)
@@ -13543,22 +13541,6 @@ func (ec *executionContext) marshalOPlayerNFL2ᚕᚖgithubᚗcomᚋrifaulknerᚋ
 	}
 
 	return ret
-}
-
-func (ec *executionContext) unmarshalOPlayerPosition2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐPlayerPosition(ctx context.Context, v interface{}) (*model.PlayerPosition, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var res = new(model.PlayerPosition)
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOPlayerPosition2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐPlayerPosition(ctx context.Context, sel ast.SelectionSet, v *model.PlayerPosition) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return v
 }
 
 func (ec *executionContext) marshalOPostComment2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐPostCommentᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.PostComment) graphql.Marshaler {
