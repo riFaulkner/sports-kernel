@@ -144,7 +144,7 @@ type Team {
     division: String
     foundedDate: Time!
     id: ID!
-    ownerID: String!
+    ownerId: String!
     teamAssets: TeamAssets
     teamLiabilities: TeamLiabilities
     teamName: String!

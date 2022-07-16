@@ -1,4 +1,4 @@
-import gql from "graphql-tag"
+import gql from 'graphql-tag'
 
 export const LEAGUE_BY_ID_QUERY = gql`
     query League($leagueId: ID!) {
@@ -17,7 +17,6 @@ export const LEAGUE_TEAMS_BY_LEAGUE_ID = gql`
     query Teams($leagueId: ID!) {
         teams(leagueId: $leagueId) {
         id
-        ownerID
         teamName
         currentContractsMetadata {
           totalUtilizedCap

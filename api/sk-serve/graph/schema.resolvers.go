@@ -28,7 +28,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) 
 }
 
 func (r *mutationResolver) CreateTeam(ctx context.Context, leagueID *string, input model.NewTeam) (*model.Team, error) {
-	team, err := r.TeamResolver.Create(ctx, *leagueID, input)
+	team, err := r.TeamService.Create(ctx, *leagueID, input)
 	if err != nil {
 		return nil, err
 	}
@@ -42,12 +42,12 @@ func (r *mutationResolver) UpdateTeamMetaData(ctx context.Context, leagueID stri
 		return nil, err
 	}
 
-	err = r.TeamResolver.UpdateTeamContractMetaData(ctx, leagueID, contracts)
+	err = r.TeamService.UpdateTeamContractMetaData(ctx, leagueID, contracts)
 	if err != nil {
 		return nil, err
 	}
 
-	team, err := r.TeamResolver.GetTeamById(ctx, leagueID, teamID)
+	team, err := r.TeamService.GetTeamById(ctx, leagueID, teamID)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func (r *mutationResolver) CreateContract(ctx context.Context, leagueID string, 
 		log.Println("Failed to update contract metadata")
 		return nil, err
 	}
-	err = r.TeamResolver.UpdateTeamContractMetaData(ctx, leagueID, teamContracts)
+	err = r.TeamService.UpdateTeamContractMetaData(ctx, leagueID, teamContracts)
 
 	return document, nil
 }
@@ -145,7 +145,7 @@ func (r *queryResolver) LeagueContracts(ctx context.Context, leagueID string) ([
 }
 
 func (r *queryResolver) Teams(ctx context.Context, leagueID *string) ([]*model.Team, error) {
-	teams, err := r.TeamResolver.GetAllLeagueTeams(ctx, *leagueID)
+	teams, err := r.TeamService.GetAllLeagueTeams(ctx, *leagueID)
 	if err != nil {
 		return nil, err
 	}
@@ -154,11 +154,15 @@ func (r *queryResolver) Teams(ctx context.Context, leagueID *string) ([]*model.T
 }
 
 func (r *queryResolver) TeamByID(ctx context.Context, leagueID string, teamID string) (*model.Team, error) {
-	team, err := r.TeamResolver.GetTeamById(ctx, leagueID, teamID)
+	team, err := r.TeamService.GetTeamById(ctx, leagueID, teamID)
 	if err != nil {
 		return nil, err
 	}
 	return team, nil
+}
+
+func (r *queryResolver) TeamByOwnerID(ctx context.Context, leagueID string, ownerID string) (*model.Team, error) {
+	return r.TeamService.GetTeamByOwnerID(ctx, leagueID, ownerID)
 }
 
 func (r *queryResolver) TeamContracts(ctx context.Context, leagueID *string, teamID *string) ([]*contract.Contract, error) {

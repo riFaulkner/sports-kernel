@@ -3,12 +3,12 @@ type Team {
     id: ID!
     foundedDate: Time!
     teamName: String!
-    ownerID: String!
     division: String
     currentContractsMetadata: ContractsMetadata
     contractsMetadata: [ContractsMetadata!]
     teamAssets: TeamAssets
     teamLiabilities: TeamLiabilities
+    teamOwners: [ID!]
 }
 
 input NewTeam {

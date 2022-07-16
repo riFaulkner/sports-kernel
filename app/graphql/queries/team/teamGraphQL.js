@@ -1,4 +1,4 @@
-import gql from "graphql-tag"
+import gql from 'graphql-tag'
 
 export const TEAM_CONTRACTS = gql`
     query teamContracts($leagueId: ID!, $teamId: ID!) {

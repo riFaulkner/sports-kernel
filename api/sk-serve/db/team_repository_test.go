@@ -32,7 +32,7 @@ func TestTeamImpl_AddDeadCapToTeam(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			u := &TeamImpl{
+			u := &TeamRepositoryImpl{
 				Client: tt.fields.Client,
 			}
 			got := u.AddDeadCapToTeam(tt.args.ctx, tt.args.leagueID, tt.args.teamID, tt.args.deadCap)
@@ -64,7 +64,7 @@ func TestTeamImpl_Create(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			u := &TeamImpl{
+			u := &TeamRepositoryImpl{
 				Client: tt.fields.Client,
 			}
 			got, err := u.Create(tt.args.ctx, tt.args.leagueId, tt.args.teamInput)
@@ -98,7 +98,7 @@ func TestTeamImpl_GetAllLeagueTeams(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			u := &TeamImpl{
+			u := &TeamRepositoryImpl{
 				Client: tt.fields.Client,
 			}
 			got, err := u.GetAllLeagueTeams(tt.args.ctx, tt.args.leagueId)
@@ -133,7 +133,7 @@ func TestTeamImpl_GetTeamById(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			u := &TeamImpl{
+			u := &TeamRepositoryImpl{
 				Client: tt.fields.Client,
 			}
 			got, err := u.GetTeamById(tt.args.ctx, tt.args.leagueId, tt.args.teamId)
@@ -175,7 +175,7 @@ func TestTeamImpl_UpdateTeamContractMetaData(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			u := &TeamImpl{
+			u := &TeamRepositoryImpl{
 				Client: tt.fields.Client,
 			}
 			if err := u.UpdateTeamContractMetaData(tt.args.ctx, tt.args.leagueID, tt.args.teamContracts); (err != nil) != tt.wantErr {

@@ -131,12 +131,12 @@ type Team struct {
 	ID                       string               `json:"id"`
 	FoundedDate              time.Time            `json:"foundedDate"`
 	TeamName                 string               `json:"teamName"`
-	OwnerID                  string               `json:"ownerID"`
 	Division                 *string              `json:"division"`
 	CurrentContractsMetadata *ContractsMetadata   `json:"currentContractsMetadata"`
 	ContractsMetadata        []*ContractsMetadata `json:"contractsMetadata"`
 	TeamAssets               *TeamAssets          `json:"teamAssets"`
 	TeamLiabilities          *TeamLiabilities     `json:"teamLiabilities"`
+	TeamOwners               []string             `json:"teamOwners"`
 }
 
 type TeamAssets struct {

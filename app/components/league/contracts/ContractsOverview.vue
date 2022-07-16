@@ -1,14 +1,16 @@
 <template>
   <v-card>
-    <v-card-title class="justify-center"> {{ leagueInfo.leagueName }}  </v-card-title>
+    <v-card-title class="justify-center">
+      {{ leagueInfo.leagueName }}
+    </v-card-title>
     <v-data-table
-        :headers=headers
-        :items=teams
-        :expanded.sync="expanded"
-        item-key="teamName"
-        :items-per-page=15
-        hide-default-footer
-        show-expand
+      :headers="headers"
+      :items="teams"
+      :expanded.sync="expanded"
+      item-key="teamName"
+      :items-per-page="15"
+      hide-default-footer
+      show-expand
     >
       <template v-slot:item.currentContractsMetadata.totalUtilizedCap="{item}">
         ${{ item.currentContractsMetadata.totalUtilizedCap.toLocaleString() }}
@@ -43,12 +45,12 @@
 </template>
 
 <script>
-import TeamAssetsBreakdown from "@/components/league/TeamAssetsBreakdown";
-import {LEAGUE_TEAMS_BY_LEAGUE_ID} from "@/graphql/queries/league/leagueGraphQL";
+import TeamAssetsBreakdown from '@/components/league/TeamAssetsBreakdown'
+import { LEAGUE_TEAMS_BY_LEAGUE_ID } from '@/graphql/queries/league/leagueGraphQL'
 
 export default {
-  name: "ContractsOverview.vue",
-  components: {TeamAssetsBreakdown},
+  name: 'ContractsOverview.vue',
+  components: { TeamAssetsBreakdown },
   props: {
     leagueInfo: {
       type: Object,
@@ -63,9 +65,9 @@ export default {
     return {
       expanded: [],
       headers: [
-        {text: 'Team', value: 'teamName', width: 200},
-        {text: 'Total Cap Utilization', value: 'currentContractsMetadata.totalUtilizedCap', width: 105},
-        {text: 'Available Cap', value: 'currentContractsMetadata.totalAvailableCap', align: 'start', divider: true, width: 75},
+        { text: 'Team', value: 'teamName', width: 200 },
+        { text: 'Total Cap Utilization', value: 'currentContractsMetadata.totalUtilizedCap', width: 105 },
+        { text: 'Available Cap', value: 'currentContractsMetadata.totalAvailableCap', align: 'start', divider: true, width: 75 },
         {
           text: 'QB Value (# Contracts)',
           value: 'currentContractsMetadata.qbUtilizedCap',
@@ -91,29 +93,29 @@ export default {
           sort: (a, b) => (a.capUtilization - b.capUtilization)
         },
         {
-          text: "",
+          text: '',
           value: 'data-table-expand'
         }
       ],
-      teams: [],
+      teams: []
     }
   },
   methods: {
-    getColor(capRemaining) {
+    getColor (capRemaining) {
       if (capRemaining < 5000000) {
-        return 'error';
+        return 'error'
       }
       if (capRemaining < 10000000) {
         return 'warning'
       }
-      return 'success';
+      return 'success'
     }
   },
   apollo: {
     teams: {
       query: LEAGUE_TEAMS_BY_LEAGUE_ID,
-      variables() {
-        return {leagueId: this.leagueInfo.id}
+      variables () {
+        return { leagueId: this.leagueInfo.id }
       }
     }
   }

@@ -1,4 +1,4 @@
-import gql from "graphql-tag"
+import gql from 'graphql-tag'
 
 export const PLAYER_BY_POSITION = gql`
     query playersByPosition($position: PlayerPosition!) {

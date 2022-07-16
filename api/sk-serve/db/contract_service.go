@@ -19,7 +19,7 @@ import (
 
 type ContractImpl struct {
 	Client          firestore.Client
-	TeamImpl        TeamImpl
+	TeamImpl        TeamRepositoryImpl
 	TransactionImpl TransactionImpl
 }
 

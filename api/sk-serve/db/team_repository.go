@@ -17,11 +17,11 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
-type TeamImpl struct {
+type TeamRepositoryImpl struct {
 	Client firestore.Client
 }
 
-func (u *TeamImpl) AddDeadCapToTeam(ctx context.Context, leagueID string, teamID string, deadCap []*model.DeadCap) bool {
+func (u *TeamRepositoryImpl) AddDeadCapToTeam(ctx context.Context, leagueID string, teamID string, deadCap []*model.DeadCap) bool {
 	// Validate the dead cap passed in
 	if deadCap == nil {
 		log.Printf("Cannot add dead cap to team, invalid deadcap passed")
@@ -86,7 +86,7 @@ func (u *TeamImpl) AddDeadCapToTeam(ctx context.Context, leagueID string, teamID
 	return true
 }
 
-func (u *TeamImpl) GetAllLeagueTeams(ctx context.Context, leagueId string) ([]*model.Team, error) {
+func (u *TeamRepositoryImpl) GetAllLeagueTeams(ctx context.Context, leagueId string) ([]*model.Team, error) {
 	teams := make([]*model.Team, 0)
 
 	//Create Document Ref - There is no traffic associated with this...
@@ -111,7 +111,7 @@ func (u *TeamImpl) GetAllLeagueTeams(ctx context.Context, leagueId string) ([]*m
 	return teams, nil
 }
 
-func (u *TeamImpl) GetTeamById(ctx context.Context, leagueId string, teamId string) (*model.Team, error) {
+func (u *TeamRepositoryImpl) GetTeamById(ctx context.Context, leagueId string, teamId string) (*model.Team, error) {
 	league := u.Client.Collection(firestore.LeaguesCollection).Doc(leagueId)
 
 	result, err := league.Collection(firestore.TeamsCollection).Doc(teamId).Get(ctx)
@@ -130,7 +130,7 @@ func (u *TeamImpl) GetTeamById(ctx context.Context, leagueId string, teamId stri
 }
 
 // Pull out to interface
-func (u *TeamImpl) GetTeamByIdOk(ctx context.Context, leagueId string, teamId string) (*model.Team, bool) {
+func (u *TeamRepositoryImpl) GetTeamByIdOk(ctx context.Context, leagueId string, teamId string) (*model.Team, bool) {
 	teamReference, err := u.Client.
 		Collection(firestore.LeaguesCollection).
 		Doc(leagueId).Collection(firestore.TeamsCollection).
@@ -158,7 +158,29 @@ func (u *TeamImpl) GetTeamByIdOk(ctx context.Context, leagueId string, teamId st
 	return team, true
 }
 
-func (u *TeamImpl) Create(ctx context.Context, leagueId string, teamInput model.NewTeam) (*model.Team, error) {
+func (u *TeamRepositoryImpl) GetTeamByOwnerID(ctx context.Context, leagueID string, ownerID string) (*model.Team, bool) {
+	documents, err := u.Client.
+		Collection(firestore.LeaguesCollection).
+		Doc(leagueID).
+		Collection(firestore.TeamsCollection).
+		Where("TeamOwners", "array_contains", ownerID).
+		Documents(ctx).
+		GetAll()
+
+	teams, ok := processResults(documents, err)
+
+	if !ok || len(teams) == 0 {
+		return nil, ok
+	}
+
+	if len(teams) > 1 {
+		log.Printf("Owner: %v has multiple teams in the same league: %v", ownerID, leagueID)
+	}
+
+	return teams[0], true
+}
+
+func (u *TeamRepositoryImpl) Create(ctx context.Context, leagueId string, teamInput model.NewTeam) (*model.Team, error) {
 	league := u.Client.Collection(firestore.LeaguesCollection).Doc(leagueId)
 
 	defaultTeamContractsMetadata := generateDefaultTeamContractsMetadata()
@@ -173,6 +195,7 @@ func (u *TeamImpl) Create(ctx context.Context, leagueId string, teamInput model.
 		CurrentContractsMetadata: defaultTeamContractsMetadata,
 		TeamAssets:               defaultTeamAssets,
 		TeamLiabilities:          defaultTeamLiabilities,
+		TeamOwners:               make([]string, 0),
 	}
 
 	_, err := league.Collection("teams").Doc(team.ID).Set(ctx, team)
@@ -183,7 +206,7 @@ func (u *TeamImpl) Create(ctx context.Context, leagueId string, teamInput model.
 	return &team, nil
 }
 
-func (u *TeamImpl) UpdateTeamContractMetaData(ctx context.Context, leagueID string, teamContracts []*contract.Contract) error {
+func (u *TeamRepositoryImpl) UpdateTeamContractMetaData(ctx context.Context, leagueID string, teamContracts []*contract.Contract) error {
 	if teamContracts == nil || len(teamContracts) == 0 {
 		return gqlerror.Errorf("Unable to update contract metadata, no team contracts")
 	}
@@ -322,4 +345,31 @@ func generateTeamAssets(teamID string) *model.TeamAssets {
 	}
 
 	return &teamAssets
+}
+
+func processResults(teamsReference []*gFirestore.DocumentSnapshot, err error) ([]*model.Team, bool) {
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			return nil, true
+		}
+		// print out log warning
+		log.Printf("WARN: error fetching contract: %v", err)
+		return nil, false
+	}
+
+	teams := make([]*model.Team, 0, len(teamsReference))
+
+	for _, teamReference := range teamsReference {
+		team := new(model.Team)
+
+		err = teamReference.DataTo(&team)
+		if err != nil {
+			// print out log warning
+			log.Printf("WARN: error marshalling team to object: %v", err)
+			return nil, false
+		}
+		team.ID = teamReference.Ref.ID
+	}
+
+	return teams, true
 }

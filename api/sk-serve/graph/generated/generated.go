@@ -173,6 +173,7 @@ type ComplexityRoot struct {
 		PlayersByPosition func(childComplexity int, position model.PlayerPosition) int
 		Posts             func(childComplexity int, leagueID string, numOfResults *int) int
 		TeamByID          func(childComplexity int, leagueID string, teamID string) int
+		TeamByOwnerID     func(childComplexity int, leagueID string, ownerID string) int
 		TeamContracts     func(childComplexity int, leagueID *string, teamID *string) int
 		Teams             func(childComplexity int, leagueID *string) int
 		UserPreferences   func(childComplexity int, userID *string) int
@@ -185,10 +186,10 @@ type ComplexityRoot struct {
 		Division                 func(childComplexity int) int
 		FoundedDate              func(childComplexity int) int
 		ID                       func(childComplexity int) int
-		OwnerID                  func(childComplexity int) int
 		TeamAssets               func(childComplexity int) int
 		TeamLiabilities          func(childComplexity int) int
 		TeamName                 func(childComplexity int) int
+		TeamOwners               func(childComplexity int) int
 	}
 
 	TeamAssets struct {
@@ -249,6 +250,7 @@ type QueryResolver interface {
 	LeagueContracts(ctx context.Context, leagueID string) ([]*contract.Contract, error)
 	Teams(ctx context.Context, leagueID *string) ([]*model.Team, error)
 	TeamByID(ctx context.Context, leagueID string, teamID string) (*model.Team, error)
+	TeamByOwnerID(ctx context.Context, leagueID string, ownerID string) (*model.Team, error)
 	TeamContracts(ctx context.Context, leagueID *string, teamID *string) ([]*contract.Contract, error)
 	Player(ctx context.Context, playerID *string) (*model.PlayerNfl, error)
 	Players(ctx context.Context, numOfResults *int) ([]*model.PlayerNfl, error)
@@ -943,6 +945,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.TeamByID(childComplexity, args["leagueId"].(string), args["teamId"].(string)), true
 
+	case "Query.teamByOwnerId":
+		if e.complexity.Query.TeamByOwnerID == nil {
+			break
+		}
+
+		args, err := ec.field_Query_teamByOwnerId_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.TeamByOwnerID(childComplexity, args["leagueId"].(string), args["ownerId"].(string)), true
+
 	case "Query.teamContracts":
 		if e.complexity.Query.TeamContracts == nil {
 			break
@@ -1021,13 +1035,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Team.ID(childComplexity), true
 
-	case "Team.ownerID":
-		if e.complexity.Team.OwnerID == nil {
-			break
-		}
-
-		return e.complexity.Team.OwnerID(childComplexity), true
-
 	case "Team.teamAssets":
 		if e.complexity.Team.TeamAssets == nil {
 			break
@@ -1048,6 +1055,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Team.TeamName(childComplexity), true
+
+	case "Team.teamOwners":
+		if e.complexity.Team.TeamOwners == nil {
+			break
+		}
+
+		return e.complexity.Team.TeamOwners(childComplexity), true
 
 	case "TeamAssets.draftPicks":
 		if e.complexity.TeamAssets.DraftPicks == nil {
@@ -1354,11 +1368,12 @@ enum Role {
 
 type Query {
   users: [User]
-  leagues: [League]
+  leagues: [League!]
   league(leagueId: ID): League
   leagueContracts(leagueId: ID!): [Contract!] @hasRole(role: LEAGUE_MEMBER)
   teams(leagueId: ID): [Team!] @hasRole(role: LEAGUE_MEMBER)
   teamById(leagueId: ID!, teamId: ID!): Team @hasRole(role: LEAGUE_MEMBER)
+  teamByOwnerId(leagueId: ID!, ownerId: ID!): Team @hasRole(role: LEAGUE_MEMBER)
   teamContracts(leagueId: ID, teamId: ID): [Contract!] @hasRole(role: LEAGUE_MEMBER)
   player(playerId: ID): PlayerNFL!
   players(numOfResults: Int): [PlayerNFL!]
@@ -1397,12 +1412,12 @@ type Team {
     id: ID!
     foundedDate: Time!
     teamName: String!
-    ownerID: String!
     division: String
     currentContractsMetadata: ContractsMetadata
     contractsMetadata: [ContractsMetadata!]
     teamAssets: TeamAssets
     teamLiabilities: TeamLiabilities
+    teamOwners: [ID!]
 }
 
 input NewTeam {
@@ -1996,6 +2011,30 @@ func (ec *executionContext) field_Query_teamById_args(ctx context.Context, rawAr
 		}
 	}
 	args["teamId"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_teamByOwnerId_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["leagueId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("leagueId"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["leagueId"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["ownerId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ownerId"))
+		arg1, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["ownerId"] = arg1
 	return args, nil
 }
 
@@ -4002,8 +4041,6 @@ func (ec *executionContext) fieldContext_League_teams(ctx context.Context, field
 				return ec.fieldContext_Team_foundedDate(ctx, field)
 			case "teamName":
 				return ec.fieldContext_Team_teamName(ctx, field)
-			case "ownerID":
-				return ec.fieldContext_Team_ownerID(ctx, field)
 			case "division":
 				return ec.fieldContext_Team_division(ctx, field)
 			case "currentContractsMetadata":
@@ -4014,6 +4051,8 @@ func (ec *executionContext) fieldContext_League_teams(ctx context.Context, field
 				return ec.fieldContext_Team_teamAssets(ctx, field)
 			case "teamLiabilities":
 				return ec.fieldContext_Team_teamLiabilities(ctx, field)
+			case "teamOwners":
+				return ec.fieldContext_Team_teamOwners(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Team", field.Name)
 		},
@@ -4500,8 +4539,6 @@ func (ec *executionContext) fieldContext_Mutation_createTeam(ctx context.Context
 				return ec.fieldContext_Team_foundedDate(ctx, field)
 			case "teamName":
 				return ec.fieldContext_Team_teamName(ctx, field)
-			case "ownerID":
-				return ec.fieldContext_Team_ownerID(ctx, field)
 			case "division":
 				return ec.fieldContext_Team_division(ctx, field)
 			case "currentContractsMetadata":
@@ -4512,6 +4549,8 @@ func (ec *executionContext) fieldContext_Mutation_createTeam(ctx context.Context
 				return ec.fieldContext_Team_teamAssets(ctx, field)
 			case "teamLiabilities":
 				return ec.fieldContext_Team_teamLiabilities(ctx, field)
+			case "teamOwners":
+				return ec.fieldContext_Team_teamOwners(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Team", field.Name)
 		},
@@ -4599,8 +4638,6 @@ func (ec *executionContext) fieldContext_Mutation_updateTeamMetaData(ctx context
 				return ec.fieldContext_Team_foundedDate(ctx, field)
 			case "teamName":
 				return ec.fieldContext_Team_teamName(ctx, field)
-			case "ownerID":
-				return ec.fieldContext_Team_ownerID(ctx, field)
 			case "division":
 				return ec.fieldContext_Team_division(ctx, field)
 			case "currentContractsMetadata":
@@ -4611,6 +4648,8 @@ func (ec *executionContext) fieldContext_Mutation_updateTeamMetaData(ctx context
 				return ec.fieldContext_Team_teamAssets(ctx, field)
 			case "teamLiabilities":
 				return ec.fieldContext_Team_teamLiabilities(ctx, field)
+			case "teamOwners":
+				return ec.fieldContext_Team_teamOwners(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Team", field.Name)
 		},
@@ -5934,7 +5973,7 @@ func (ec *executionContext) _Query_leagues(ctx context.Context, field graphql.Co
 	}
 	res := resTmp.([]*model.League)
 	fc.Result = res
-	return ec.marshalOLeague2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐLeague(ctx, field.Selections, res)
+	return ec.marshalOLeague2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐLeagueᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_leagues(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6198,8 +6237,6 @@ func (ec *executionContext) fieldContext_Query_teams(ctx context.Context, field 
 				return ec.fieldContext_Team_foundedDate(ctx, field)
 			case "teamName":
 				return ec.fieldContext_Team_teamName(ctx, field)
-			case "ownerID":
-				return ec.fieldContext_Team_ownerID(ctx, field)
 			case "division":
 				return ec.fieldContext_Team_division(ctx, field)
 			case "currentContractsMetadata":
@@ -6210,6 +6247,8 @@ func (ec *executionContext) fieldContext_Query_teams(ctx context.Context, field 
 				return ec.fieldContext_Team_teamAssets(ctx, field)
 			case "teamLiabilities":
 				return ec.fieldContext_Team_teamLiabilities(ctx, field)
+			case "teamOwners":
+				return ec.fieldContext_Team_teamOwners(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Team", field.Name)
 		},
@@ -6294,8 +6333,6 @@ func (ec *executionContext) fieldContext_Query_teamById(ctx context.Context, fie
 				return ec.fieldContext_Team_foundedDate(ctx, field)
 			case "teamName":
 				return ec.fieldContext_Team_teamName(ctx, field)
-			case "ownerID":
-				return ec.fieldContext_Team_ownerID(ctx, field)
 			case "division":
 				return ec.fieldContext_Team_division(ctx, field)
 			case "currentContractsMetadata":
@@ -6306,6 +6343,8 @@ func (ec *executionContext) fieldContext_Query_teamById(ctx context.Context, fie
 				return ec.fieldContext_Team_teamAssets(ctx, field)
 			case "teamLiabilities":
 				return ec.fieldContext_Team_teamLiabilities(ctx, field)
+			case "teamOwners":
+				return ec.fieldContext_Team_teamOwners(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Team", field.Name)
 		},
@@ -6318,6 +6357,102 @@ func (ec *executionContext) fieldContext_Query_teamById(ctx context.Context, fie
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_teamById_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_teamByOwnerId(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_teamByOwnerId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().TeamByOwnerID(rctx, fc.Args["leagueId"].(string), fc.Args["ownerId"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRole2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐRole(ctx, "LEAGUE_MEMBER")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*model.Team); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model.Team`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Team)
+	fc.Result = res
+	return ec.marshalOTeam2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐTeam(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_teamByOwnerId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Team_id(ctx, field)
+			case "foundedDate":
+				return ec.fieldContext_Team_foundedDate(ctx, field)
+			case "teamName":
+				return ec.fieldContext_Team_teamName(ctx, field)
+			case "division":
+				return ec.fieldContext_Team_division(ctx, field)
+			case "currentContractsMetadata":
+				return ec.fieldContext_Team_currentContractsMetadata(ctx, field)
+			case "contractsMetadata":
+				return ec.fieldContext_Team_contractsMetadata(ctx, field)
+			case "teamAssets":
+				return ec.fieldContext_Team_teamAssets(ctx, field)
+			case "teamLiabilities":
+				return ec.fieldContext_Team_teamLiabilities(ctx, field)
+			case "teamOwners":
+				return ec.fieldContext_Team_teamOwners(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Team", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_teamByOwnerId_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -7158,50 +7293,6 @@ func (ec *executionContext) fieldContext_Team_teamName(ctx context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Team_ownerID(ctx context.Context, field graphql.CollectedField, obj *model.Team) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Team_ownerID(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.OwnerID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Team_ownerID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Team",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Team_division(ctx context.Context, field graphql.CollectedField, obj *model.Team) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Team_division(ctx, field)
 	if err != nil {
@@ -7446,6 +7537,47 @@ func (ec *executionContext) fieldContext_Team_teamLiabilities(ctx context.Contex
 				return ec.fieldContext_TeamLiabilities_deadCap(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TeamLiabilities", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Team_teamOwners(ctx context.Context, field graphql.CollectedField, obj *model.Team) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Team_teamOwners(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TeamOwners, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalOID2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Team_teamOwners(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Team",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
 		},
 	}
 	return fc, nil
@@ -11423,6 +11555,26 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
+		case "teamByOwnerId":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_teamByOwnerId(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "teamContracts":
 			field := field
 
@@ -11640,13 +11792,6 @@ func (ec *executionContext) _Team(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "ownerID":
-
-			out.Values[i] = ec._Team_ownerID(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		case "division":
 
 			out.Values[i] = ec._Team_division(ctx, field, obj)
@@ -11666,6 +11811,10 @@ func (ec *executionContext) _Team(ctx context.Context, sel ast.SelectionSet, obj
 		case "teamLiabilities":
 
 			out.Values[i] = ec._Team_teamLiabilities(ctx, field, obj)
+
+		case "teamOwners":
+
+			out.Values[i] = ec._Team_teamOwners(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -13345,6 +13494,44 @@ func (ec *executionContext) marshalODraftYear2ᚖgithubᚗcomᚋrifaulknerᚋspo
 	return ec._DraftYear(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalOID2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNID2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOID2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNID2string(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
 	if v == nil {
 		return nil, nil
@@ -13377,7 +13564,7 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
-func (ec *executionContext) marshalOLeague2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐLeague(ctx context.Context, sel ast.SelectionSet, v []*model.League) graphql.Marshaler {
+func (ec *executionContext) marshalOLeague2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐLeagueᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.League) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -13404,7 +13591,7 @@ func (ec *executionContext) marshalOLeague2ᚕᚖgithubᚗcomᚋrifaulknerᚋspo
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOLeague2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐLeague(ctx, sel, v[i])
+			ret[i] = ec.marshalNLeague2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐLeague(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -13414,6 +13601,12 @@ func (ec *executionContext) marshalOLeague2ᚕᚖgithubᚗcomᚋrifaulknerᚋspo
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
 
 	return ret
 }
