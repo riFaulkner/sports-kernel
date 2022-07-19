@@ -20,7 +20,7 @@ type Contract {
     id: ID!
     player: PlayerNFL!
     playerId: String!
-    playerPosition: String
+    playerPosition: PlayerPosition!
     restructureStatus: ContractRestructureStatus!
     teamId: String!
     totalContractValue: Int!
@@ -93,7 +93,7 @@ type Mutation {
     addComment(input: NewPostComment, leagueId: ID!, postId: ID!): PostComment!
     contractActionDrop(contractId: ID!, leagueId: ID!, teamId: ID!): Boolean!
     contractActionRestructure(leagueId: ID!, restructureDetails: ContractRestructureInput!): Contract!
-    createContract(input: ContractInput, leagueId: ID): Contract!
+    createContract(input: ContractInput!, leagueId: ID!): Contract!
     createPlayer(input: NewPlayerNFL!): PlayerNFL!
     createPost(input: NewLeaguePost, leagueId: ID!): LeaguePost!
     createTeam(input: NewTeam!, leagueId: ID): Team!
@@ -126,12 +126,13 @@ type Query {
     getUserRoles(userId: ID): [UserRoles]
     league(leagueId: ID): League
     leagueContracts(leagueId: ID!): [Contract!]
-    leagues: [League]
+    leagues: [League!]
     player(playerId: ID): PlayerNFL!
     players(numOfResults: Int): [PlayerNFL!]
     playersByPosition(position: PlayerPosition!): [PlayerNFL!]
     posts(leagueId: ID!, numOfResults: Int): [LeaguePost!]
     teamById(leagueId: ID!, teamId: ID!): Team
+    teamByOwnerId(leagueId: ID!, ownerId: ID!): Team
     teamContracts(leagueId: ID, teamId: ID): [Contract!]
     teams(leagueId: ID): [Team!]
     userPreferences(userId: ID): UserPreferences
@@ -144,10 +145,10 @@ type Team {
     division: String
     foundedDate: Time!
     id: ID!
-    ownerId: String!
     teamAssets: TeamAssets
     teamLiabilities: TeamLiabilities
     teamName: String!
+    teamOwners: [ID!]
 }
 
 type TeamAssets {
@@ -260,7 +261,7 @@ input ContractInput {
     contractStatus: ContractStatus
     currentYear: Int!
     playerId: String!
-    playerPosition: String!
+    playerPosition: PlayerPosition!
     restructureStatus: ContractRestructureStatus
     teamId: String!
     totalContractValue: Int

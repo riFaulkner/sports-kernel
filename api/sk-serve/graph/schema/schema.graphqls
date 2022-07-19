@@ -28,9 +28,10 @@ enum Role {
 
 type Query {
   users: [User]
-  leagues: [League!]
+  leagues: [League!] @hasRole(role: ADMIN)
   league(leagueId: ID): League
   leagueContracts(leagueId: ID!): [Contract!] @hasRole(role: LEAGUE_MEMBER)
+  leagueContractsByOwnerId(leagueId: ID!, ownerId: ID!): [Contract!] @hasRole(role: LEAGUE_MEMBER)
   teams(leagueId: ID): [Team!] @hasRole(role: LEAGUE_MEMBER)
   teamById(leagueId: ID!, teamId: ID!): Team @hasRole(role: LEAGUE_MEMBER)
   teamByOwnerId(leagueId: ID!, ownerId: ID!): Team @hasRole(role: LEAGUE_MEMBER)
@@ -38,8 +39,8 @@ type Query {
   player(playerId: ID): PlayerNFL!
   players(numOfResults: Int): [PlayerNFL!]
   playersByPosition(position: PlayerPosition!): [PlayerNFL!]
-  posts(leagueId: ID!, numOfResults: Int): [LeaguePost!]
-  comments(leagueId: ID!, postId: ID!): [PostComment!]
+  posts(leagueId: ID!, numOfResults: Int): [LeaguePost!] @hasRole(role: LEAGUE_MEMBER)
+  comments(leagueId: ID!, postId: ID!): [PostComment!] @hasRole(role: LEAGUE_MEMBER)
   userPreferences(userId: ID): UserPreferences
   getUserRoles(userId:ID): [UserRoles]
 }

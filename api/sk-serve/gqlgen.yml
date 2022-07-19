@@ -73,3 +73,49 @@ models:
   ContractYearInput:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/contract.ContractYearInput
+  Team:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/team.Team
+    fields:
+      ActiveContracts:
+        resolver: true
+  ContractsMetadata:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/team.ContractsMetadata
+  TeamAssets:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/team.TeamAssets
+  TeamLiabilities:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/team.TeamLiabilities
+  DraftPick:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/team.DraftPick
+  DraftYear:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/team.DraftYear
+  DeadCap:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/team.DeadCap
+  DeadCapYear:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/team.DeadCapYear
+  CapUtilizationSummary:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/team.CapUtilizationSummary
+  NewTeam:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/team.NewTeam
+  League:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/league.League
+    fields:
+      Teams:
+        resolver: true
+  Division:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/league.Division
+  UserPreferences:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/user.UserPreferences
+

@@ -1,7 +1,7 @@
 <template>
   <v-card>
     <v-card-text>
-      My Team
+      TeamID: {{ teamId }}
 
     </v-card-text>
   </v-card>
@@ -23,7 +23,8 @@ export default {
     return {
 
     }
-  }
+  },
+
 }
 </script>
 

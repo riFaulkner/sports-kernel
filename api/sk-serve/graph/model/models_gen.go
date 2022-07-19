@@ -9,57 +9,6 @@ import (
 	"time"
 )
 
-type CapUtilizationSummary struct {
-	CapUtilization int `json:"capUtilization"`
-	NumContracts   int `json:"numContracts"`
-}
-
-type ContractsMetadata struct {
-	Year              int                    `json:"year"`
-	TotalUtilizedCap  int                    `json:"totalUtilizedCap"`
-	TotalAvailableCap int                    `json:"totalAvailableCap"`
-	QbUtilizedCap     *CapUtilizationSummary `json:"qbUtilizedCap"`
-	RbUtilizedCap     *CapUtilizationSummary `json:"rbUtilizedCap"`
-	WrUtilizedCap     *CapUtilizationSummary `json:"wrUtilizedCap"`
-	TeUtilizedCap     *CapUtilizationSummary `json:"teUtilizedCap"`
-	DeadCap           *CapUtilizationSummary `json:"deadCap"`
-}
-
-type DeadCap struct {
-	AssociatedContractID string `json:"associatedContractId"`
-	Amount               int    `json:"amount"`
-}
-
-type DeadCapYear struct {
-	Year           int        `json:"year"`
-	DeadCapAccrued []*DeadCap `json:"deadCapAccrued"`
-}
-
-type Division struct {
-	DivisionName string `json:"divisionName"`
-	LeadingWins  *int   `json:"leadingWins"`
-}
-
-type DraftPick struct {
-	Round           int     `json:"round"`
-	Value           *int    `json:"value"`
-	OriginalOwnerID *string `json:"originalOwnerId"`
-}
-
-type DraftYear struct {
-	Year  int          `json:"year"`
-	Picks []*DraftPick `json:"picks"`
-}
-
-type League struct {
-	ID         string      `json:"id"`
-	LeagueName string      `json:"leagueName"`
-	LogoURL    string      `json:"logoUrl"`
-	StartDate  time.Time   `json:"startDate"`
-	Teams      []*Team     `json:"teams"`
-	Divisions  []*Division `json:"divisions"`
-}
-
 type LeaguePost struct {
 	ID       string         `json:"id"`
 	Author   string         `json:"author"`
@@ -67,6 +16,11 @@ type LeaguePost struct {
 	PostDate time.Time      `json:"postDate"`
 	Content  string         `json:"content"`
 	Comments []*PostComment `json:"comments"`
+}
+
+type LeagueTeamFiltering struct {
+	TeamID  *string `json:"teamId"`
+	OwnerID *string `json:"ownerId"`
 }
 
 type NewLeaguePost struct {
@@ -88,13 +42,6 @@ type NewPlayerNfl struct {
 type NewPostComment struct {
 	Author  string `json:"author"`
 	Content string `json:"content"`
-}
-
-type NewTeam struct {
-	ID          string     `json:"id"`
-	TeamName    string     `json:"teamName"`
-	Division    *string    `json:"division"`
-	FoundedDate *time.Time `json:"foundedDate"`
 }
 
 type NewUser struct {
@@ -127,26 +74,6 @@ type PostComment struct {
 	CommentDate time.Time `json:"commentDate"`
 }
 
-type Team struct {
-	ID                       string               `json:"id"`
-	FoundedDate              time.Time            `json:"foundedDate"`
-	TeamName                 string               `json:"teamName"`
-	Division                 *string              `json:"division"`
-	CurrentContractsMetadata *ContractsMetadata   `json:"currentContractsMetadata"`
-	ContractsMetadata        []*ContractsMetadata `json:"contractsMetadata"`
-	TeamAssets               *TeamAssets          `json:"teamAssets"`
-	TeamLiabilities          *TeamLiabilities     `json:"teamLiabilities"`
-	TeamOwners               []string             `json:"teamOwners"`
-}
-
-type TeamAssets struct {
-	DraftPicks []*DraftYear `json:"draftPicks"`
-}
-
-type TeamLiabilities struct {
-	DeadCap []*DeadCapYear `json:"deadCap"`
-}
-
 type Transaction struct {
 	TransactionType TransactionType `json:"transactionType"`
 	OccurrenceDate  int             `json:"occurrenceDate"`
@@ -163,14 +90,6 @@ type User struct {
 	OwnerName string `json:"ownerName"`
 	Email     string `json:"email"`
 	Avatar    string `json:"avatar"`
-}
-
-type UserPreferences struct {
-	ID                string    `json:"id"`
-	OwnerName         string    `json:"ownerName"`
-	PreferredLeagueID *string   `json:"preferredLeagueId"`
-	IsAdmin           *bool     `json:"isAdmin"`
-	Leagues           []*League `json:"leagues"`
 }
 
 type UserRoles struct {

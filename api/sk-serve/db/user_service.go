@@ -5,6 +5,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/firestore"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/user"
 	"google.golang.org/api/iterator"
 )
 
@@ -48,13 +49,13 @@ func (u *UserImpl) Create(ctx context.Context, user model.User) error {
 	return err
 }
 
-func (u *UserImpl) GetUserPreferences(ctx context.Context, userId string) (*model.UserPreferences, error) {
+func (u *UserImpl) GetUserPreferences(ctx context.Context, userId string) (*user.UserPreferences, error) {
 	result, err := u.Client.Collection(collectionName).Doc(userId).Get(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	userPreferences := new(model.UserPreferences)
+	userPreferences := new(user.UserPreferences)
 	err = result.DataTo(&userPreferences)
 	id := result.Ref.ID
 	userPreferences.ID = id

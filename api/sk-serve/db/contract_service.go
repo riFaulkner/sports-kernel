@@ -9,6 +9,7 @@ import (
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/firestore"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/team"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -278,7 +279,7 @@ func (u *ContractImpl) DropContract(ctx context.Context, leagueID string, teamID
 		return false, gqlerror.Errorf("TeamId provided did not match the contract's teamID")
 	}
 
-	deadCapYears := make([]*model.DeadCap, 0, 2)
+	deadCapYears := make([]*team.DeadCap, 0, 2)
 
 	sort.Slice(playerContract.ContractDetails, func(i, j int) bool {
 		return playerContract.ContractDetails[i].Year < playerContract.ContractDetails[j].Year
@@ -286,7 +287,7 @@ func (u *ContractImpl) DropContract(ctx context.Context, leagueID string, teamID
 	currentContractYear := playerContract.CurrentYear
 	currentContractDetails := playerContract.ContractDetails[(currentContractYear - 1)]
 
-	deadCapYears = append(deadCapYears, &model.DeadCap{
+	deadCapYears = append(deadCapYears, &team.DeadCap{
 		AssociatedContractID: playerContract.ID,
 		Amount:               calculateDeadCap(currentContractDetails),
 	})
@@ -298,7 +299,7 @@ func (u *ContractImpl) DropContract(ctx context.Context, leagueID string, teamID
 		}
 	}
 
-	deadCapYears = append(deadCapYears, &model.DeadCap{
+	deadCapYears = append(deadCapYears, &team.DeadCap{
 		AssociatedContractID: playerContract.ID,
 		Amount:               futureAccumulatedDeadCap,
 	})

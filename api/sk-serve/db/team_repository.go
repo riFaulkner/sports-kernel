@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/league"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/team"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"log"
@@ -13,7 +14,6 @@ import (
 	gFirestore "cloud.google.com/go/firestore"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/firestore"
-	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
@@ -21,7 +21,7 @@ type TeamRepositoryImpl struct {
 	Client firestore.Client
 }
 
-func (u *TeamRepositoryImpl) AddDeadCapToTeam(ctx context.Context, leagueID string, teamID string, deadCap []*model.DeadCap) bool {
+func (u *TeamRepositoryImpl) AddDeadCapToTeam(ctx context.Context, leagueID string, teamID string, deadCap []*team.DeadCap) bool {
 	// Validate the dead cap passed in
 	if deadCap == nil {
 		log.Printf("Cannot add dead cap to team, invalid deadcap passed")
@@ -35,20 +35,20 @@ func (u *TeamRepositoryImpl) AddDeadCapToTeam(ctx context.Context, leagueID stri
 	}
 
 	// Get the team
-	team, ok := u.GetTeamByIdOk(ctx, leagueID, teamID)
-	if !ok || team == nil {
-		if team == nil {
+	teamRef, ok := u.GetTeamByIdOk(ctx, leagueID, teamID)
+	if !ok || teamRef == nil {
+		if teamRef == nil {
 			gqlerror.Errorf("WARN: Team does not exist, failed update contract")
 		}
 		return false
 	}
-	if team.TeamLiabilities == nil || team.TeamLiabilities.DeadCap == nil {
-		team.TeamLiabilities = &model.TeamLiabilities{
-			DeadCap: make([]*model.DeadCapYear, 0, 0),
+	if teamRef.TeamLiabilities == nil || teamRef.TeamLiabilities.DeadCap == nil {
+		teamRef.TeamLiabilities = &team.TeamLiabilities{
+			DeadCap: make([]*team.DeadCapYear, 0, 0),
 		}
 	}
 
-	teamDeadCap := team.TeamLiabilities.DeadCap
+	teamDeadCap := teamRef.TeamLiabilities.DeadCap
 	if len(teamDeadCap) != 0 {
 		sort.Slice(teamDeadCap, func(i, j int) bool {
 			return teamDeadCap[i].Year < teamDeadCap[j].Year
@@ -60,9 +60,9 @@ func (u *TeamRepositoryImpl) AddDeadCapToTeam(ctx context.Context, leagueID stri
 			if len(teamDeadCap) > i {
 				teamDeadCap[i].DeadCapAccrued = append(teamDeadCap[i].DeadCapAccrued, value)
 			} else {
-				deadCapYear := &model.DeadCapYear{
+				deadCapYear := &team.DeadCapYear{
 					Year:           time.Now().Year() + i,
-					DeadCapAccrued: make([]*model.DeadCap, 0, 1),
+					DeadCapAccrued: make([]*team.DeadCap, 0, 1),
 				}
 				deadCapYear.DeadCapAccrued = append(deadCapYear.DeadCapAccrued, value)
 				teamDeadCap = append(teamDeadCap, deadCapYear)
@@ -86,8 +86,8 @@ func (u *TeamRepositoryImpl) AddDeadCapToTeam(ctx context.Context, leagueID stri
 	return true
 }
 
-func (u *TeamRepositoryImpl) GetAllLeagueTeams(ctx context.Context, leagueId string) ([]*model.Team, error) {
-	teams := make([]*model.Team, 0)
+func (u *TeamRepositoryImpl) GetAllLeagueTeams(ctx context.Context, leagueId string) ([]*team.Team, error) {
+	teams := make([]*team.Team, 0)
 
 	//Create Document Ref - There is no traffic associated with this...
 	league := u.Client.Collection(firestore.LeaguesCollection).Doc(leagueId)
@@ -100,7 +100,7 @@ func (u *TeamRepositoryImpl) GetAllLeagueTeams(ctx context.Context, leagueId str
 	}
 
 	for _, result := range results {
-		team := new(model.Team)
+		team := new(team.Team)
 		err = result.DataTo(&team)
 		team.ID = result.Ref.ID
 		if err != nil {
@@ -111,7 +111,7 @@ func (u *TeamRepositoryImpl) GetAllLeagueTeams(ctx context.Context, leagueId str
 	return teams, nil
 }
 
-func (u *TeamRepositoryImpl) GetTeamById(ctx context.Context, leagueId string, teamId string) (*model.Team, error) {
+func (u *TeamRepositoryImpl) GetTeamById(ctx context.Context, leagueId string, teamId string) (*team.Team, error) {
 	league := u.Client.Collection(firestore.LeaguesCollection).Doc(leagueId)
 
 	result, err := league.Collection(firestore.TeamsCollection).Doc(teamId).Get(ctx)
@@ -119,7 +119,7 @@ func (u *TeamRepositoryImpl) GetTeamById(ctx context.Context, leagueId string, t
 	if err != nil {
 		return nil, err
 	}
-	team := new(model.Team)
+	team := new(team.Team)
 	err = result.DataTo(&team)
 	team.ID = result.Ref.ID
 
@@ -130,7 +130,7 @@ func (u *TeamRepositoryImpl) GetTeamById(ctx context.Context, leagueId string, t
 }
 
 // Pull out to interface
-func (u *TeamRepositoryImpl) GetTeamByIdOk(ctx context.Context, leagueId string, teamId string) (*model.Team, bool) {
+func (u *TeamRepositoryImpl) GetTeamByIdOk(ctx context.Context, leagueId string, teamId string) (*team.Team, bool) {
 	teamReference, err := u.Client.
 		Collection(firestore.LeaguesCollection).
 		Doc(leagueId).Collection(firestore.TeamsCollection).
@@ -146,7 +146,7 @@ func (u *TeamRepositoryImpl) GetTeamByIdOk(ctx context.Context, leagueId string,
 		return nil, false
 	}
 
-	team := new(model.Team)
+	team := new(team.Team)
 	err = teamReference.DataTo(&team)
 	if err != nil {
 		// print out log warning
@@ -158,12 +158,12 @@ func (u *TeamRepositoryImpl) GetTeamByIdOk(ctx context.Context, leagueId string,
 	return team, true
 }
 
-func (u *TeamRepositoryImpl) GetTeamByOwnerID(ctx context.Context, leagueID string, ownerID string) (*model.Team, bool) {
+func (u *TeamRepositoryImpl) GetTeamByOwnerID(ctx context.Context, leagueID string, ownerID string) (*team.Team, bool) {
 	documents, err := u.Client.
 		Collection(firestore.LeaguesCollection).
 		Doc(leagueID).
 		Collection(firestore.TeamsCollection).
-		Where("TeamOwners", "array_contains", ownerID).
+		Where("TeamOwners", "array-contains", ownerID).
 		Documents(ctx).
 		GetAll()
 
@@ -180,14 +180,14 @@ func (u *TeamRepositoryImpl) GetTeamByOwnerID(ctx context.Context, leagueID stri
 	return teams[0], true
 }
 
-func (u *TeamRepositoryImpl) Create(ctx context.Context, leagueId string, teamInput model.NewTeam) (*model.Team, error) {
+func (u *TeamRepositoryImpl) Create(ctx context.Context, leagueId string, teamInput team.NewTeam) (*team.Team, error) {
 	league := u.Client.Collection(firestore.LeaguesCollection).Doc(leagueId)
 
 	defaultTeamContractsMetadata := generateDefaultTeamContractsMetadata()
 	defaultTeamAssets := generateTeamAssets(teamInput.ID)
-	defaultTeamLiabilities := &model.TeamLiabilities{}
+	defaultTeamLiabilities := &team.TeamLiabilities{}
 
-	team := model.Team{
+	team := team.Team{
 		ID:                       teamInput.ID,
 		TeamName:                 teamInput.TeamName,
 		Division:                 teamInput.Division,
@@ -211,13 +211,13 @@ func (u *TeamRepositoryImpl) UpdateTeamContractMetaData(ctx context.Context, lea
 		return gqlerror.Errorf("Unable to update contract metadata, no team contracts")
 	}
 	teamID := teamContracts[0].TeamID
-	team, err := u.GetTeamById(ctx, leagueID, teamID)
+	teamRef, err := u.GetTeamById(ctx, leagueID, teamID)
 	if err != nil {
 		return nil
 	}
 
 	// Create default data
-	contractsMetadata := make([]*model.ContractsMetadata, league.MaxContractLength, league.MaxContractLength)
+	contractsMetadata := make([]*team.ContractsMetadata, league.MaxContractLength, league.MaxContractLength)
 	for i := 0; i < cap(contractsMetadata); i++ {
 		yearMetadata := generateDefaultTeamContractsMetadata()
 		yearMetadata.Year = yearMetadata.Year + i
@@ -242,7 +242,7 @@ func (u *TeamRepositoryImpl) UpdateTeamContractMetaData(ctx context.Context, lea
 			contractMetadataYear.TotalAvailableCap -= contractYear.TotalAmount
 			playerType := contract.PlayerPosition
 
-			var capUtilization *model.CapUtilizationSummary = nil
+			var capUtilization *team.CapUtilizationSummary = nil
 			switch playerType {
 			case "QB":
 				capUtilization = contractMetadataYear.QbUtilizedCap
@@ -258,17 +258,17 @@ func (u *TeamRepositoryImpl) UpdateTeamContractMetaData(ctx context.Context, lea
 			capUtilization.NumContracts++
 		}
 	}
-	if team.TeamLiabilities != nil {
-		if team.TeamLiabilities.DeadCap != nil {
+	if teamRef.TeamLiabilities != nil {
+		if teamRef.TeamLiabilities.DeadCap != nil {
 			// Process dead cap
-			for i, deadCapYear := range team.TeamLiabilities.DeadCap {
+			for i, deadCapYear := range teamRef.TeamLiabilities.DeadCap {
 				deadCapTotal := 0
 				totalContracts := 0
 				for _, deadCap := range deadCapYear.DeadCapAccrued {
 					totalContracts++
 					deadCapTotal += deadCap.Amount
 				}
-				contractsMetadata[i].DeadCap = &model.CapUtilizationSummary{
+				contractsMetadata[i].DeadCap = &team.CapUtilizationSummary{
 					CapUtilization: deadCapTotal,
 					NumContracts:   totalContracts,
 				}
@@ -280,7 +280,7 @@ func (u *TeamRepositoryImpl) UpdateTeamContractMetaData(ctx context.Context, lea
 
 	_, err = league.
 		Collection(firestore.TeamsCollection).
-		Doc(team.ID).
+		Doc(teamRef.ID).
 		Update(ctx, []gFirestore.Update{
 			{
 				Path:  "CurrentContractsMetadata",
@@ -294,42 +294,42 @@ func (u *TeamRepositoryImpl) UpdateTeamContractMetaData(ctx context.Context, lea
 	return err
 }
 
-func generateDefaultTeamContractsMetadata() *model.ContractsMetadata {
-	return &model.ContractsMetadata{
+func generateDefaultTeamContractsMetadata() *team.ContractsMetadata {
+	return &team.ContractsMetadata{
 		Year:              time.Now().Year(),
 		TotalUtilizedCap:  0,
 		TotalAvailableCap: league.SalaryCap,
-		QbUtilizedCap: &model.CapUtilizationSummary{
+		QbUtilizedCap: &team.CapUtilizationSummary{
 			CapUtilization: 0,
 			NumContracts:   0,
 		},
-		RbUtilizedCap: &model.CapUtilizationSummary{
+		RbUtilizedCap: &team.CapUtilizationSummary{
 			CapUtilization: 0,
 			NumContracts:   0,
 		},
-		WrUtilizedCap: &model.CapUtilizationSummary{
+		WrUtilizedCap: &team.CapUtilizationSummary{
 			CapUtilization: 0,
 			NumContracts:   0,
 		},
-		TeUtilizedCap: &model.CapUtilizationSummary{
+		TeUtilizedCap: &team.CapUtilizationSummary{
 			CapUtilization: 0,
 			NumContracts:   0,
 		},
-		DeadCap: &model.CapUtilizationSummary{
+		DeadCap: &team.CapUtilizationSummary{
 			CapUtilization: 0,
 			NumContracts:   0,
 		},
 	}
 }
 
-func generateTeamAssets(teamID string) *model.TeamAssets {
+func generateTeamAssets(teamID string) *team.TeamAssets {
 	year := time.Now().Year()
-	draftYears := make([]*model.DraftYear, 0, 5)
+	draftYears := make([]*team.DraftYear, 0, 5)
 
 	for i := 0; i < 5; i++ {
-		draftYear := model.DraftYear{
+		draftYear := team.DraftYear{
 			Year: year + i,
-			Picks: []*model.DraftPick{
+			Picks: []*team.DraftPick{
 				{Round: 1, Value: nil, OriginalOwnerID: &teamID},
 				{Round: 2, Value: nil, OriginalOwnerID: &teamID},
 				{Round: 3, Value: nil, OriginalOwnerID: &teamID},
@@ -340,14 +340,14 @@ func generateTeamAssets(teamID string) *model.TeamAssets {
 		draftYears = append(draftYears, &draftYear)
 	}
 
-	teamAssets := model.TeamAssets{
+	teamAssets := team.TeamAssets{
 		DraftPicks: draftYears,
 	}
 
 	return &teamAssets
 }
 
-func processResults(teamsReference []*gFirestore.DocumentSnapshot, err error) ([]*model.Team, bool) {
+func processResults(teamsReference []*gFirestore.DocumentSnapshot, err error) ([]*team.Team, bool) {
 	if err != nil {
 		if status.Code(err) == codes.NotFound {
 			return nil, true
@@ -357,10 +357,10 @@ func processResults(teamsReference []*gFirestore.DocumentSnapshot, err error) ([
 		return nil, false
 	}
 
-	teams := make([]*model.Team, 0, len(teamsReference))
+	teams := make([]*team.Team, len(teamsReference), len(teamsReference))
 
-	for _, teamReference := range teamsReference {
-		team := new(model.Team)
+	for i, teamReference := range teamsReference {
+		team := new(team.Team)
 
 		err = teamReference.DataTo(&team)
 		if err != nil {
@@ -369,6 +369,7 @@ func processResults(teamsReference []*gFirestore.DocumentSnapshot, err error) ([
 			return nil, false
 		}
 		team.ID = teamReference.Ref.ID
+		teams[i] = team
 	}
 
 	return teams, true

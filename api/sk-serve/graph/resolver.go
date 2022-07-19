@@ -20,7 +20,7 @@ import (
 
 type Resolver struct {
 	UserResolver     user.User
-	LeagueResolver   league.League
+	LeagueResolver   league.LeagueRepository
 	TeamService      team.TeamService
 	ContractResolver contract.Resolver
 	PlayerService    playernfl.PlayerService

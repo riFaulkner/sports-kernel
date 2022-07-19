@@ -9,6 +9,7 @@ type Team {
     teamAssets: TeamAssets
     teamLiabilities: TeamLiabilities
     teamOwners: [ID!]
+    activeContracts: [Contract!]
 }
 
 input NewTeam {

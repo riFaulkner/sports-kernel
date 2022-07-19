@@ -2,8 +2,6 @@ package league
 
 import (
 	"context"
-
-	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
 )
 
 const (
@@ -11,7 +9,7 @@ const (
 	MaxContractLength = 4
 )
 
-type League interface {
-	GetAll(ctx context.Context) ([]*model.League, error)
-	GetByLeagueId(ctx context.Context, leagueID string) (*model.League, error)
+type LeagueRepository interface {
+	GetAll(ctx context.Context) ([]*League, error)
+	GetByLeagueId(ctx context.Context, leagueID string) (*League, error)
 }
