@@ -26,6 +26,12 @@
             :league-id="leagueId"
         />
       </v-col>
+
+      <v-col v-if="selectedTool === 'accessCodes'">
+        <generate-access-codes
+            :league-id="leagueId"
+        />
+      </v-col>
     </v-row>
   </v-container>
 
@@ -35,10 +41,11 @@
 import RestructureContract from "@/components/league/managementTools/ManageContract";
 import ManageContract from "@/components/league/managementTools/ManageContract";
 import ContractCreationTool from "~/components/league/contracts/ContractCreationTool";
+import GenerateAccessCodes from "@/components/league/managementTools/GenerateAccessCodes";
 
 export default {
   name: "LeagueManagementTool",
-  components: {ContractCreationTool, ManageContract, RestructureContract},
+  components: {ContractCreationTool, ManageContract, RestructureContract, GenerateAccessCodes},
   props: {
     leagueId: {
       type: String,
@@ -50,6 +57,7 @@ export default {
       toolTypes: [
         {text: "Create Contract", value: "createContract"},
         {text: "Manage Contract", value: "manageContract"},
+        {text: "Generate Access Codes", value: "accessCodes"},
       ],
       selectedTool: ""
     }
