@@ -57,7 +57,7 @@ export default {
       toolTypes: [
         {text: "Create Contract", value: "createContract"},
         {text: "Manage Contract", value: "manageContract"},
-        {text: "Generate Access Codes", value: "accessCodes"},
+        {text: "Generate League Access Codes", value: "accessCodes"},
       ],
       selectedTool: ""
     }
