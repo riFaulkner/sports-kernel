@@ -137,6 +137,7 @@ type Team struct {
 	ContractsMetadata        []*ContractsMetadata `json:"contractsMetadata"`
 	TeamAssets               *TeamAssets          `json:"teamAssets"`
 	TeamLiabilities          *TeamLiabilities     `json:"teamLiabilities"`
+	AccessCodes              []*string            `json:"accessCodes"`
 }
 
 type TeamAssets struct {

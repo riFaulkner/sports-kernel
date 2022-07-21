@@ -2,13 +2,16 @@ package db
 
 import (
 	"context"
+	"crypto/md5"
+	"encoding/base64"
+	"log"
+	"sort"
+	"time"
+
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/league"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"log"
-	"sort"
-	"time"
 
 	gFirestore "cloud.google.com/go/firestore"
 	"github.com/99designs/gqlgen/graphql"
@@ -269,6 +272,41 @@ func (u *TeamImpl) UpdateTeamContractMetaData(ctx context.Context, leagueID stri
 		})
 
 	return err
+}
+
+func (u *TeamImpl) GenerateAccessCode(ctx context.Context, leagueId string, teamId string, role string) (string, error) {
+	//Get the designated team
+	team, err := u.GetTeamById(ctx, leagueId, teamId)
+
+	if err != nil {
+		return "Issue creating access string", err
+	}
+
+	accessCode := accessCodeFromString(leagueId + teamId + role)
+
+	codes := team.AccessCodes
+	codes = append(codes, &accessCode)
+
+	u.Client.
+		Collection(firestore.LeaguesCollection).
+		Doc(leagueId).
+		Collection(firestore.TeamsCollection).
+		Doc(teamId).
+		Update(ctx, []gFirestore.Update{
+			{
+				Path:  "AccessCodes",
+				Value: codes,
+			},
+		})
+
+	return accessCode, nil
+}
+
+func accessCodeFromString(input string) string {
+	hashString := []byte(input)
+	md5string := md5.Sum(hashString)
+	b64String := base64.RawURLEncoding.EncodeToString(md5string[:])
+	return b64String
 }
 
 func generateDefaultTeamContractsMetadata() *model.ContractsMetadata {
