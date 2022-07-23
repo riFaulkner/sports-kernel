@@ -77,7 +77,7 @@ type League {
     leagueName: String!
     logoUrl: String!
     startDate: Time!
-    teams: [Team!]!
+    teams(search: LeagueTeamFiltering): [Team!]!
 }
 
 type LeaguePost {
@@ -126,6 +126,7 @@ type Query {
     getUserRoles(userId: ID): [UserRoles]
     league(leagueId: ID): League
     leagueContracts(leagueId: ID!): [Contract!]
+    leagueContractsByOwnerId(leagueId: ID!, ownerId: ID!): [Contract!]
     leagues: [League!]
     player(playerId: ID): PlayerNFL!
     players(numOfResults: Int): [PlayerNFL!]
@@ -140,6 +141,7 @@ type Query {
 }
 
 type Team {
+    activeContracts: [Contract!]
     contractsMetadata: [ContractsMetadata!]
     currentContractsMetadata: ContractsMetadata
     division: String
@@ -278,6 +280,11 @@ input ContractYearInput {
     paidAmount: Int!
     totalAmount: Int!
     year: Int!
+}
+
+input LeagueTeamFiltering {
+    ownerId: ID
+    teamId: ID
 }
 
 input NewLeaguePost {

@@ -12,6 +12,7 @@
     <v-tab-item>
       <my-team
         :league-id="league.id"
+        :owner-id="ownerId"
       />
     </v-tab-item>
     <v-tab-item>
@@ -58,6 +59,9 @@ export default {
   computed: {
     league () {
       return this.$store.getters['application/getActiveLeague']
+    },
+    ownerId() {
+      return this.$store.getters['user/getUserId']
     },
     tab () {
       return this.$store.state.application.activeTab

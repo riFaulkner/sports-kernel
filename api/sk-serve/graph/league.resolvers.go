@@ -5,7 +5,6 @@ package graph
 
 import (
 	"context"
-
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/generated"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/league"

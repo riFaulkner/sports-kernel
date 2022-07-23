@@ -67,4 +67,30 @@ export const LEAGUE_CONTRACTS = gql`
     }
 `
 
-
+export const LEAGUE_FILTER_TEAMS_BY_OWNER_ID = gql`
+    query GetFullLeagueInfo($leagueId:ID!, $filter:LeagueTeamFiltering) {
+        league(leagueId: $leagueId) {
+            id
+            teams(search: $filter) {
+                id
+                teamName
+                activeContracts {
+                    id
+                    playerId
+                    player {
+                        id
+                        playerName
+                        team
+                    }
+                    totalContractValue
+                    totalRemainingValue
+                    contractDetails {
+                        totalAmount
+                        paidAmount
+                        guaranteedAmount
+                    }
+                }
+            }
+        }
+    }
+    `

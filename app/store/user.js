@@ -10,6 +10,9 @@ export const state = () => ({
 })
 
 export const getters = {
+  getUserId (state) {
+    return state.userId
+  },
   getUserLeagues (state) {
     return state.userPreferences.leagues
   },
