@@ -39,13 +39,13 @@ func (p *PlayerRepositoryImpl) GetAll(ctx context.Context, numberOfResults *int)
 	if *numberOfResults == -1 {
 		results, err = p.Client.
 			Collection(appFirestore.PlayerCollection).
-			OrderBy("overallRank", firestore.Asc).
+			OrderBy("OverallRank", firestore.Asc).
 			Documents(ctx).
 			GetAll()
 	} else {
 		results, err = p.Client.
 			Collection(appFirestore.PlayerCollection).
-			OrderBy("overallRank", firestore.Asc).
+			OrderBy("OverallRank", firestore.Asc).
 			Limit(*numberOfResults).
 			Documents(ctx).
 			GetAll()
@@ -62,7 +62,7 @@ func (p *PlayerRepositoryImpl) GetAll(ctx context.Context, numberOfResults *int)
 func (p *PlayerRepositoryImpl) GetPlayersByPosition(ctx context.Context, position model.PlayerPosition) ([]*model.PlayerNfl, bool) {
 	results, err := p.Client.
 		Collection(appFirestore.PlayerCollection).
-		Where("position", "==", position).
+		Where("Position", "==", position).
 		Documents(ctx).
 		GetAll()
 
