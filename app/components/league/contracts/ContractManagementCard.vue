@@ -260,7 +260,6 @@ export default {
   },
   methods: {
     closeDialog() {
-      console.log("closed")
       this.$emit("contract-management-closed")
     },
     cancelAction() {

@@ -2,23 +2,31 @@
   <v-card>
     <h1 class="text-center">Manage Contract</h1>
 
-    <v-card-text v-if="selectedContract === null">
+    <v-card-text>
       <contract-search
           :league-id="leagueId"
           :contracts="contracts"
           :loading="this.$apollo.loading"
+          :selected="contractSelectList"
           @contract-selected="contractSelected"
           @contract-deselected="contractDeselected"
       />
     </v-card-text>
-    <div v-else>
-      <contract-management-card
-          :contract=selectedContract
-          :league-id="leagueId"
-          @contract-restructured="contractModified"
-          @contract-dropped="contractModified"
-          @contract-management-closed="contractDeselected"
-      />
+    <div v-if="selectedContract !== null">
+
+      <v-dialog
+          :value="true"
+          max-width="500px"
+      >
+        <contract-management-card
+            :contract=selectedContract
+            :league-id="leagueId"
+            @contract-restructured="contractModified"
+            @contract-dropped="contractModified"
+            @contract-management-closed="contractDeselected"
+        />
+      </v-dialog>
+
     </div>
   </v-card>
 
@@ -41,19 +49,22 @@ export default {
   data: function () {
     return {
       selectedContract: null,
+      contractSelectList:[],
       contracts: []
     }
   },
   methods: {
     contractSelected(contract) {
       this.selectedContract = contract.contract
+      this.contractSelectList = [contract.contract]
     },
     contractDeselected() {
-      console.log("Deselecting")
       this.selectedContract = null
+      this.contractSelectList = []
     },
     contractModified() {
       this.selectedContract = null
+      this.contractSelectList = []
     }
   },
   apollo: {

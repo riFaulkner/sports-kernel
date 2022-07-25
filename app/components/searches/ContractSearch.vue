@@ -7,7 +7,7 @@
         :search="search"
         :custom-filter="playerNameMatchesSearch"
         :loading="loading"
-        v-model="selected"
+        :value="selectedList"
         show-select
         :single-select="true"
     >
@@ -81,6 +81,12 @@ export default {
       type: Boolean,
       required: false,
       default: false
+    },
+    selected: {
+      type: Array,
+      default: function () {
+        return []
+      }
     }
   },
   data: function () {
@@ -99,7 +105,6 @@ export default {
         {text: "Contract Restructure Status", value: "restructureStatus", align: 'center'},
       ],
       queriedWith: "",
-      selected: [],
     }
   },
   methods: {
@@ -133,7 +138,14 @@ export default {
           .toLocaleString()
     }
   },
-
+  computed: {
+    selectedList: {
+      // No set method, instead the event is handled in the contractSelected method above
+      get:function () {
+        return this.selected
+      },
+    }
+  }
 }
 </script>
 
