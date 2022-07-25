@@ -14,6 +14,11 @@
         />
       </v-card-text>
     </v-card>
+    <v-card>
+      <team-draft-picks-breakdown
+          :draft-picks="this.league.teams[0]?.teamAssets?.draftPicks"
+      />
+    </v-card>
     <v-dialog
         v-model="contractIsSelected"
         max-width="500px"
@@ -35,10 +40,11 @@
 import {LEAGUE_FILTER_TEAMS_BY_OWNER_ID} from "@/graphql/queries/league/leagueGraphQL";
 import ContractSearch from "@/components/searches/ContractSearch";
 import ContractManagementCard from "@/components/league/contracts/ContractManagementCard";
+import TeamDraftPicksBreakdown from "@/components/league/team-assets/TeamDraftPicksBreakdown";
 
 export default {
   name: "MyTeam.vue",
-  components: {ContractManagementCard, ContractSearch},
+  components: {TeamDraftPicksBreakdown, ContractManagementCard, ContractSearch},
   props: {
     leagueId: {
       type: String,
@@ -66,6 +72,9 @@ export default {
       }
       return []
     },
+    teamDraftPicks() {
+
+    }
   },
   methods: {
     contractSelected(contract) {

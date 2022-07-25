@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import TeamAssetsBreakdown from '@/components/league/TeamAssetsBreakdown'
+import TeamAssetsBreakdown from '@/components/league/team-assets/TeamAssetsBreakdown'
 import { LEAGUE_TEAMS_BY_LEAGUE_ID } from '@/graphql/queries/league/leagueGraphQL'
 
 export default {

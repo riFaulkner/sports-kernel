@@ -31,7 +31,7 @@ export const TEAM_DRAFT_PICKS = gql`
             teamAssets{
                 draftPicks{
                     year
-                    picks{
+                    picks {
                         round
                         value
                     }
