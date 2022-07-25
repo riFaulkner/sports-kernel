@@ -6,7 +6,7 @@
         item-key="id"
         :search="search"
         :custom-filter="playerNameMatchesSearch"
-        :loading="this.$apollo.loading"
+        :loading="loading"
         v-model="selected"
         show-select
         :single-select="true"
@@ -62,23 +62,31 @@
 </template>
 
 <script>
-import {LEAGUE_CONTRACTS} from "~/graphql/queries/league/leagueGraphQL";
 
 export default {
   name: "ContractSearch",
   props: {
+    contracts: {
+      type: Array,
+      required: true,
+    },
     leagueId: {
       type: String,
       required: true
+    },
+    loading: {
+      type: Boolean,
+      required: false,
+      default: false
     }
   },
   data: function () {
     return {
-      contracts: [],
       search: "",
       headers: [
         {text: "Player Name:", value: "player.playerName"},
         {text: "Player Position", value: "player.position"},
+        {text: "NFL Team", value: "player.team"},
         {text: "Total Contract Value", value: "totalContractValue"},
         {text: "Year 1", value: "year1"},
         {text: "Year 2", value: "year2"},
@@ -117,15 +125,7 @@ export default {
       this.$emit('contract-deselected', {contract:contract})
     }
   },
-  apollo: {
-    contracts: {
-      query: LEAGUE_CONTRACTS,
-      variables() {
-        return {leagueId: this.leagueId}
-      },
-      update: data => data.leagueContracts
-    }
-  }
+
 }
 </script>
 
