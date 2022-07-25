@@ -6,7 +6,17 @@
           elevation="2"
           max-width="450px"
       >
-        <v-card-title> {{ contract.player.playerName }}</v-card-title>
+        <v-card-title> {{ contract.player.playerName }}
+          <v-spacer/>
+          <v-btn
+              icon
+              dark
+              @click="closeDialog"
+          >
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+
+        </v-card-title>
         <v-card-subtitle>
           Position: {{ contract.player.position }} <br/>
         </v-card-subtitle>
@@ -249,6 +259,10 @@ export default {
     }
   },
   methods: {
+    closeDialog() {
+      console.log("closed")
+      this.$emit("contract-management-closed")
+    },
     cancelAction() {
       this.actionToPerform = null
       this.confirmationDialog = false
@@ -308,7 +322,7 @@ export default {
           // TODO: Update both drop and restructure to remove the contract from the team view
         }).then(() => {
           this.$store.dispatch("application/alertSuccess", {message: "Contract dropped"})
-          this.$emit("contractDropped", {contractId: contractId})
+          this.$emit("contract-dropped", {contractId: contractId})
         }).catch((data) => {
           this.$store.dispatch("application/alertError", {message: "Failed to drop contract"})
           console.error("Failed to restructure contract ", data)
@@ -357,7 +371,7 @@ export default {
           },
         }).then(() => {
           this.$store.dispatch("application/alertSuccess", {message: "Contract restructured"})
-          this.$emit("contractRestructured", {contractId: contractRestructure.contractId})
+          this.$emit("contract-restructured", {contractId: contractRestructure.contractId})
         }).catch((data) => {
           this.$store.dispatch("application/alertError", {message: "Failed to restructure contract"})
           console.error("Failed to restructure contract ", data)

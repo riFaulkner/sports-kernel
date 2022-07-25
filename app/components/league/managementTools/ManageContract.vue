@@ -15,8 +15,9 @@
       <contract-management-card
           :contract=selectedContract
           :league-id="leagueId"
-          @contractRestructured="contractModified"
-          @contractDropped="contractModified"
+          @contract-restructured="contractModified"
+          @contract-dropped="contractModified"
+          @contract-management-closed="contractDeselected"
       />
     </div>
   </v-card>
@@ -48,6 +49,7 @@ export default {
       this.selectedContract = contract.contract
     },
     contractDeselected() {
+      console.log("Deselecting")
       this.selectedContract = null
     },
     contractModified() {
