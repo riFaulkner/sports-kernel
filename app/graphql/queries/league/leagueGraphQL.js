@@ -81,14 +81,18 @@ export const LEAGUE_FILTER_TEAMS_BY_OWNER_ID = gql`
                         id
                         playerName
                         team
+                        position
                     }
+                    currentYear
                     totalContractValue
                     totalRemainingValue
                     contractDetails {
-                        totalAmount
-                        paidAmount
                         guaranteedAmount
+                        paidAmount
+                        totalAmount
+                        year
                     }
+                    restructureStatus
                 }
             }
         }

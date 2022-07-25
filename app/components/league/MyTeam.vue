@@ -5,14 +5,11 @@
     <v-card>
     <v-card-text>
       TeamID: {{ league }}
-      <v-data-table
-          :headers="headers"
-          :items="teamContracts"
-      >
-        <template v-slot:item.>
-
-        </template>
-      </v-data-table>
+      <contract-search
+        :contracts="teamContracts"
+        :league-id="leagueId"
+        :loading="this.$apollo.loading"
+        />
     </v-card-text>
 
     </v-card>
@@ -22,9 +19,11 @@
 
 <script>
 import {LEAGUE_FILTER_TEAMS_BY_OWNER_ID} from "@/graphql/queries/league/leagueGraphQL";
+import ContractSearch from "@/components/searches/ContractSearch";
 
 export default {
   name: "MyTeam.vue",
+  components: {ContractSearch},
   props: {
     leagueId: {
       type: String,
@@ -37,32 +36,12 @@ export default {
   },
   data: function() {
     return {
-      headers: [
-        {text: "Player", value: "player.playerName"},
-        {text: "NFL team", value: "player.team"},
-        {text: "Current Fantasy Points", value: "0"},
-        {text: "Points Contributed", value: "0"},
-        {text: "Cost per point", value: "0"},
-        {text: "Contract Total", value: "totalContractValue"},
-        {text: "Contract Paid", value: "totalRemainingValue"},
-        {text: "Guaranteed Value", value: "totalGuaranteed(item)"},
-        {text: "Year One Total", value: "contractDetails[0].totalAmount"},
-        {text: "Year One Paid", value: "contractDetails[0].paidAmount"},
-        {text: "Year One Guaranteed ", value: "contractDetails[0].guaranteedAmount"},
-        {text: "Year Two Total", value: "contractDetails[1].totalAmount"},
-        {text: "Year Two Paid", value: "contractDetails[1].paidAmount"},
-        {text: "Year Two Guaranteed ", value: "contractDetails[1].guaranteedAmount"},
-        {text: "Year Three Total", value: "contractDetails[2].totalAmount"},
-        {text: "Year Three Paid", value: "contractDetails[2].paidAmount"},
-        {text: "Year Three Guaranteed ", value: "contractDetails[2].guaranteedAmount"},
-        {text: "Edit", value: "0"},
-      ],
       league: {},
     }
   },
   computed: {
     teamContracts() {
-      if (this.league ) {
+      if (this.league) {
         if (this.league.teams && this.league.teams.length > 0) {
           return this.league.teams[0].activeContracts
         }
