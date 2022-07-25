@@ -124,7 +124,6 @@ type ComplexityRoot struct {
 		LogoURL    func(childComplexity int) int
 		StartDate  func(childComplexity int) int
 		Teams      func(childComplexity int, search *model.LeagueTeamFiltering) int
-		Test       func(childComplexity int) int
 	}
 
 	LeaguePost struct {
@@ -241,7 +240,6 @@ type ContractResolver interface {
 }
 type LeagueResolver interface {
 	Teams(ctx context.Context, obj *league.League, search *model.LeagueTeamFiltering) ([]*team.Team, error)
-	Test(ctx context.Context, obj *league.League) (*string, error)
 }
 type MutationResolver interface {
 	CreateUser(ctx context.Context, input model.NewUser) (*model.User, error)
@@ -597,13 +595,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.League.Teams(childComplexity, args["search"].(*model.LeagueTeamFiltering)), true
-
-	case "League.test":
-		if e.complexity.League.Test == nil {
-			break
-		}
-
-		return e.complexity.League.Test(childComplexity), true
 
 	case "LeaguePost.author":
 		if e.complexity.LeaguePost.Author == nil {
@@ -1373,7 +1364,6 @@ input ContractRestructureInput {
     logoUrl: String!
     startDate: Time!
     teams(search: LeagueTeamFiltering): [Team!]!
-    test: String
     divisions: [Division!]!
 }
 
@@ -4169,47 +4159,6 @@ func (ec *executionContext) fieldContext_League_teams(ctx context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _League_test(ctx context.Context, field graphql.CollectedField, obj *league.League) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_League_test(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.League().Test(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_League_test(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "League",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _League_divisions(ctx context.Context, field graphql.CollectedField, obj *league.League) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_League_divisions(ctx, field)
 	if err != nil {
@@ -6172,8 +6121,6 @@ func (ec *executionContext) fieldContext_Query_leagues(ctx context.Context, fiel
 				return ec.fieldContext_League_startDate(ctx, field)
 			case "teams":
 				return ec.fieldContext_League_teams(ctx, field)
-			case "test":
-				return ec.fieldContext_League_test(ctx, field)
 			case "divisions":
 				return ec.fieldContext_League_divisions(ctx, field)
 			}
@@ -6229,8 +6176,6 @@ func (ec *executionContext) fieldContext_Query_league(ctx context.Context, field
 				return ec.fieldContext_League_startDate(ctx, field)
 			case "teams":
 				return ec.fieldContext_League_teams(ctx, field)
-			case "test":
-				return ec.fieldContext_League_test(ctx, field)
 			case "divisions":
 				return ec.fieldContext_League_divisions(ctx, field)
 			}
@@ -8612,8 +8557,6 @@ func (ec *executionContext) fieldContext_UserPreferences_leagues(ctx context.Con
 				return ec.fieldContext_League_startDate(ctx, field)
 			case "teams":
 				return ec.fieldContext_League_teams(ctx, field)
-			case "test":
-				return ec.fieldContext_League_test(ctx, field)
 			case "divisions":
 				return ec.fieldContext_League_divisions(ctx, field)
 			}
@@ -11529,23 +11472,6 @@ func (ec *executionContext) _League(ctx context.Context, sel ast.SelectionSet, o
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
-				return res
-			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
-
-			})
-		case "test":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._League_test(ctx, field, obj)
 				return res
 			}
 
