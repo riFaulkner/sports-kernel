@@ -105,6 +105,7 @@
         <v-tabs
             v-model="activeTab"
             align-with-title
+            show-arrows
         >
           <v-tab
             v-for="tab in submenu"
