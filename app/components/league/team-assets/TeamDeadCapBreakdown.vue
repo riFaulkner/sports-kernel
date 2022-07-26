@@ -1,7 +1,6 @@
 <template>
   <div>
     <h2> Dead cap </h2>
-    {{ this.deadCap }}
     <v-data-table
         :headers="headers"
         :items="processedDeadCap"
@@ -47,9 +46,9 @@ export default {
           const filterResult = tableView.filter((item) => {
             return item.id === contract.associatedContractId
           })
-          console.log("Filter result", filterResult)
           let tableItem = {
             id: contract.associatedContractId,
+            name: contract.contract.player.playerName,
             amounts: []
           }
           if(filterResult.length === 1) {
@@ -57,11 +56,7 @@ export default {
           } else {
             tableView.push(tableItem)
           }
-          console.log("[TeamDeadCapBreakdown] item: ", tableItem)
           tableItem.amounts.push(contract.amount)
-
-          console.log("[TeamDeadCapBreakdown] item post addition: ", tableItem)
-          console.log("Table View", tableView)
         })
       })
 
@@ -71,7 +66,7 @@ export default {
       const nextDeadCapYear = this.deadCap[0].year
 
       return [
-        {text: "Contract", value: "id"},
+        {text: "Player", value: "name"},
         {text: nextDeadCapYear, value: "year1DeadCap"},
         {text: nextDeadCapYear + 1, value: "year2DeadCap"}
       ]

@@ -48,6 +48,7 @@ type ContractsMetadata {
 type DeadCap {
     amount: Int!
     associatedContractId: ID!
+    contract: Contract
 }
 
 type DeadCapYear {

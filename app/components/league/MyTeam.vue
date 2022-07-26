@@ -16,14 +16,22 @@
       </v-card-text>
     </v-card>
     <v-card>
-      <team-draft-picks-breakdown
-          v-if="this.league.teams?.length > 0"
-          :draft-picks="this.league.teams[0].teamAssets?.draftPicks"
-      />
-      <team-dead-cap-breakdown
-          v-if="this.league.teams?.length > 0"
-          :dead-cap="this.league.teams[0].teamLiabilities?.deadCap"
-      />
+      <v-row>
+        <v-col cols="12" md="8">
+          <team-draft-picks-breakdown
+              v-if="this.league.teams?.length > 0"
+              :draft-picks="this.league.teams[0].teamAssets?.draftPicks"
+          />
+        </v-col>
+        <v-divider vertical/>
+        <v-col cols="12" md="4">
+          <team-dead-cap-breakdown
+              v-if="this.league.teams?.length > 0"
+              :dead-cap="this.league.teams[0].teamLiabilities?.deadCap"
+          />
+        </v-col>
+      </v-row>
+
     </v-card>
 
     <v-dialog
