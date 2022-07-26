@@ -128,6 +128,25 @@ func (u *ContractImpl) GetContractByLeagueAndPlayerId(ctx context.Context, leagu
 	return contract, nil
 }
 
+func (u *ContractImpl) GetById(ctx context.Context, leagueID string, contractID string) (*contract.Contract, bool) {
+	contractRef, err := u.Client.Collection(firestore.LeaguesCollection).Doc(leagueID).Collection(firestore.PlayerContractsCollection).Doc(contractID).Get(ctx)
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			return nil, true
+		}
+		// TODO: log error
+		return nil, false
+	}
+	contract := new(contract.Contract)
+	err = contractRef.DataTo(&contract)
+	if err != nil {
+		// TODO:  print to log
+		return nil, false
+	}
+	contract.ID = contractRef.Ref.ID
+	return contract, true
+}
+
 func (u *ContractImpl) CreateContract(ctx context.Context, leagueId string, contractInput contract.ContractInput) (*contract.Contract, error) {
 	u.validateContract(ctx, &leagueId, &contractInput)
 

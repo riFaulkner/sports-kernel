@@ -42,6 +42,7 @@ type Config struct {
 
 type ResolverRoot interface {
 	Contract() ContractResolver
+	DeadCap() DeadCapResolver
 	League() LeagueResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
@@ -94,6 +95,7 @@ type ComplexityRoot struct {
 	DeadCap struct {
 		Amount               func(childComplexity int) int
 		AssociatedContractID func(childComplexity int) int
+		Contract             func(childComplexity int) int
 	}
 
 	DeadCapYear struct {
@@ -237,6 +239,9 @@ type ComplexityRoot struct {
 
 type ContractResolver interface {
 	Player(ctx context.Context, obj *contract.Contract) (*model.PlayerNfl, error)
+}
+type DeadCapResolver interface {
+	Contract(ctx context.Context, obj *team.DeadCap) (*contract.Contract, error)
 }
 type LeagueResolver interface {
 	Teams(ctx context.Context, obj *league.League, search *model.LeagueTeamFiltering) ([]*team.Team, error)
@@ -485,6 +490,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.DeadCap.AssociatedContractID(childComplexity), true
+
+	case "DeadCap.contract":
+		if e.complexity.DeadCap.Contract == nil {
+			break
+		}
+
+		return e.complexity.DeadCap.Contract(childComplexity), true
 
 	case "DeadCapYear.deadCapAccrued":
 		if e.complexity.DeadCapYear.DeadCapAccrued == nil {
@@ -1500,6 +1512,7 @@ type DeadCapYear {
 type DeadCap {
     associatedContractId: ID!
     amount: Int!
+    contract: Contract
 }
 
 type DraftYear {
@@ -3508,6 +3521,73 @@ func (ec *executionContext) fieldContext_DeadCap_amount(ctx context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _DeadCap_contract(ctx context.Context, field graphql.CollectedField, obj *team.DeadCap) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DeadCap_contract(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.DeadCap().Contract(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*contract.Contract)
+	fc.Result = res
+	return ec.marshalOContract2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋcontractᚐContract(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DeadCap_contract(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DeadCap",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Contract_id(ctx, field)
+			case "playerId":
+				return ec.fieldContext_Contract_playerId(ctx, field)
+			case "player":
+				return ec.fieldContext_Contract_player(ctx, field)
+			case "teamId":
+				return ec.fieldContext_Contract_teamId(ctx, field)
+			case "currentYear":
+				return ec.fieldContext_Contract_currentYear(ctx, field)
+			case "contractStatus":
+				return ec.fieldContext_Contract_contractStatus(ctx, field)
+			case "restructureStatus":
+				return ec.fieldContext_Contract_restructureStatus(ctx, field)
+			case "totalContractValue":
+				return ec.fieldContext_Contract_totalContractValue(ctx, field)
+			case "totalRemainingValue":
+				return ec.fieldContext_Contract_totalRemainingValue(ctx, field)
+			case "contractLength":
+				return ec.fieldContext_Contract_contractLength(ctx, field)
+			case "playerPosition":
+				return ec.fieldContext_Contract_playerPosition(ctx, field)
+			case "contractDetails":
+				return ec.fieldContext_Contract_contractDetails(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Contract", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _DeadCapYear_year(ctx context.Context, field graphql.CollectedField, obj *team.DeadCapYear) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_DeadCapYear_year(ctx, field)
 	if err != nil {
@@ -3592,6 +3672,8 @@ func (ec *executionContext) fieldContext_DeadCapYear_deadCapAccrued(ctx context.
 				return ec.fieldContext_DeadCap_associatedContractId(ctx, field)
 			case "amount":
 				return ec.fieldContext_DeadCap_amount(ctx, field)
+			case "contract":
+				return ec.fieldContext_DeadCap_contract(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type DeadCap", field.Name)
 		},
@@ -11266,15 +11348,32 @@ func (ec *executionContext) _DeadCap(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = ec._DeadCap_associatedContractId(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "amount":
 
 			out.Values[i] = ec._DeadCap_amount(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
+		case "contract":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._DeadCap_contract(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -13728,6 +13827,13 @@ func (ec *executionContext) marshalOContract2ᚕᚖgithubᚗcomᚋrifaulknerᚋs
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalOContract2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋcontractᚐContract(ctx context.Context, sel ast.SelectionSet, v *contract.Contract) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Contract(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOContractRestructureStatus2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐContractRestructureStatus(ctx context.Context, v interface{}) (*model.ContractRestructureStatus, error) {

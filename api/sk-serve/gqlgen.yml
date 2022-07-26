@@ -97,6 +97,9 @@ models:
   DeadCap:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/team.DeadCap
+    fields:
+      Contract:
+        resolver: true
   DeadCapYear:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/team.DeadCapYear
