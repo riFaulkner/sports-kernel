@@ -1,9 +1,10 @@
 <template>
-  <div>
+  <div class="text-center">
     <h2> Dead cap </h2>
     <v-data-table
         :headers="headers"
         :items="processedDeadCap"
+        hide-default-footer
     >
       <template v-slot:item.year1DeadCap="{item}">
         {{ getAmount(item.amounts, 0 )}}
@@ -66,9 +67,9 @@ export default {
       const nextDeadCapYear = this.deadCap[0].year
 
       return [
-        {text: "Player", value: "name"},
-        {text: nextDeadCapYear, value: "year1DeadCap"},
-        {text: nextDeadCapYear + 1, value: "year2DeadCap"}
+        {text: "Player", value: "name", align: "center"},
+        {text: nextDeadCapYear, value: "year1DeadCap", align: "center"},
+        {text: nextDeadCapYear + 1, value: "year2DeadCap", align: "center"}
       ]
     },
   },

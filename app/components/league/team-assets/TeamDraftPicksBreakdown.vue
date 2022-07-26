@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="text-center">
     <h2> Draft Picks </h2>
     <v-data-table
         :headers="headers"
@@ -47,11 +47,11 @@ export default {
     return {
       headers: [
         {text: "", value: "round"},
-        {text: '2022', value: "draft1"},
-        {text: '2023', value: "draft2"},
-        {text: '2024', value: "draft3"},
-        {text: '2025', value: "draft4"},
-        {text: '2026', value: "draft5"},
+        {text: '2022', value: "draft1", align: "center"},
+        {text: '2023', value: "draft2", align: "center"},
+        {text: '2024', value: "draft3", align: "center"},
+        {text: '2025', value: "draft4", align: "center"},
+        {text: '2026', value: "draft5", align: "center"},
       ]
     }
   },

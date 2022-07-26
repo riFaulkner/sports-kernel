@@ -3,7 +3,11 @@
       :loading="$apollo.loading" type="article, card"
   >
     <v-card>
-      <v-card-title v-if="this.league.teams?.length > 0"><v-spacer/><h1> {{ this.league.teams[0].teamName }} </h1><v-spacer/> </v-card-title>
+      <v-card-title v-if="this.league.teams?.length > 0">
+        <v-spacer/>
+        <h2> {{ this.league.teams[0].teamName }} </h2>
+        <v-spacer/>
+      </v-card-title>
       <v-card-text>
         <contract-search
             :contracts="teamContracts"
