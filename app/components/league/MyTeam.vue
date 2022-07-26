@@ -3,6 +3,7 @@
       :loading="$apollo.loading" type="article, card"
   >
     <v-card>
+      <v-card-title v-if="this.league.teams?.length > 0"><v-spacer/><h1> {{ this.league.teams[0].teamName }} </h1><v-spacer/> </v-card-title>
       <v-card-text>
         <contract-search
             :contracts="teamContracts"
@@ -16,9 +17,15 @@
     </v-card>
     <v-card>
       <team-draft-picks-breakdown
-          :draft-picks="this.league.teams[0]?.teamAssets?.draftPicks"
+          v-if="this.league.teams?.length > 0"
+          :draft-picks="this.league.teams[0].teamAssets?.draftPicks"
+      />
+      <team-dead-cap-breakdown
+          v-if="this.league.teams?.length > 0"
+          :dead-cap="this.league.teams[0].teamLiabilities?.deadCap"
       />
     </v-card>
+
     <v-dialog
         v-model="contractIsSelected"
         max-width="500px"
@@ -41,10 +48,11 @@ import {LEAGUE_FILTER_TEAMS_BY_OWNER_ID} from "@/graphql/queries/league/leagueGr
 import ContractSearch from "@/components/searches/ContractSearch";
 import ContractManagementCard from "@/components/league/contracts/ContractManagementCard";
 import TeamDraftPicksBreakdown from "@/components/league/team-assets/TeamDraftPicksBreakdown";
+import TeamDeadCapBreakdown from "@/components/league/team-assets/TeamDeadCapBreakdown";
 
 export default {
   name: "MyTeam.vue",
-  components: {TeamDraftPicksBreakdown, ContractManagementCard, ContractSearch},
+  components: {TeamDeadCapBreakdown, TeamDraftPicksBreakdown, ContractManagementCard, ContractSearch},
   props: {
     leagueId: {
       type: String,

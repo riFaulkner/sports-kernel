@@ -86,6 +86,7 @@ export const LEAGUE_FILTER_TEAMS_BY_OWNER_ID = gql`
                     currentYear
                     totalContractValue
                     totalRemainingValue
+                    teamId
                     contractDetails {
                         guaranteedAmount
                         paidAmount
@@ -100,6 +101,15 @@ export const LEAGUE_FILTER_TEAMS_BY_OWNER_ID = gql`
                         picks {
                             round
                             value
+                        }
+                    }
+                }
+                teamLiabilities {
+                    deadCap {
+                        year
+                        deadCapAccrued {
+                            amount
+                            associatedContractId
                         }
                     }
                 }

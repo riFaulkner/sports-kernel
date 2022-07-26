@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1> Draft Picks</h1>
+    <h2> Draft Picks </h2>
     <v-data-table
         :headers="headers"
         :items="processedDraftPicks"
