@@ -2,9 +2,10 @@ package db
 
 import (
 	"context"
-	"crypto/md5"
 	"encoding/base64"
+	"fmt"
 	"log"
+	"math/rand"
 	"sort"
 	"time"
 
@@ -282,7 +283,10 @@ func (u *TeamImpl) GenerateAccessCode(ctx context.Context, leagueId string, team
 		return "Issue creating access string", err
 	}
 
-	accessCode := accessCodeFromString(leagueId + teamId + role)
+	//Generate a random string, length 5, to append to the pre-encoded string
+	randString := randomString(5)
+	//Concat data string, and encode in base64
+	accessCode := accessCodeFromString(leagueId + "," + teamId + "," + role + "," + randString)
 
 	codes := team.AccessCodes
 	codes = append(codes, &accessCode)
@@ -303,10 +307,16 @@ func (u *TeamImpl) GenerateAccessCode(ctx context.Context, leagueId string, team
 }
 
 func accessCodeFromString(input string) string {
-	hashString := []byte(input)
-	md5string := md5.Sum(hashString)
-	b64String := base64.RawURLEncoding.EncodeToString(md5string[:])
+	data := []byte(input)
+	b64String := base64.RawURLEncoding.EncodeToString(data[:])
 	return b64String
+}
+
+func randomString(length int) string {
+	rand.Seed(time.Now().UnixNano())
+	b := make([]byte, length)
+	rand.Read(b)
+	return fmt.Sprintf("%x", b)[:length]
 }
 
 func generateDefaultTeamContractsMetadata() *model.ContractsMetadata {
