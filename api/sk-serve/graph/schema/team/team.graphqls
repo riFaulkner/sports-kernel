@@ -9,6 +9,7 @@ type Team {
     contractsMetadata: [ContractsMetadata!]
     teamAssets: TeamAssets
     teamLiabilities: TeamLiabilities
+    accessCodes: [String]
 }
 
 input NewTeam {

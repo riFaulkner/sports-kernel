@@ -65,4 +65,5 @@ type Mutation {
   createUserRole(leagueId: ID, newUserRole: NewUserRole): UserRoles! @hasRole(role: LEAGUE_MANAGER)
   contractActionDrop(leagueId: ID!, teamId: ID!, contractId: ID!): Boolean! @hasRole(role: TEAM_OWNER)
   contractActionRestructure(leagueId: ID!, restructureDetails: ContractRestructureInput!): Contract! @hasRole(role: TEAM_OWNER)
+  generateAccessCode(leagueId: ID!, teamId: ID!, role: Role!): String! @hasRole(role: LEAGUE_MANAGER)
 }
