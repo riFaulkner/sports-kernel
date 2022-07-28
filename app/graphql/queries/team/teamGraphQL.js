@@ -40,3 +40,25 @@ export const TEAM_DRAFT_PICKS = gql`
         }
     }
 `
+
+export const TEAM_DEAD_CAP = gql`
+    query getTeamById($leagueId:ID!, $teamId: ID!) {
+        teamById(leagueId: $leagueId, teamId:$teamId) {
+            id
+            teamLiabilities {
+                deadCap {
+                    year
+                    deadCapAccrued {
+                        associatedContractId
+                        contract {
+                            player {
+                                playerName
+                            }
+                        }
+                        amount
+                    }
+                }
+            }
+        }
+    }
+`

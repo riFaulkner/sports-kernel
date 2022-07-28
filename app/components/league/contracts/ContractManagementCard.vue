@@ -304,21 +304,6 @@ export default {
             teamId: this.contract.teamId,
             contractId: contractId
           },
-          // Update the cache with the result
-          update: (store, {data: {contractActionDrop}}) => {
-            const allContractsQuery = {
-              query: LEAGUE_CONTRACTS,
-              variables: {leagueId: this.leagueId}
-            }
-            // Read the data from our cache for this query.
-            const {leagueContracts} = store.readQuery(allContractsQuery)
-
-            const contractsCopy = leagueContracts.slice().filter(contract => contract.id !== contractId)
-
-            // Write our data back to the cache.
-            store.writeQuery({...allContractsQuery, data: {leagueContracts: contractsCopy}})
-          },
-          // TODO: Update both drop and restructure to remove the contract from the team view
         }).then(() => {
           this.$store.dispatch("application/alertSuccess", {message: "Contract dropped"})
           this.$emit("contract-dropped", {contractId: contractId})
@@ -347,26 +332,6 @@ export default {
           variables: {
             leagueId: this.leagueId,
             restructureDetails: contractRestructure,
-          },
-          // Update the cache with the result
-          // The query will be updated with the optimistic response -- actually I removed the optimistic response...
-          // and then with the real result of the mutation
-          update: (store, {data: {contractActionRestructure}}) => {
-            const allContractsQuery = {
-              query: LEAGUE_CONTRACTS,
-              variables: {leagueId: this.leagueId}
-            }
-            // Read the data from our cache for this query.
-            const {leagueContracts} = store.readQuery(allContractsQuery)
-
-            // Filter out the old version of this tag, and add a new one to the end
-            // We don't want to modify the object returned by readQuery directly:
-            // https://www.apollographql.com/docs/react/caching/cache-interaction/
-            const contractsCopy = leagueContracts.slice().filter(contract => contract.id !== contractRestructure.contractId)
-            contractsCopy.push(contractActionRestructure)
-
-            // Write our data back to the cache.
-            store.writeQuery({...allContractsQuery, data: {leagueContracts: contractsCopy}})
           },
         }).then(() => {
           this.$store.dispatch("application/alertSuccess", {message: "Contract restructured"})

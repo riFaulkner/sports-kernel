@@ -124,6 +124,7 @@ type PostComment {
 
 type Query {
     comments(leagueId: ID!, postId: ID!): [PostComment!]
+    contractById(contractId: ID!, leagueId: ID!): Contract
     getUserRoles(userId: ID): [UserRoles]
     league(leagueId: ID): League
     leagueContracts(leagueId: ID!): [Contract!]
@@ -135,8 +136,8 @@ type Query {
     posts(leagueId: ID!, numOfResults: Int): [LeaguePost!]
     teamById(leagueId: ID!, teamId: ID!): Team
     teamByOwnerId(leagueId: ID!, ownerId: ID!): Team
-    teamContracts(leagueId: ID, teamId: ID): [Contract!]
-    teams(leagueId: ID): [Team!]
+    teamContracts(leagueId: ID!, teamId: ID!): [Contract!]
+    teams(leagueId: ID!): [Team!]
     userPreferences(userId: ID): UserPreferences
     users: [User]
 }

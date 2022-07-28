@@ -14,6 +14,7 @@ import (
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/league"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/team"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/user"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*model.User, error) {
@@ -152,8 +153,8 @@ func (r *queryResolver) LeagueContractsByOwnerID(ctx context.Context, leagueID s
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Teams(ctx context.Context, leagueID *string) ([]*team.Team, error) {
-	teams, err := r.TeamService.GetAllLeagueTeams(ctx, *leagueID)
+func (r *queryResolver) Teams(ctx context.Context, leagueID string) ([]*team.Team, error) {
+	teams, err := r.TeamService.GetAllLeagueTeams(ctx, leagueID)
 	if err != nil {
 		return nil, err
 	}
@@ -173,13 +174,21 @@ func (r *queryResolver) TeamByOwnerID(ctx context.Context, leagueID string, owne
 	return r.TeamService.GetTeamByOwnerID(ctx, leagueID, ownerID)
 }
 
-func (r *queryResolver) TeamContracts(ctx context.Context, leagueID *string, teamID *string) ([]*contract.Contract, error) {
-	contracts, err := r.ContractResolver.GetAllActiveTeamContracts(ctx, *leagueID, *teamID)
+func (r *queryResolver) TeamContracts(ctx context.Context, leagueID string, teamID string) ([]*contract.Contract, error) {
+	contracts, err := r.ContractResolver.GetAllActiveTeamContracts(ctx, leagueID, teamID)
 	if err != nil {
 		return nil, err
 	}
 
 	return contracts, nil
+}
+
+func (r *queryResolver) ContractByID(ctx context.Context, leagueID string, contractID string) (*contract.Contract, error) {
+	contract, ok := r.ContractResolver.GetById(ctx, leagueID, contractID)
+	if !ok {
+		return nil, gqlerror.Errorf("Error fetching Contract")
+	}
+	return contract, nil
 }
 
 func (r *queryResolver) Player(ctx context.Context, playerID *string) (*model.PlayerNfl, error) {

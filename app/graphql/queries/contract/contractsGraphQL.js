@@ -42,3 +42,29 @@ export const CREATE_CONTRACT = gql`
         }
     }
 `
+
+export const GET_CONTACT_BY_ID = gql`
+    query contractById($leagueId: ID!, $contractId: ID!) {
+        contractById(leagueId: $leagueId, contractId: $contractId) {
+            id
+            playerId
+            player {
+                id
+                playerName
+                team
+                position
+            }
+            currentYear
+            totalContractValue
+            totalRemainingValue
+            teamId
+            contractDetails {
+                guaranteedAmount
+                paidAmount
+                totalAmount
+                year
+            }
+            restructureStatus
+        }
+    }
+`

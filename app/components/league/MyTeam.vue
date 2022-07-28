@@ -18,8 +18,7 @@
             @contract-deselected="contractDeselected"
         />
       </v-card-text>
-    </v-card>
-    <v-card>
+      <br/>
       <v-row>
         <v-col cols="12" md="8">
           <team-draft-picks-breakdown
@@ -35,7 +34,6 @@
           />
         </v-col>
       </v-row>
-
     </v-card>
 
     <v-dialog
@@ -46,8 +44,8 @@
           v-if="contractIsSelected"
           :contract="selectedContract[0]"
           :league-id="leagueId"
-          @contract-restructured="contractModified"
-          @contract-dropped="contractModified"
+          @contract-restructured="contractRestructured"
+          @contract-dropped="contractDropped"
           @contract-management-closed="contractDeselected"
       />
     </v-dialog>
@@ -61,6 +59,8 @@ import ContractSearch from "@/components/searches/ContractSearch";
 import ContractManagementCard from "@/components/league/contracts/ContractManagementCard";
 import TeamDraftPicksBreakdown from "@/components/league/team-assets/TeamDraftPicksBreakdown";
 import TeamDeadCapBreakdown from "@/components/league/team-assets/TeamDeadCapBreakdown";
+import {TEAM_DEAD_CAP} from "@/graphql/queries/team/teamGraphQL";
+import {GET_CONTACT_BY_ID} from "@/graphql/queries/contract/contractsGraphQL";
 
 export default {
   name: "MyTeam.vue",
@@ -92,9 +92,6 @@ export default {
       }
       return []
     },
-    teamDraftPicks() {
-
-    }
   },
   methods: {
     contractSelected(contract) {
@@ -105,8 +102,51 @@ export default {
       this.selectedContract = []
       this.contractIsSelected = false
     },
-    contractModified() {
+    contractDropped(droppedContract) {
+      this.contractIsSelected = false
       this.selectedContract = []
+      this.league.teams[0].activeContracts = this.league.teams[0].activeContracts.filter((contract) => {
+        return contract.id !== droppedContract.contractId
+      })
+      this.updateTeamDeadCap()
+    },
+    contractRestructured(contractInfo) {
+      this.contractIsSelected = false
+      this.selectedContract = []
+      this.updateSingleContractInfo(contractInfo.contractId)
+    },
+    updateSingleContractInfo(contractId) {
+      this.$apollo.query(({
+        query: GET_CONTACT_BY_ID,
+        variables: {
+          leagueId: this.leagueId,
+          contractId: contractId
+        }
+      })).then((response) => {
+        const newContract = response.data.contractById
+
+        const allOtherContracts = this.league.teams[0].activeContracts.slice().filter(contract => contract.id !== contractId)
+
+        allOtherContracts.push(newContract)
+      }).catch((error) => {
+        console.error("ERROR: ", error)
+
+      })
+    },
+    updateTeamDeadCap() {
+      this.$apollo.query(({
+        query: TEAM_DEAD_CAP,
+        variables: {
+          leagueId: this.leagueId,
+          teamId: this.league.teams[0].id
+        }
+      })).then((response) => {
+        this.league.teams[0].teamLiabilities.deadCap = response.data.teamById.teamLiabilities.deadCap
+
+      }).catch((error) => {
+        this.$store.dispatch("application/alertError", {message: "Error fetching updated dead cap"})
+        console.error("ERROR: ", error)
+      })
     }
   },
   apollo: {
