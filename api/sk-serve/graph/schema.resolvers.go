@@ -118,6 +118,10 @@ func (r *mutationResolver) ContractActionRestructure(ctx context.Context, league
 	return r.ContractResolver.RestructureContract(ctx, &leagueID, &restructureDetails)
 }
 
+func (r *mutationResolver) GenerateAccessCode(ctx context.Context, leagueID string, teamID string, role model.Role) (string, error) {
+	return r.TeamService.GenerateAccessCode(ctx, leagueID, teamID, role)
+}
+
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	users, err := r.UserResolver.GetAll(ctx)
 	if err != nil {

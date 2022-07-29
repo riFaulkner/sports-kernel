@@ -10,6 +10,7 @@ type Team {
     teamLiabilities: TeamLiabilities
     teamOwners: [ID!]
     activeContracts: [Contract!]
+    accessCodes: [String]
 }
 
 input NewTeam {

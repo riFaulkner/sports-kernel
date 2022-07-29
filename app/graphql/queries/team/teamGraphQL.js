@@ -62,3 +62,8 @@ export const TEAM_DEAD_CAP = gql`
         }
     }
 `
+export const GENERATE_ACCESS_CODE = gql`
+    mutation generateAccessCode($leagueId:ID!, $teamId:ID!, $role:Role!){
+        generateAccessCode(leagueId: $leagueId, teamId: $teamId, role: $role)
+    }
+`

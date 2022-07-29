@@ -14,6 +14,7 @@ type Team struct {
 	TeamAssets               *TeamAssets          `json:"teamAssets"`
 	TeamLiabilities          *TeamLiabilities     `json:"teamLiabilities"`
 	TeamOwners               []string             `json:"teamOwners"`
+	AccessCodes              []*string            `json:"accessCodes"`
 }
 
 type ContractsMetadata struct {

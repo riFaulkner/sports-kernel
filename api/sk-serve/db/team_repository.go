@@ -2,14 +2,18 @@ package db
 
 import (
 	"context"
+	"encoding/base64"
+	"fmt"
+	"log"
+	"math/rand"
+	"sort"
+	"time"
+
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/league"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/team"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"log"
-	"sort"
-	"time"
 
 	gFirestore "cloud.google.com/go/firestore"
 	"github.com/99designs/gqlgen/graphql"
@@ -294,6 +298,49 @@ func (u *TeamRepositoryImpl) UpdateTeamContractMetaData(ctx context.Context, lea
 	return err
 }
 
+func (u *TeamRepositoryImpl) GenerateAccessCode(ctx context.Context, leagueId string, teamId string, role string) (string, error) {
+	//Get the designated team
+	teamReference, err := u.GetTeamById(ctx, leagueId, teamId)
+
+	if err != nil {
+		return "Issue creating access string", err
+	}
+
+	//Generate a random string, length 5, to append to the pre-encoded string
+	randString := randomString(5)
+	//Concat data string, and encode in base64
+	accessCode := accessCodeFromString(leagueId + "," + teamId + "," + role + "," + randString)
+
+	codes := teamReference.AccessCodes
+	codes = append(codes, &accessCode)
+
+	u.Client.
+		Collection(firestore.LeaguesCollection).
+		Doc(leagueId).
+		Collection(firestore.TeamsCollection).
+		Doc(teamId).
+		Update(ctx, []gFirestore.Update{
+			{
+				Path:  "AccessCodes",
+				Value: codes,
+			},
+		})
+
+	return accessCode, nil
+}
+
+func accessCodeFromString(input string) string {
+	data := []byte(input)
+	b64String := base64.RawURLEncoding.EncodeToString(data[:])
+	return b64String
+}
+
+func randomString(length int) string {
+	rand.Seed(time.Now().UnixNano())
+	b := make([]byte, length)
+	rand.Read(b)
+	return fmt.Sprintf("%x", b)[:length]
+}
 func generateDefaultTeamContractsMetadata() *team.ContractsMetadata {
 	return &team.ContractsMetadata{
 		Year:              time.Now().Year(),

@@ -2,12 +2,18 @@ package team
 
 import (
 	"context"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
+
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 type TeamService struct {
 	TeamRepository TeamRepository
+}
+
+func (t TeamService) GenerateAccessCode(ctx context.Context, leagueID string, teamID string, role model.Role) (string, error) {
+	return t.TeamRepository.GenerateAccessCode(ctx, leagueID, teamID, string(role))
 }
 
 func (t TeamService) GetTeamByOwnerID(ctx context.Context, leagueID string, ownerID string) (*Team, error) {

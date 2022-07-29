@@ -100,6 +100,7 @@ type Mutation {
     createTeam(input: NewTeam!, leagueId: ID): Team!
     createUser(input: NewUser!): User!
     createUserRole(leagueId: ID, newUserRole: NewUserRole): UserRoles!
+    generateAccessCode(leagueId: ID!, role: Role!, teamId: ID!): String!
     updateTeamMetaData(leagueId: ID!, teamId: ID!): Team!
 }
 
@@ -143,6 +144,7 @@ type Query {
 }
 
 type Team {
+    accessCodes: [String]
     activeContracts: [Contract!]
     contractsMetadata: [ContractsMetadata!]
     currentContractsMetadata: ContractsMetadata

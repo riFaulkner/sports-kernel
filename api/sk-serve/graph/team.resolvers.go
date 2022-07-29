@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
@@ -29,6 +30,10 @@ func (r *teamResolver) ActiveContracts(ctx context.Context, obj *team.Team) ([]*
 		return r.ContractResolver.GetAllActiveTeamContracts(ctx, str, obj.ID)
 	}
 	return nil, gqlerror.Errorf("Error getting leagueId to retrieve active contract")
+}
+
+func (r *teamResolver) AccessCodes(ctx context.Context, obj *team.Team) ([]*string, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 // DeadCap returns generated.DeadCapResolver implementation.
