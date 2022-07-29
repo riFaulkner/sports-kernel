@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/firestore"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/team"
 
-	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
 	"reflect"
 	"testing"
 )
@@ -19,7 +19,7 @@ func TestTeamImpl_AddDeadCapToTeam(t *testing.T) {
 		ctx      context.Context
 		leagueID string
 		teamID   string
-		deadCap  []*model.DeadCap
+		deadCap  []*team.DeadCap
 	}
 	tests := []struct {
 		name    string
@@ -51,13 +51,13 @@ func TestTeamImpl_Create(t *testing.T) {
 	type args struct {
 		ctx       context.Context
 		leagueId  string
-		teamInput model.NewTeam
+		teamInput team.NewTeam
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		want    *model.Team
+		want    *team.Team
 		wantErr bool
 	}{
 		// TODO: Add test cases.
@@ -91,7 +91,7 @@ func TestTeamImpl_GetAllLeagueTeams(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    []*model.Team
+		want    []*team.Team
 		wantErr bool
 	}{
 		// TODO: Add test cases.
@@ -126,7 +126,7 @@ func TestTeamImpl_GetTeamById(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    *model.Team
+		want    *team.Team
 		wantErr bool
 	}{
 		// TODO: Add test cases.
@@ -188,7 +188,7 @@ func TestTeamImpl_UpdateTeamContractMetaData(t *testing.T) {
 func Test_generateDefaultTeamContractsMetadata(t *testing.T) {
 	tests := []struct {
 		name string
-		want *model.ContractsMetadata
+		want *team.ContractsMetadata
 	}{
 		// TODO: Add test cases.
 	}
@@ -210,16 +210,16 @@ func Test_generateTeamAssets(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want *model.TeamAssets
+		want *team.TeamAssets
 	}{
 		{
 			name: "team ID gets added to result",
 			args: args{teamID: goodTeamID},
-			want: &model.TeamAssets{
-				DraftPicks: []*model.DraftYear{
+			want: &team.TeamAssets{
+				DraftPicks: []*team.DraftYear{
 					{
 						Year: 2022,
-						Picks: []*model.DraftPick{
+						Picks: []*team.DraftPick{
 							{Round: 1, Value: nil, OriginalOwnerID: &goodTeamID},
 							{Round: 2, Value: nil, OriginalOwnerID: &goodTeamID},
 							{Round: 3, Value: nil, OriginalOwnerID: &goodTeamID},
@@ -229,7 +229,7 @@ func Test_generateTeamAssets(t *testing.T) {
 					},
 					{
 						Year: 2023,
-						Picks: []*model.DraftPick{
+						Picks: []*team.DraftPick{
 							{Round: 1, Value: nil, OriginalOwnerID: &goodTeamID},
 							{Round: 2, Value: nil, OriginalOwnerID: &goodTeamID},
 							{Round: 3, Value: nil, OriginalOwnerID: &goodTeamID},
@@ -239,7 +239,7 @@ func Test_generateTeamAssets(t *testing.T) {
 					},
 					{
 						Year: 2024,
-						Picks: []*model.DraftPick{
+						Picks: []*team.DraftPick{
 							{Round: 1, Value: nil, OriginalOwnerID: &goodTeamID},
 							{Round: 2, Value: nil, OriginalOwnerID: &goodTeamID},
 							{Round: 3, Value: nil, OriginalOwnerID: &goodTeamID},
@@ -249,7 +249,7 @@ func Test_generateTeamAssets(t *testing.T) {
 					},
 					{
 						Year: 2025,
-						Picks: []*model.DraftPick{
+						Picks: []*team.DraftPick{
 							{Round: 1, Value: nil, OriginalOwnerID: &goodTeamID},
 							{Round: 2, Value: nil, OriginalOwnerID: &goodTeamID},
 							{Round: 3, Value: nil, OriginalOwnerID: &goodTeamID},
@@ -259,7 +259,7 @@ func Test_generateTeamAssets(t *testing.T) {
 					},
 					{
 						Year: 2026,
-						Picks: []*model.DraftPick{
+						Picks: []*team.DraftPick{
 							{Round: 1, Value: nil, OriginalOwnerID: &goodTeamID},
 							{Round: 2, Value: nil, OriginalOwnerID: &goodTeamID},
 							{Round: 3, Value: nil, OriginalOwnerID: &goodTeamID},
