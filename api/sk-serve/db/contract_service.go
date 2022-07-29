@@ -9,6 +9,7 @@ import (
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/firestore"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/team"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -19,7 +20,7 @@ import (
 
 type ContractImpl struct {
 	Client          firestore.Client
-	TeamImpl        TeamImpl
+	TeamImpl        TeamRepositoryImpl
 	TransactionImpl TransactionImpl
 }
 
@@ -125,6 +126,25 @@ func (u *ContractImpl) GetContractByLeagueAndPlayerId(ctx context.Context, leagu
 	}
 	contract.ID = result.Ref.ID
 	return contract, nil
+}
+
+func (u *ContractImpl) GetById(ctx context.Context, leagueID string, contractID string) (*contract.Contract, bool) {
+	contractRef, err := u.Client.Collection(firestore.LeaguesCollection).Doc(leagueID).Collection(firestore.PlayerContractsCollection).Doc(contractID).Get(ctx)
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			return nil, true
+		}
+		// TODO: log error
+		return nil, false
+	}
+	contract := new(contract.Contract)
+	err = contractRef.DataTo(&contract)
+	if err != nil {
+		// TODO:  print to log
+		return nil, false
+	}
+	contract.ID = contractRef.Ref.ID
+	return contract, true
 }
 
 func (u *ContractImpl) CreateContract(ctx context.Context, leagueId string, contractInput contract.ContractInput) (*contract.Contract, error) {
@@ -278,7 +298,7 @@ func (u *ContractImpl) DropContract(ctx context.Context, leagueID string, teamID
 		return false, gqlerror.Errorf("TeamId provided did not match the contract's teamID")
 	}
 
-	deadCapYears := make([]*model.DeadCap, 0, 2)
+	deadCapYears := make([]*team.DeadCap, 0, 2)
 
 	sort.Slice(playerContract.ContractDetails, func(i, j int) bool {
 		return playerContract.ContractDetails[i].Year < playerContract.ContractDetails[j].Year
@@ -286,7 +306,7 @@ func (u *ContractImpl) DropContract(ctx context.Context, leagueID string, teamID
 	currentContractYear := playerContract.CurrentYear
 	currentContractDetails := playerContract.ContractDetails[(currentContractYear - 1)]
 
-	deadCapYears = append(deadCapYears, &model.DeadCap{
+	deadCapYears = append(deadCapYears, &team.DeadCap{
 		AssociatedContractID: playerContract.ID,
 		Amount:               calculateDeadCap(currentContractDetails),
 	})
@@ -298,7 +318,7 @@ func (u *ContractImpl) DropContract(ctx context.Context, leagueID string, teamID
 		}
 	}
 
-	deadCapYears = append(deadCapYears, &model.DeadCap{
+	deadCapYears = append(deadCapYears, &team.DeadCap{
 		AssociatedContractID: playerContract.ID,
 		Amount:               futureAccumulatedDeadCap,
 	})

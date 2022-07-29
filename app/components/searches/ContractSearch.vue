@@ -6,8 +6,8 @@
         item-key="id"
         :search="search"
         :custom-filter="playerNameMatchesSearch"
-        :loading="this.$apollo.loading"
-        v-model="selected"
+        :loading="loading"
+        :value="selectedList"
         show-select
         :single-select="true"
     >
@@ -20,25 +20,28 @@
       </template>
       <template v-slot:item.data-table-select="{item, isSelected, select}">
         <v-btn v-if="isSelected" @click="contractDeselected(item, select)" class="primary">Selected</v-btn>
-        <v-btn v-else @click="contractSelected(item,select)">&nbsp Select  &nbsp</v-btn>
+        <v-btn v-else @click="contractSelected(item,select)">&nbsp Select &nbsp</v-btn>
       </template>
       <template v-slot:item.totalContractValue="{item}">
         ${{ item.totalContractValue.toLocaleString() }}
       </template>
+      <template v-slot:item.totalGuaranteedValue="{item}">
+        ${{ totalGuaranteed(item) }}
+      </template>
       <template v-slot:item.year1="{item}">
-        <div v-if="item.currentYear > 1" class="success--text">
-          {{ item.contractDetails[0].totalAmount.toLocaleString() }}
+        <div v-if=getContractYearPaid(item,1) class="success--text">
+          {{ getContractYearDetails(item, 1) }}
         </div>
         <div v-else class="warning--text">
-          {{ item.contractDetails[0].totalAmount.toLocaleString() }}
+          {{ getContractYearDetails(item, 1) }}
         </div>
       </template>
       <template v-slot:item.year2="{item}">
-        <div v-if="item.currentYear > 2" class="success--text">
-          {{ item.contractDetails[1].totalAmount.toLocaleString() }}
+        <div v-if=getContractYearPaid(item,2) class="success--text">
+          {{ getContractYearDetails(item, 2) }}
         </div>
         <div v-else class="warning--text">
-          {{ item.contractDetails[1].totalAmount.toLocaleString() }}
+          {{ getContractYearDetails(item, 2) }}
         </div>
       </template>
       <template v-slot:item.year3="{item}">
@@ -62,24 +65,39 @@
 </template>
 
 <script>
-import {LEAGUE_CONTRACTS} from "~/graphql/queries/league/leagueGraphQL";
 
 export default {
   name: "ContractSearch",
   props: {
+    contracts: {
+      type: Array,
+      required: true,
+    },
     leagueId: {
       type: String,
       required: true
+    },
+    loading: {
+      type: Boolean,
+      required: false,
+      default: false
+    },
+    selected: {
+      type: Array,
+      default: function () {
+        return []
+      }
     }
   },
   data: function () {
     return {
-      contracts: [],
       search: "",
       headers: [
         {text: "Player Name:", value: "player.playerName"},
         {text: "Player Position", value: "player.position"},
+        {text: "NFL Team", value: "player.team"},
         {text: "Total Contract Value", value: "totalContractValue"},
+        {text: "Total Guaranteed", value: "totalGuaranteedValue"},
         {text: "Year 1", value: "year1"},
         {text: "Year 2", value: "year2"},
         {text: "Year 3", value: "year3"},
@@ -87,7 +105,6 @@ export default {
         {text: "Contract Restructure Status", value: "restructureStatus", align: 'center'},
       ],
       queriedWith: "",
-      selected: [],
     }
   },
   methods: {
@@ -110,20 +127,23 @@ export default {
     },
     contractSelected(contract, select) {
       select(true)
-      this.$emit('contract-selected', {contract:contract})
+      this.$emit('contract-selected', {contract: contract})
     },
     contractDeselected(contract, select) {
       select(false)
-      this.$emit('contract-deselected', {contract:contract})
+      this.$emit('contract-deselected', {contract: contract})
+    },
+    totalGuaranteed(contract) {
+      return contract.contractDetails.reduce((incompleteSum, year) => incompleteSum + year.guaranteedAmount, 0)
+          .toLocaleString()
     }
   },
-  apollo: {
-    contracts: {
-      query: LEAGUE_CONTRACTS,
-      variables() {
-        return {leagueId: this.leagueId}
+  computed: {
+    selectedList: {
+      // No set method, instead the event is handled in the contractSelected method above
+      get:function () {
+        return this.selected
       },
-      update: data => data.leagueContracts
     }
   }
 }

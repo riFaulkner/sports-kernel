@@ -258,7 +258,9 @@ export default {
   },
   created() {
     if(this.$auth.loggedIn) {
-      this.$store.dispatch('user/initializeUserPreferences', {apolloClient: this.$apollo, userId: this.$auth.user.sub})
+      this.$store.dispatch('user/initializeUserPreferences', {apolloClient: this.$apollo, userId: this.$auth.user.sub}).catch(() => {
+        this.$store.dispatch('application/alertError', {message:'Error loading user preferences please refresh the page or try again later'})
+      })
     }
       this.isInitialized = true;
   }

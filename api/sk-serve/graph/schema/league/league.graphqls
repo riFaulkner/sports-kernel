@@ -3,7 +3,7 @@ type League {
     leagueName: String!
     logoUrl: String!
     startDate: Time!
-    teams: [Team!]!
+    teams(search: LeagueTeamFiltering): [Team!]!
     divisions: [Division!]!
 }
 
@@ -15,4 +15,10 @@ input NewUserRole {
 type Division {
     divisionName: String!
     leadingWins: Int
+}
+
+# Input used to filter league teams being viewed, TeamId and OwnerId are mutually exclusive in that you may only provide one
+input LeagueTeamFiltering {
+    teamId: ID
+    ownerId: ID
 }

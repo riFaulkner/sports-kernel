@@ -1,4 +1,4 @@
-import gql from "graphql-tag"
+import gql from 'graphql-tag'
 
 export const LEAGUE_BY_ID_QUERY = gql`
     query League($leagueId: ID!) {
@@ -17,7 +17,6 @@ export const LEAGUE_TEAMS_BY_LEAGUE_ID = gql`
     query Teams($leagueId: ID!) {
         teams(leagueId: $leagueId) {
         id
-        ownerID
         teamName
         currentContractsMetadata {
           totalUtilizedCap
@@ -67,3 +66,59 @@ export const LEAGUE_CONTRACTS = gql`
         }
     }
 `
+
+export const LEAGUE_FILTER_TEAMS_BY_OWNER_ID = gql`
+    query GetFullLeagueInfo($leagueId:ID!, $filter:LeagueTeamFiltering) {
+        league(leagueId: $leagueId) {
+            id
+            teams(search: $filter) {
+                id
+                teamName
+                activeContracts {
+                    id
+                    playerId
+                    player {
+                        id
+                        playerName
+                        team
+                        position
+                    }
+                    currentYear
+                    totalContractValue
+                    totalRemainingValue
+                    teamId
+                    contractDetails {
+                        guaranteedAmount
+                        paidAmount
+                        totalAmount
+                        year
+                    }
+                    restructureStatus
+                },
+                teamAssets {
+                    draftPicks {
+                        year
+                        picks {
+                            round
+                            value
+                        }
+                    }
+                }
+                teamLiabilities {
+                    deadCap {
+                        year
+                        deadCapAccrued {
+                            amount
+                            associatedContractId
+                            contract {
+                                player {
+                                    playerName
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    `

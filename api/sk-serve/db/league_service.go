@@ -3,7 +3,7 @@ package db
 import (
 	"context"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/firestore"
-	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/league"
 )
 
 const collectionLeague = "leagues"
@@ -12,8 +12,8 @@ type LeagueImpl struct {
 	Client firestore.Client
 }
 
-func (u *LeagueImpl) GetAll(ctx context.Context) ([]*model.League, error) {
-	leagues := make([]*model.League, 0)
+func (u *LeagueImpl) GetAll(ctx context.Context) ([]*league.League, error) {
+	leagues := make([]*league.League, 0)
 
 	results, err := u.Client.
 		Collection(collectionLeague).
@@ -25,7 +25,7 @@ func (u *LeagueImpl) GetAll(ctx context.Context) ([]*model.League, error) {
 	}
 
 	for _, result := range results {
-		league := new(model.League)
+		league := new(league.League)
 		err = result.DataTo(&league)
 		league.ID = result.Ref.ID
 		if err != nil {
@@ -36,7 +36,7 @@ func (u *LeagueImpl) GetAll(ctx context.Context) ([]*model.League, error) {
 	return leagues, nil
 }
 
-func (u *LeagueImpl) GetByLeagueId(ctx context.Context, leagueId string) (*model.League, error) {
+func (u *LeagueImpl) GetByLeagueId(ctx context.Context, leagueId string) (*league.League, error) {
 	result, err := u.Client.
 		Collection(collectionLeague).
 		Doc(leagueId).
@@ -45,7 +45,7 @@ func (u *LeagueImpl) GetByLeagueId(ctx context.Context, leagueId string) (*model
 		return nil, err
 	}
 
-	league := new(model.League)
+	league := new(league.League)
 	err = result.DataTo(&league)
 	id := result.Ref.ID
 	league.ID = id

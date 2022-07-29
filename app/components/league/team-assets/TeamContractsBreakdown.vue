@@ -24,7 +24,6 @@
           </v-list-item-content>
         </template>
         <v-card>
-          <!--          Age: 25-->
         </v-card>
 
         <v-list-item

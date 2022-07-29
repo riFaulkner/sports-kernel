@@ -6,7 +6,17 @@
           elevation="2"
           max-width="450px"
       >
-        <v-card-title> {{ contract.player.playerName }}</v-card-title>
+        <v-card-title> {{ contract.player.playerName }}
+          <v-spacer/>
+          <v-btn
+              icon
+              dark
+              @click="closeDialog"
+          >
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+
+        </v-card-title>
         <v-card-subtitle>
           Position: {{ contract.player.position }} <br/>
         </v-card-subtitle>
@@ -249,6 +259,9 @@ export default {
     }
   },
   methods: {
+    closeDialog() {
+      this.$emit("contract-management-closed")
+    },
     cancelAction() {
       this.actionToPerform = null
       this.confirmationDialog = false
@@ -291,24 +304,9 @@ export default {
             teamId: this.contract.teamId,
             contractId: contractId
           },
-          // Update the cache with the result
-          update: (store, {data: {contractActionDrop}}) => {
-            const allContractsQuery = {
-              query: LEAGUE_CONTRACTS,
-              variables: {leagueId: this.leagueId}
-            }
-            // Read the data from our cache for this query.
-            const {leagueContracts} = store.readQuery(allContractsQuery)
-
-            const contractsCopy = leagueContracts.slice().filter(contract => contract.id !== contractId)
-
-            // Write our data back to the cache.
-            store.writeQuery({...allContractsQuery, data: {leagueContracts: contractsCopy}})
-          },
-          // TODO: Update both drop and restructure to remove the contract from the team view
         }).then(() => {
           this.$store.dispatch("application/alertSuccess", {message: "Contract dropped"})
-          this.$emit("contractDropped", {contractId: contractId})
+          this.$emit("contract-dropped", {contractId: contractId})
         }).catch((data) => {
           this.$store.dispatch("application/alertError", {message: "Failed to drop contract"})
           console.error("Failed to restructure contract ", data)
@@ -335,29 +333,9 @@ export default {
             leagueId: this.leagueId,
             restructureDetails: contractRestructure,
           },
-          // Update the cache with the result
-          // The query will be updated with the optimistic response -- actually I removed the optimistic response...
-          // and then with the real result of the mutation
-          update: (store, {data: {contractActionRestructure}}) => {
-            const allContractsQuery = {
-              query: LEAGUE_CONTRACTS,
-              variables: {leagueId: this.leagueId}
-            }
-            // Read the data from our cache for this query.
-            const {leagueContracts} = store.readQuery(allContractsQuery)
-
-            // Filter out the old version of this tag, and add a new one to the end
-            // We don't want to modify the object returned by readQuery directly:
-            // https://www.apollographql.com/docs/react/caching/cache-interaction/
-            const contractsCopy = leagueContracts.slice().filter(contract => contract.id !== contractRestructure.contractId)
-            contractsCopy.push(contractActionRestructure)
-
-            // Write our data back to the cache.
-            store.writeQuery({...allContractsQuery, data: {leagueContracts: contractsCopy}})
-          },
         }).then(() => {
           this.$store.dispatch("application/alertSuccess", {message: "Contract restructured"})
-          this.$emit("contractRestructured", {contractId: contractRestructure.contractId})
+          this.$emit("contract-restructured", {contractId: contractRestructure.contractId})
         }).catch((data) => {
           this.$store.dispatch("application/alertError", {message: "Failed to restructure contract"})
           console.error("Failed to restructure contract ", data)

@@ -1,4 +1,4 @@
-import gql from "graphql-tag"
+import gql from 'graphql-tag'
 
 export const TEAM_CONTRACTS = gql`
     query teamContracts($leagueId: ID!, $teamId: ID!) {
@@ -31,7 +31,7 @@ export const TEAM_DRAFT_PICKS = gql`
             teamAssets{
                 draftPicks{
                     year
-                    picks{
+                    picks {
                         round
                         value
                     }
@@ -41,6 +41,27 @@ export const TEAM_DRAFT_PICKS = gql`
     }
 `
 
+export const TEAM_DEAD_CAP = gql`
+    query getTeamById($leagueId:ID!, $teamId: ID!) {
+        teamById(leagueId: $leagueId, teamId:$teamId) {
+            id
+            teamLiabilities {
+                deadCap {
+                    year
+                    deadCapAccrued {
+                        associatedContractId
+                        contract {
+                            player {
+                                playerName
+                            }
+                        }
+                        amount
+                    }
+                }
+            }
+        }
+    }
+`
 export const GENERATE_ACCESS_CODE = gql`
     mutation generateAccessCode($leagueId:ID!, $teamId:ID!, $role:Role!){
         generateAccessCode(leagueId: $leagueId, teamId: $teamId, role: $role)

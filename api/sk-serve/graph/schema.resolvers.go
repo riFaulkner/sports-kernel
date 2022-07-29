@@ -5,11 +5,16 @@ package graph
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/generated"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/league"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/team"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/user"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*model.User, error) {
@@ -27,8 +32,8 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) 
 	return &user, nil
 }
 
-func (r *mutationResolver) CreateTeam(ctx context.Context, leagueID *string, input model.NewTeam) (*model.Team, error) {
-	team, err := r.TeamResolver.Create(ctx, *leagueID, input)
+func (r *mutationResolver) CreateTeam(ctx context.Context, leagueID *string, input team.NewTeam) (*team.Team, error) {
+	team, err := r.TeamService.Create(ctx, *leagueID, input)
 	if err != nil {
 		return nil, err
 	}
@@ -36,18 +41,18 @@ func (r *mutationResolver) CreateTeam(ctx context.Context, leagueID *string, inp
 	return team, nil
 }
 
-func (r *mutationResolver) UpdateTeamMetaData(ctx context.Context, leagueID string, teamID string) (*model.Team, error) {
+func (r *mutationResolver) UpdateTeamMetaData(ctx context.Context, leagueID string, teamID string) (*team.Team, error) {
 	contracts, err := r.ContractResolver.GetAllActiveTeamContracts(ctx, leagueID, teamID)
 	if err != nil {
 		return nil, err
 	}
 
-	err = r.TeamResolver.UpdateTeamContractMetaData(ctx, leagueID, contracts)
+	err = r.TeamService.UpdateTeamContractMetaData(ctx, leagueID, contracts)
 	if err != nil {
 		return nil, err
 	}
 
-	team, err := r.TeamResolver.GetTeamById(ctx, leagueID, teamID)
+	team, err := r.TeamService.GetTeamById(ctx, leagueID, teamID)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +72,7 @@ func (r *mutationResolver) CreateContract(ctx context.Context, leagueID string, 
 		log.Println("Failed to update contract metadata")
 		return nil, err
 	}
-	err = r.TeamResolver.UpdateTeamContractMetaData(ctx, leagueID, teamContracts)
+	err = r.TeamService.UpdateTeamContractMetaData(ctx, leagueID, teamContracts)
 
 	return document, nil
 }
@@ -114,7 +119,7 @@ func (r *mutationResolver) ContractActionRestructure(ctx context.Context, league
 }
 
 func (r *mutationResolver) GenerateAccessCode(ctx context.Context, leagueID string, teamID string, role model.Role) (string, error) {
-	return r.TeamResolver.GenerateAccessCode(ctx, leagueID, teamID, string(role))
+	return r.TeamService.GenerateAccessCode(ctx, leagueID, teamID, role)
 }
 
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
@@ -126,7 +131,7 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	return users, nil
 }
 
-func (r *queryResolver) Leagues(ctx context.Context) ([]*model.League, error) {
+func (r *queryResolver) Leagues(ctx context.Context) ([]*league.League, error) {
 	leagues, err := r.Resolver.LeagueResolver.GetAll(ctx)
 	if err != nil {
 		return nil, err
@@ -135,7 +140,7 @@ func (r *queryResolver) Leagues(ctx context.Context) ([]*model.League, error) {
 	return leagues, nil
 }
 
-func (r *queryResolver) League(ctx context.Context, leagueID *string) (*model.League, error) {
+func (r *queryResolver) League(ctx context.Context, leagueID *string) (*league.League, error) {
 	league, err := r.Resolver.LeagueResolver.GetByLeagueId(ctx, *leagueID)
 	if err != nil {
 		return nil, err
@@ -148,8 +153,12 @@ func (r *queryResolver) LeagueContracts(ctx context.Context, leagueID string) ([
 	return r.ContractResolver.GetAllLeagueContracts(ctx, leagueID)
 }
 
-func (r *queryResolver) Teams(ctx context.Context, leagueID *string) ([]*model.Team, error) {
-	teams, err := r.TeamResolver.GetAllLeagueTeams(ctx, *leagueID)
+func (r *queryResolver) LeagueContractsByOwnerID(ctx context.Context, leagueID string, ownerID string) ([]*contract.Contract, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) Teams(ctx context.Context, leagueID string) ([]*team.Team, error) {
+	teams, err := r.TeamService.GetAllLeagueTeams(ctx, leagueID)
 	if err != nil {
 		return nil, err
 	}
@@ -157,21 +166,33 @@ func (r *queryResolver) Teams(ctx context.Context, leagueID *string) ([]*model.T
 	return teams, nil
 }
 
-func (r *queryResolver) TeamByID(ctx context.Context, leagueID string, teamID string) (*model.Team, error) {
-	team, err := r.TeamResolver.GetTeamById(ctx, leagueID, teamID)
+func (r *queryResolver) TeamByID(ctx context.Context, leagueID string, teamID string) (*team.Team, error) {
+	team, err := r.TeamService.GetTeamById(ctx, leagueID, teamID)
 	if err != nil {
 		return nil, err
 	}
 	return team, nil
 }
 
-func (r *queryResolver) TeamContracts(ctx context.Context, leagueID *string, teamID *string) ([]*contract.Contract, error) {
-	contracts, err := r.ContractResolver.GetAllActiveTeamContracts(ctx, *leagueID, *teamID)
+func (r *queryResolver) TeamByOwnerID(ctx context.Context, leagueID string, ownerID string) (*team.Team, error) {
+	return r.TeamService.GetTeamByOwnerID(ctx, leagueID, ownerID)
+}
+
+func (r *queryResolver) TeamContracts(ctx context.Context, leagueID string, teamID string) ([]*contract.Contract, error) {
+	contracts, err := r.ContractResolver.GetAllActiveTeamContracts(ctx, leagueID, teamID)
 	if err != nil {
 		return nil, err
 	}
 
 	return contracts, nil
+}
+
+func (r *queryResolver) ContractByID(ctx context.Context, leagueID string, contractID string) (*contract.Contract, error) {
+	contract, ok := r.ContractResolver.GetById(ctx, leagueID, contractID)
+	if !ok {
+		return nil, gqlerror.Errorf("Error fetching Contract")
+	}
+	return contract, nil
 }
 
 func (r *queryResolver) Player(ctx context.Context, playerID *string) (*model.PlayerNfl, error) {
@@ -206,7 +227,7 @@ func (r *queryResolver) Comments(ctx context.Context, leagueID string, postID st
 	return comments, nil
 }
 
-func (r *queryResolver) UserPreferences(ctx context.Context, userID *string) (*model.UserPreferences, error) {
+func (r *queryResolver) UserPreferences(ctx context.Context, userID *string) (*user.UserPreferences, error) {
 	userPreferences, err := r.UserResolver.GetUserPreferences(ctx, *userID)
 	if err != nil {
 		log.Printf("Error attempting to resolve user preferences, %s", err)
