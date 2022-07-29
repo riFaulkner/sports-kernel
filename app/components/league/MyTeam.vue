@@ -105,9 +105,12 @@ export default {
     contractDropped(droppedContract) {
       this.contractIsSelected = false
       this.selectedContract = []
-      this.league.teams[0].activeContracts = this.league.teams[0].activeContracts.filter((contract) => {
-        return contract.id !== droppedContract.contractId
-      })
+
+      this.league.teams[0].activeContracts = this.league.teams[0]
+          .activeContracts
+          .slice()
+          .filter(contract => contract.id !== droppedContract.contractId)
+
       this.updateTeamDeadCap()
     },
     contractRestructured(contractInfo) {
@@ -130,7 +133,6 @@ export default {
         allOtherContracts.push(newContract)
       }).catch((error) => {
         console.error("ERROR: ", error)
-
       })
     },
     updateTeamDeadCap() {
@@ -162,7 +164,6 @@ export default {
       }
     }
   }
-
 }
 </script>
 
