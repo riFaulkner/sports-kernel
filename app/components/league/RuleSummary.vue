@@ -31,7 +31,7 @@
           <h3><u>Contract</u></h3>
           <p>Dynasty version of an auction draft. The start-up draft is an auction of all players (including rookies for the first season only). You can offer a player a 1-year, 2-year, 3-year, or 4-year deal. There is a discount for longer contracts (e.g. a $10 million 1-year deal may be worth less than a $19.5 million 2-year deal). There will be a predetermined "slope" for this that is provided below. </p>
           <h3><u>Salary Cap</u></h3>
-          <p>There will be a hard salary cap ($200 million/yr) and a minimum contract (1-year, $0.5 million). These loosely match the NFL cap and minimum.Salary cap, dead money, and “cash” cannot be traded or adjusted during a trade (no eating salary to enable trades).</p>
+          <p>There will be a hard salary cap ($200 million/yr) and a minimum contract (1-year, $0.5 million). These loosely match the NFL cap and minimum. Salary cap, dead money, and “cash” cannot be traded or adjusted during a trade (no eating salary to enable trades).</p>
           <h3><u>Yearly Draft and Auction</u></h3>
           <p>In the offseason, all players not on rosters plus those that have finished their contracts will go into a free agent pool. Owners will bid in a similar way as the start-up draft. This will occur in the spring.</p>
           <p>There will be a rookie draft every year (except 2021) that follows a 1-12 order for every round based on last season's result (Last place selects first, and so on, non-snake draft). Rookie contract values are predetermined by pick and follow the same slope as other contracts and can be 1-4 years in length.</p>
@@ -69,68 +69,68 @@
           <p>Same as roster construction, we want some new elements to keep things interesting! Goal is to maintain balance but create much higher scores, 
             so I'm sure we'll tweak things a bit once we can dig into projections a bit more (still on to-do list). We'll use decimal scoring and scoring is additive 
             (e.g. 0.5 PPR and 0.2 points per target = 0.7 total PPR).</p>
-          <v-simple-table>
-            <template v-slot:default>
-              <thead>
-                 <tr>
-                    <th>Passing</th>
-                    <th>Rushing</th>
-                    <th>Receiving</th>
-                    <th>Miscellaneous</th>
-                 </tr>
-              </thead>
-              <tbody>
-                <tr>
-                    <td>0.04 pts per passing yard (1 pt per 25 yards)</td>
-                    <td>0.1 pts per rushing yard</td>
-                    <td>0.1 pts per receiving yard</td>
-                    <td>0.04 pts per kickoff return yard</td>
-                 </tr>
-                 <tr>
-                    <td>0.1 pts per complete pass</td>
-                    <td>0.1 pts per rushing attempt</td>
-                    <td>0.5 pts per reception</td>
-                    <td>0.5 pts per reception</td>
-                 </tr>
-                 <tr>
-                    <td>-0.1 pts per incomplete pass</td>
-                    <td>6 pts per rushing TD</td>
-                    <td>0.2 pts per receiving target</td>
-                    <td>6 points per kickoff return TD</td>
-                 </tr>
-                 <tr>
-                    <td>6 pts per passing TD</td>
-                    <td>2 pts per rushing 2 point conversion</td>
-                    <td>6 pts per receiving TD</td>
-                    <td>6 points per punt return TD</td>
-                 </tr>
-                 <tr>
-                    <td>-5 pts per INT</td>
-                    <td>3 points for 200+ yard Rushing Game</td>
-                    <td>2 pts per receiving 2 point conversion</td>
-                    <td>6 points per fumble recovered for a TD</td>
-                 </tr>
-                 <tr>
-                    <td>2 pts per passing 2 point conversion</td>
-                    <td></td>
-                    <td>3 points for 200+ yard Receiving Game</td>
-                    <td>-1 points per fumble</td>
-                 </tr>
-                 <tr>
-                    <td>-0.5 pts per SACK taken</td>
-                    <td></td>
-                    <td></td>
-                    <td>-2 points per fumble lost</td>
-                 </tr>
-                 <tr>
-                    <td>3 points for 400+ yard Passing Game</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                 </tr>
-              </tbody>
-            </template>
-          </v-simple-table>
+            <v-simple-table>
+              <template v-slot:default>
+                <thead>
+                  <tr>
+                      <th>Passing</th>
+                      <th>Rushing</th>
+                      <th>Receiving</th>
+                      <th>Miscellaneous</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                      <td>0.04 pts per passing yard (1 pt per 25 yards)</td>
+                      <td>0.1 pts per rushing yard</td>
+                      <td>0.1 pts per receiving yard</td>
+                      <td>0.04 pts per kickoff return yard</td>
+                  </tr>
+                  <tr>
+                      <td>0.1 pts per complete pass</td>
+                      <td>0.1 pts per rushing attempt</td>
+                      <td>0.5 pts per reception</td>
+                      <td>0.5 pts per reception</td>
+                  </tr>
+                  <tr>
+                      <td>-0.1 pts per incomplete pass</td>
+                      <td>6 pts per rushing TD</td>
+                      <td>0.2 pts per receiving target</td>
+                      <td>6 points per kickoff return TD</td>
+                  </tr>
+                  <tr>
+                      <td>6 pts per passing TD</td>
+                      <td>2 pts per rushing 2 point conversion</td>
+                      <td>6 pts per receiving TD</td>
+                      <td>6 points per punt return TD</td>
+                  </tr>
+                  <tr>
+                      <td>-5 pts per INT</td>
+                      <td>3 points for 200+ yard Rushing Game</td>
+                      <td>2 pts per receiving 2 point conversion</td>
+                      <td>6 points per fumble recovered for a TD</td>
+                  </tr>
+                  <tr>
+                      <td>2 pts per passing 2 point conversion</td>
+                      <td></td>
+                      <td>3 points for 200+ yard Receiving Game</td>
+                      <td>-1 points per fumble</td>
+                  </tr>
+                  <tr>
+                      <td>-0.5 pts per SACK taken</td>
+                      <td></td>
+                      <td></td>
+                      <td>-2 points per fumble lost</td>
+                  </tr>
+                  <tr>
+                      <td>3 points for 400+ yard Passing Game</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                  </tr>
+                </tbody>
+              </template>
+            </v-simple-table>
         </v-expansion-panel-content>
       </v-expansion-panel>
 
