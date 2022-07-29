@@ -5,7 +5,16 @@
     <blockquote class="blockquote">
       <p>Below are the proposed rules for a best ball, contract, dynasty fantasy football league. <br>
       The intent is to create a league that is low/no maintenance during the season, but still allows for lots of fun in the off season.</p>
-      <p>*Updated July 2021</p>
+      <p>*Changes in July 2022</p>
+      <ul>
+            <li>Added clarification on off-season execution: no drops after restructuring window through rookie signing</li>
+            <li>Modified rule to allow for being over the cap in future years but requiring all owners to have all years under the cap after the restructuring window every season</li>
+            <li>Clarified that owners cannot “eat” cap during a trade.</li>
+            <li>Updated Rookie contracts to allow for signing to shorter deals and clarified slope.</li>
+            <li>Added commissioner discretion rule</li>
+            <li>Updated roster size to 40 based on vote</li>
+            <li>Confirmed Matching Tags cannot be traded based on vote</li>
+      </ul>
     </blockquote>
 
     <v-expansion-panels
@@ -22,11 +31,11 @@
           <h3><u>Contract</u></h3>
           <p>Dynasty version of an auction draft. The start-up draft is an auction of all players (including rookies for the first season only). You can offer a player a 1-year, 2-year, 3-year, or 4-year deal. There is a discount for longer contracts (e.g. a $10 million 1-year deal may be worth less than a $19.5 million 2-year deal). There will be a predetermined "slope" for this that is provided below. </p>
           <h3><u>Salary Cap</u></h3>
-          <p>There will be a hard salary cap ($200 million/yr) and a minimum contract (1-year, $0.5 million). These loosely match the NFL cap and minimum.</p>
+          <p>There will be a hard salary cap ($200 million/yr) and a minimum contract (1-year, $0.5 million). These loosely match the NFL cap and minimum.Salary cap, dead money, and “cash” cannot be traded or adjusted during a trade (no eating salary to enable trades).</p>
           <h3><u>Yearly Draft and Auction</u></h3>
           <p>In the offseason, all players not on rosters plus those that have finished their contracts will go into a free agent pool. Owners will bid in a similar way as the start-up draft. This will occur in the spring.</p>
-          <p>There will be a rookie draft every year (except 2021) that follows a 1-12 order for every round based on last season's result (with a lottery for the non-playoff teams similar to NBA style). Rookie contracts are predetermined by pick and are always 4-year deals. More on that to follow also.</p>
-          <p>There will be a low-intensity mid-season free agent auction (probably a silent auction) to place any free agents onto rosters for the remainder of the season.</p>
+          <p>There will be a rookie draft every year (except 2021) that follows a 1-12 order for every round based on last season's result (Last place selects first, and so on, non-snake draft). Rookie contract values are predetermined by pick and follow the same slope as other contracts and can be 1-4 years in length.</p>
+          <p>There will be a low-intensity mid-season free agent auction (Dutch Auction) to place any free agents onto rosters for the remainder of the season.</p>
         </v-expansion-panel-content>
       </v-expansion-panel>
 
@@ -57,7 +66,7 @@
         <v-expansion-panel-header class="grey--text">Scoring</v-expansion-panel-header>
         <v-expansion-panel-content>
           <br/>
-          <p>Same as roster, we want some new elements to keep things interesting! Goal is to maintain balance but create much higher scores, 
+          <p>Same as roster construction, we want some new elements to keep things interesting! Goal is to maintain balance but create much higher scores, 
             so I'm sure we'll tweak things a bit once we can dig into projections a bit more (still on to-do list). We'll use decimal scoring and scoring is additive 
             (e.g. 0.5 PPR and 0.2 points per target = 0.7 total PPR).</p>
           <v-simple-table>
@@ -126,6 +135,38 @@
       </v-expansion-panel>
 
       <v-expansion-panel>
+        <v-expansion-panel-header class="grey--text">Season Milestones / Deadline Summary</v-expansion-panel-header>
+        <v-expansion-panel-content>
+          <br/>
+          <h3><u>Roughly Mid-May</u></h3>
+          <p>The league year begins with the submission of all restructures and drops 2 weeks before the offseason Free Agent Auction. At this point, all teams must be under the salary cap in all league years (excluding rookie picks as these players are not signed yet).</p>
+          <h4>Important:</h4>
+          <ul>
+            <li>No restructuring is allowed until the next offseason</li>
+            <li>No drops are allowed until after the rookie draft.</li>
+            <li>No trades are allowed until after the free agent auction.</li>
+          </ul>
+          <p></p>
+          <h3><u>Roughly Late May</u></h3>
+          <p>Free Agent Auction</p>
+          <h3><u>Early June</u></h3>
+          <p>All contract lengths for free agents signed during the auction must be confirmed.<b>Trades are allowed after contract lengths are confirmed</b></p>
+          <h3><u>Mid-July</u></h3>
+          <p>Rookie Draft (slow draft by email). <b>Trades are allowed, but drops are still not allowed</b></p>
+          <h3><u>Early August</u></h3>
+          <p>Rookie contracts must be confirmed within 1 week of the end of the draft.<b> Drops are now allowed.</b></p>
+          <h3><u>NFL Week 1</u></h3>
+          <p>Contracts start to get "spent" against. 1/10 the yearly value of the contract per week through 10.</p>
+          <h3><u>NFL Week 6</u></h3>
+          <p>Mid-Season Free Agent auction (dutch auction)</p>
+          <h3><u>NFL Week 10</u></h3>
+          <p>Transaction deadline for that season. No transactions (drops, trades) allowed until the end of the fantasy playoffs</p>
+          <h3><u>NFL Week 18</u></h3>
+          <p>All transactions now allowed</p>
+        </v-expansion-panel-content>
+      </v-expansion-panel>
+
+      <v-expansion-panel>
         <v-expansion-panel-header class="grey--text">Contracts and Free Agent Auction</v-expansion-panel-header>
         <v-expansion-panel-content> <br/>
           <p>The minimum contract for a player is a 1 year, $0.5 million. 
@@ -170,6 +211,8 @@
             <li><b>Example 1</b> - You have a player that you had signed on your team with a 4-year deal. In the offseason, their contract expires, and they go into the free agent auction pool. Another owner wins the bidding with an offer of 1 year, $15 Million. You have the choice to match that contract (following the same slope as normal). </li>
             <li><b>Example 2</b> - You have a rookie you drafted. In the offseason, their contract expires, and they go into the free agent auction pool. Another owner wins the bidding with an offer of 4 years, $32 Million. Before you decide if you want to match, they decide to increase that bid to 3 years, $30 Million. You now choose to match or not. </li>
           </ul>
+          <p></p>
+          <p>Per league vote, matching tags cannot be traded. They are locked based on ownership at the transaction deadline the season prior.</p>
         </v-expansion-panel-content>
       </v-expansion-panel>
       <v-expansion-panel>
@@ -192,20 +235,186 @@
             </li>
           </ul>
           <p></p>
-          <p>At no point can you be above the salary cap nor have any future year where your minimum cap hit is above the salary cap. This can only happen if you are doing a lot of restructuring which will create a lot of fully guaranteed contracts. If this situation would occur, the transaction that causes it (trade / signing / restructuring / draft pick) is not allowed or forfeited.</p>
-          <ul>
-            <li><b>Example 4</b> - You have restructured contracts to push salary into 2024. You now have $100 million in fully guaranteed contract money in that year and a further $200 million signed that is only 50% guaranteed. Your team can still technically get down to the salary cap by forfeiting picks so this is allowed. However, you are not allowed to do any transaction that would increase your 2024 salary commitments (draft a player, trades that increase cost in that year, restructuring a player with salary owed in 2024, etc) until you open up salary cap room in that year.</li>
-          </ul>
-          <p></p>
+          <p>The commissioner may choose to not allow an owner to drop a player with a fully guaranteed contract if he determines that the drop is mainly intended to make the team worse to improve draft pick position. This falls under the Tanking rule noted below.</p>
+          <p>You can never be over the cap within a league year (defined above as starting with the transaction confirmations ahead of the free agent auction and ending at Week 18 of the NFL season). Any transaction that would put you over the cap within the current league year is not allowed. This includes signing free agents, signing rookies, or trades. </p>
+          <p>The league has decided that we will allow owners to have signed contracts that go over the cap in future years. However, all owners must be below the cap in all years at the start of the league year. If an owner is not under the cap in any year, they must execute transactions to get under the cap. If completely unable to do this or execute a trade, they forfeit the league year.</p>
           <p>The contract becomes void if a player retires (files retirement paperwork with the NFL). Being cut or injured does not void a contract unless the player then retires.</p>
         </v-expansion-panel-content>
       </v-expansion-panel>
        <v-expansion-panel>
         <v-expansion-panel-header class="grey--text">Rookie Contracts</v-expansion-panel-header>
         <v-expansion-panel-content> <br/>
+          <p>The league will have a 5-round rookie draft every season. The order of picks is the reverse of the league finish (league champion has last pick). Only rookies may be taken during the rookie draft.</p>
           <p>As with the NFL, rookie contracts will all be 4-year deals. Values are predetermined based on the draft pick. After the rookie draft, they follow the same rules as the free agent contracts. Picks are forfeited if the team does not have the cap space for the pick or if the owner chooses not to draft a player.</p>
-          <p>Rookie contract values were very hard to determine fairly. The approach we’ll take is to base rookie contract values on the actual start-up auction results for Rookies. The total contract value will be normalized to a smooth slope (vs. the tiers that will occur) and based on 2021 Rookie values vs. typical years (using ADP). The proposed values will be sent to the league for a vote with a simple majority needed.</p>
-          <p>Rookie contracts may (low chance) be adjusted one additional time after the 3rd season along with salary slope.</p>
+          <p>Rookie contract values have been confirmed per table below. Note that they change from 2022 to 2023 but will stay at 2023 values unless we vote to change. Values are in $ Million/yr for a 1-year deal. Owners can choose to sign picks for multi-year deals, and contracts for rookies follow the same slope as for free agents.</p>
+          <v-simple-table>
+            <template v-slot:default>
+              <thead>
+                 <tr>
+                    <th>Pick</th>
+                    <th>2022</th>
+                    <th>2023+</th>
+                    <th>Pick</th>
+                    <th>2022</th>
+                    <th>2023+</th>
+                 </tr>
+              </thead>
+              <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>$24,000,000/yr</td>
+                    <td>$12,000,000/yr</td>
+                    <td>19</td>
+                    <td>$1,750,000/yr</td>
+                    <td>$1,500,000/yr</td>
+                 </tr>
+                 <tr>
+                    <td>2</td>
+                    <td>$20,500,000/yr</td>
+                    <td>$10,500,000/yr</td>
+                    <td>20</td>
+                    <td>$1,750,000/yr</td>
+                    <td>$1,500,000/yr</td>
+                 </tr>
+                 <tr>
+                    <td>3</td>
+                    <td>$17,500,000/yr</td>
+                    <td>$9,000,000/yr</td>
+                    <td>21</td>
+                    <td>$1,500,000/yr</td>
+                    <td>$1,250,000/yr</td>
+                 </tr>
+                 <tr>
+                    <td>4</td>
+                    <td>$14,750,000/yr</td>
+                    <td>$7,500,000/yr</td>
+                    <td>22</td>
+                    <td>$1,500,000/yr</td>
+                    <td>$1,250,000/yr</td>
+                 </tr>
+                 <tr>
+                    <td>5</td>
+                    <td>$12,250,000/yr</td>
+                    <td>$6,250,000/yr</td>
+                    <td>23</td>
+                    <td>$1,250,000/yr</td>
+                    <td>$1,250,000/yr</td>
+                 </tr>
+                 <tr>
+                    <td>6</td>
+                    <td>$10,000,000/yr</td>
+                    <td>$5,250,000/yr</td>
+                    <td>24</td>
+                    <td>$1,250,000/yr</td>
+                    <td>$1,250,000/yr</td>
+                 </tr>
+                 <tr>
+                    <td>7</td>
+                    <td>$8,250,000/yr</td>
+                    <td>$4,250,000/yr</td>
+                    <td>25</td>
+                    <td>$1,000,000/yr</td>
+                    <td>$1,000,000/yr</td>
+                 </tr>
+                 <tr>
+                    <td>8</td>
+                    <td>$6,750,000/yr</td>
+                    <td>$3,500,000/yr</td>
+                    <td>26</td>
+                    <td>$1,000,000/yr</td>
+                    <td>$1,000,000/yr</td>
+                 </tr>
+                 <tr>
+                    <td>9</td>
+                    <td>$5,750,000/yr</td>
+                    <td>$3,000,000/yr</td>
+                    <td>27</td>
+                    <td>$1,000,000/yr</td>
+                    <td>$1,000,000/yr</td>
+                 </tr>
+                 <tr>
+                    <td>10</td>
+                    <td>$4,750,000/yr</td>
+                    <td>$2,500,000/yr</td>
+                    <td>28</td>
+                    <td>$1,000,000/yr</td>
+                    <td>$1,000,000/yr</td>
+                 </tr>
+                 <tr>
+                    <td>11</td>
+                    <td>$4,000,000/yr</td>
+                    <td>$2,250,000/yr</td>
+                    <td>29</td>
+                    <td>$1,000,000/yr</td>
+                    <td>$1,000,000/yr</td>
+                 </tr>
+                 <tr>
+                    <td>12</td>
+                    <td>$3,500,000/yr</td>
+                    <td>$2,000,000/yr</td>
+                    <td>30</td>
+                    <td>$1,000,000/yr</td>
+                    <td>$1,000,000/yr</td>
+                 </tr>
+                 <tr>
+                    <td>13</td>
+                    <td>$3,000,000/yr</td>
+                    <td>$1,750,000/yr</td>
+                    <td>31</td>
+                    <td>$750,000/yr</td>
+                    <td>$750,000/yr</td>
+                 </tr>
+                 <tr>
+                    <td>14</td>
+                    <td>$2,750,000/yr</td>
+                    <td>$1,750,000/yr</td>
+                    <td>32</td>
+                    <td>$750,000/yr</td>
+                    <td>$750,000/yr</td>
+                 </tr>
+                 <tr>
+                    <td>15</td>
+                    <td>$2,500,000/yr</td>
+                    <td>$1,750,000/yr</td>
+                    <td>33</td>
+                    <td>$750,000/yr</td>
+                    <td>$750,000/yr</td>
+                 </tr>
+                 <tr>
+                    <td>16</td>
+                    <td>$2,250,000/yr</td>
+                    <td>$1,750,000/yr</td>
+                    <td>34</td>
+                    <td>$750,000/yr</td>
+                    <td>$750,000/yr</td>
+                 </tr>
+                 <tr>
+                    <td>17</td>
+                    <td>$2,000,000/yr</td>
+                    <td>$1,500,000/yr</td>
+                    <td>35</td>
+                    <td>$750,000/yr</td>
+                    <td>$750,000/yr</td>
+                 </tr>
+                 <tr>
+                    <td>18</td>
+                    <td>$2,000,000/yr</td>
+                    <td>$1,500,000/yr</td>
+                    <td>36</td>
+                    <td>$750,000/yr</td>
+                    <td>$750,000/yr</td>
+                 </tr>
+                 <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>37+</td>
+                    <td>$600,000/yr</td>
+                    <td>$600,000/yr</td>
+                 </tr>
+              </tbody>
+            </template>
+          </v-simple-table>
         </v-expansion-panel-content>
       </v-expansion-panel>
        <v-expansion-panel>
@@ -254,6 +463,19 @@
         <v-expansion-panel-content> <br/>
           <p>We define tanking as making decisions designed primarily to increase the chances of losing while not providing a substantiative benefit to your team beyond improving draft picks. Tanking is damaging to league morale, and it will not be tolerated. If the majority of the league believes a transaction is intentionally designed to tank, the commissioner can reject the transaction. Repeated issues will result in forfeiting of team.</p>
           <p>Collusion is defined as one team making a move that benefits another team without improving their own position. This is much more common in redraft leagues than dynasty, but it is possible. Examples that are more subtle include things like player “rentals” where you trade a player to someone competing and they later trade that player back as well as a draft pick. Transactions like this are not allowed. However, as noted above, trades intended to free up cap space are allowed.</p>
+        </v-expansion-panel-content>
+      </v-expansion-panel>
+      <v-expansion-panel>
+      <v-expansion-panel-header class="grey--text">Commissioner's Discretion</v-expansion-panel-header>
+        <v-expansion-panel-content> <br/>
+          <p>Due to the incredible complexity of this league, the commissioner needs some discretion to resolve issues. I will try to provide relief to teams in situations where a misunderstanding of the rules: </p>
+          <ol type="1">
+            <li>has no impact on the outcome of any matchups,</li>
+            <li>hinders a team's ability to compete in either the short or long-term, and</li>
+            <li>is brought to my attention promptly.</li>
+          </ol>
+          <p></p>
+          <p>I will always strive to fairly resolve all situations. This league is meant to be fun. If you aren’t having fun, I will help you find a new owner for your team.</p>
         </v-expansion-panel-content>
       </v-expansion-panel>
     </v-expansion-panels>
