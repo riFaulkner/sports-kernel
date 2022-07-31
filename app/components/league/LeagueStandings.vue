@@ -1,6 +1,17 @@
 <template>
   <v-card>
-    <v-card-title class="justify-center"> {{ leagueInfo.leagueName }} Standings</v-card-title>
+    <v-card-title>
+      <v-row>
+        <v-col cols="2">
+          <v-select
+              :items="leagueYears"
+              :value="leagueYears[0]"
+          />
+        </v-col>
+        <v-col offset="3">
+          {{ leagueInfo.leagueName }} Standings
+        </v-col>
+      </v-row></v-card-title>
     <v-data-table
         :headers=headers
         :items=items
@@ -69,7 +80,8 @@ export default {
           pointsFor: 1234,
           pointsAgainst: 1200,
           currentStreak: 8,
-        }, {
+        },
+        {
           teamName: "Jeff's team",
           outcomes: {
             wins: 9,
@@ -106,6 +118,7 @@ export default {
           currentStreak: -8,
         }
       ],
+      leagueYears: [2022, 2021]
     }
   },
   methods: {

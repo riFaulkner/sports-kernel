@@ -10,7 +10,8 @@ type Team {
     teamLiabilities: TeamLiabilities
     teamOwners: [ID!]
     activeContracts: [Contract!]
-    accessCodes: [String]
+    accessCodes: [String!]
+    teamScoring(year: Int): [TeamScoring!]!
 }
 
 input NewTeam {
@@ -18,6 +19,11 @@ input NewTeam {
     teamName: String!
     division: String
     foundedDate: Time
+}
+
+type CapUtilizationSummary {
+    capUtilization: Int!
+    numContracts: Int!
 }
 
 type ContractsMetadata {
@@ -30,37 +36,44 @@ type ContractsMetadata {
     teUtilizedCap: CapUtilizationSummary!
     deadCap: CapUtilizationSummary!
 }
-
-type TeamAssets {
-    draftPicks: [DraftYear]!
-}
-
-type TeamLiabilities {
-    deadCap: [DeadCapYear]
-}
-type DeadCapYear {
-    year: Int!
-    deadCapAccrued: [DeadCap!]
-}
-
 type DeadCap {
     associatedContractId: ID!
     amount: Int!
     contract: Contract
 }
-
-type DraftYear {
+type DeadCapYear {
     year: Int!
-    picks: [DraftPick]!
+    deadCapAccrued: [DeadCap!]
 }
-
 type DraftPick {
     round: Int!
     value: Int
     originalOwnerId: String
 }
+type DraftYear {
+    year: Int!
+    picks: [DraftPick]!
+}
+type TeamAssets {
+    draftPicks: [DraftYear]!
+}
+type TeamLiabilities {
+    deadCap: [DeadCapYear]
+}
+type TeamScoring {
+    year: Int!
+    summary: TeamScoringSeasonSummary
+    weeks: [TeamScoringWeek!]
+}
+type TeamScoringSeasonSummary {
+    wins: Int!
+    losses: Int!
+    ties: Int!
+    currentStreak: Int!
+}
 
-type CapUtilizationSummary {
-    capUtilization: Int!
-    numContracts: Int!
+type TeamScoringWeek {
+    week: Int!
+    pointsFor: Int!
+    pointsAgainst: Int!
 }

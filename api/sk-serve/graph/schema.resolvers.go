@@ -153,6 +153,7 @@ func (r *queryResolver) LeagueContracts(ctx context.Context, leagueID string) ([
 	return r.ContractResolver.GetAllLeagueContracts(ctx, leagueID)
 }
 
+// TODO: remove
 func (r *queryResolver) LeagueContractsByOwnerID(ctx context.Context, leagueID string, ownerID string) ([]*contract.Contract, error) {
 	panic(fmt.Errorf("not implemented"))
 }
