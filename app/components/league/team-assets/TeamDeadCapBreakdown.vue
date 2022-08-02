@@ -35,7 +35,7 @@ export default {
   },
   computed: {
     processedDeadCap() {
-      if (this.deadCap?.length === 0) {
+      if (this.deadCap === null || this.deadCap.length === 1) {
         return []
       }
       let tableView = []
@@ -64,7 +64,11 @@ export default {
       return tableView
     },
     headers() {
-      const nextDeadCapYear = this.deadCap[0].year
+      let nextDeadCapYear = new Date().getFullYear()
+
+      if (this.deadCap?.length > 0) {
+        nextDeadCapYear = this.deadCap[0].year
+      }
 
       return [
         {text: "Player", value: "name", align: "center"},
