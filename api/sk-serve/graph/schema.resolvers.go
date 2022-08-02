@@ -5,7 +5,6 @@ package graph
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
@@ -16,6 +15,10 @@ import (
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/user"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
+
+func (r *mutationResolver) CreateLeague(ctx context.Context, input league.NewLeagueInput) (*league.League, error) {
+	return r.LeagueResolver.CreateLeague(ctx, input)
+}
 
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*model.User, error) {
 	user := model.User{
@@ -151,10 +154,6 @@ func (r *queryResolver) League(ctx context.Context, leagueID *string) (*league.L
 
 func (r *queryResolver) LeagueContracts(ctx context.Context, leagueID string) ([]*contract.Contract, error) {
 	return r.ContractResolver.GetAllLeagueContracts(ctx, leagueID)
-}
-
-func (r *queryResolver) LeagueContractsByOwnerID(ctx context.Context, leagueID string, ownerID string) ([]*contract.Contract, error) {
-	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *queryResolver) Teams(ctx context.Context, leagueID string) ([]*team.Team, error) {

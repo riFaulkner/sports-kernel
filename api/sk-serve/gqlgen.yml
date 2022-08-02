@@ -115,6 +115,9 @@ models:
     fields:
       Teams:
         resolver: true
+  NewLeagueInput:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/league.NewLeagueInput
   Division:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/league.Division

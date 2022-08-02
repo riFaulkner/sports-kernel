@@ -12,6 +12,13 @@ input NewUserRole {
     role: String!
 }
 
+input NewLeagueInput {
+    leagueName: String!
+    logoUrl: String
+    startDate: Time
+    divisions: [String!]
+}
+
 type Division {
     divisionName: String!
     leadingWins: Int

@@ -5,7 +5,6 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
@@ -32,10 +31,6 @@ func (r *teamResolver) ActiveContracts(ctx context.Context, obj *team.Team) ([]*
 	return nil, gqlerror.Errorf("Error getting leagueId to retrieve active contract")
 }
 
-func (r *teamResolver) AccessCodes(ctx context.Context, obj *team.Team) ([]*string, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
 // DeadCap returns generated.DeadCapResolver implementation.
 func (r *Resolver) DeadCap() generated.DeadCapResolver { return &deadCapResolver{r} }
 
@@ -45,12 +40,6 @@ func (r *Resolver) Team() generated.TeamResolver { return &teamResolver{r} }
 type deadCapResolver struct{ *Resolver }
 type teamResolver struct{ *Resolver }
 
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
 func getLeagueIDFromContext(ctx context.Context) (string, bool) {
 	leagueID := graphql.GetOperationContext(ctx).Variables["leagueId"]
 	str, ok := leagueID.(string)
