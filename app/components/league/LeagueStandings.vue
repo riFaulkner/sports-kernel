@@ -1,6 +1,7 @@
 <template>
   <v-card>
     <v-card-title>
+      {{ teams }}
       <v-row>
         <v-col cols="2">
           <v-select
@@ -44,6 +45,8 @@
 </template>
 
 <script>
+import {TEAMS_WITH_SCORING} from "@/graphql/queries/team/teamGraphQL";
+
 export default {
   name: "LeagueStandings.vue",
   props: {
@@ -118,7 +121,9 @@ export default {
           currentStreak: -8,
         }
       ],
-      leagueYears: [2022, 2021]
+      leagueYears: [2022, 2021],
+      selectedYear: new Date().getFullYear(),
+      teams: []
     }
   },
   methods: {
@@ -138,6 +143,27 @@ export default {
         return currentStreak + "W";
       }
       return Math.abs(currentStreak) + "L";
+    }
+  },
+  computed: {
+    processedTeamData() {
+      if (this.teams === null || this.teams.length === 0) {
+        return [];
+      }
+
+      return this.teams.filter((team) => {
+        team.teamScoring.filter((yearScoring) => yearScoring.year === this.selectedYear)
+      })
+    }
+  },
+  apollo: {
+    teams: {
+      query: TEAMS_WITH_SCORING,
+      variables: function () {
+        return {
+          leagueId: this.leagueInfo.id
+        }
+      }
     }
   }
 }

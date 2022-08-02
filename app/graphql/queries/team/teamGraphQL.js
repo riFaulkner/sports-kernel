@@ -24,7 +24,23 @@ export const TEAM_CONTRACTS = gql`
         }
     }
 `
-
+export const TEAMS_WITH_SCORING = gql`
+    query GetTeams($leagueId: ID!) {
+        teams(leagueId: $leagueId) {
+            teamName
+            id
+            teamScoring {
+                year
+                summary {
+                    wins
+                    losses
+                    ties
+                    currentStreak
+                }
+            }
+        }
+    }
+`
 export const TEAM_DRAFT_PICKS = gql`
     query getTeamById($leagueId:ID!, $teamId: ID!) {
         teamById(leagueId: $leagueId, teamId:$teamId) {
@@ -40,7 +56,6 @@ export const TEAM_DRAFT_PICKS = gql`
         }
     }
 `
-
 export const TEAM_DEAD_CAP = gql`
     query getTeamById($leagueId:ID!, $teamId: ID!) {
         teamById(leagueId: $leagueId, teamId:$teamId) {
