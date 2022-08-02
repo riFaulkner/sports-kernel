@@ -20,6 +20,6 @@ type Division struct {
 type NewLeagueInput struct {
 	LeagueName string     `json:"leagueName"`
 	LogoUrl    *string    `json:"logoUrl"`
-	StarDate   *time.Time `json:"starDate"`
+	StartDate  *time.Time `json:"startDate"`
 	Divisions  []string   `json:"divisions"`
 }

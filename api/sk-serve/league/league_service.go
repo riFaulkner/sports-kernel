@@ -10,6 +10,7 @@ const (
 )
 
 type LeagueRepository interface {
+	CreateLeague(ctx context.Context, input NewLeagueInput) (*League, error)
 	GetAll(ctx context.Context) ([]*League, error)
 	GetByLeagueId(ctx context.Context, leagueID string) (*League, error)
 }
