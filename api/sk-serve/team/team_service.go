@@ -2,6 +2,7 @@ package team
 
 import (
 	"context"
+
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
 
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
@@ -14,6 +15,10 @@ type TeamService struct {
 
 func (t TeamService) GenerateAccessCode(ctx context.Context, leagueID string, teamID string, role model.Role) (string, error) {
 	return t.TeamRepository.GenerateAccessCode(ctx, leagueID, teamID, string(role))
+}
+
+func (t TeamService) AddUserToTeam(ctx context.Context, accessCode string, ownerID string) (string, error) {
+	return t.TeamRepository.AddUserToTeam(ctx, accessCode, ownerID)
 }
 
 func (t TeamService) GetTeamByOwnerID(ctx context.Context, leagueID string, ownerID string) (*Team, error) {

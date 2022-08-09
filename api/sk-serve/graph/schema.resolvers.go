@@ -125,6 +125,10 @@ func (r *mutationResolver) GenerateAccessCode(ctx context.Context, leagueID stri
 	return r.TeamService.GenerateAccessCode(ctx, leagueID, teamID, role)
 }
 
+func (r *mutationResolver) AddUserToTeam(ctx context.Context, accessCode string, ownerID string) (string, error) {
+	return r.TeamService.AddUserToTeam(ctx, accessCode, ownerID)
+}
+
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	users, err := r.UserResolver.GetAll(ctx)
 	if err != nil {

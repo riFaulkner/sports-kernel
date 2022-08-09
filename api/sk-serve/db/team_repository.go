@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
@@ -329,6 +330,57 @@ func (u *TeamRepositoryImpl) GenerateAccessCode(ctx context.Context, leagueId st
 	return accessCode, nil
 }
 
+func (u *TeamRepositoryImpl) AddUserToTeam(ctx context.Context, accessCode string, ownerId string) (string, error) {
+	rawText, err := decodeAccessCodeString(accessCode)
+
+	if err != nil {
+		log.Printf("WARN: could not validate access code: %v", err)
+		return "Error Parsing Code", err
+	}
+	//0: League ID; 1:Team ID; 2: USER_ROLE; 3: Salt
+	rawTextArray := strings.Split(rawText, ",")
+
+	team := new(team.Team)
+
+	//Check for access code
+	doc, err := u.Client.
+		Collection(firestore.LeaguesCollection).
+		Doc(rawTextArray[0]).
+		Collection(firestore.TeamsCollection).
+		Doc(rawTextArray[1]).Get(ctx)
+
+	cast_err := doc.DataTo(&team)
+	if cast_err != nil {
+		log.Printf("WARN: Error casting team to object")
+		return "Error marshalling object", cast_err
+	}
+
+	isInArray, stringIndex := containsString(team.AccessCodes, accessCode)
+
+	if isInArray == false && stringIndex == -1 {
+		log.Printf("INFO: Access code not found in document")
+		return "Access Code Not Found", nil
+	}
+
+	//Add User to Team
+	//token := ctx.Value(jwtmiddleware.ContextKey{}).(*validator.ValidatedClaims)
+	//userId := token.RegisteredClaims.Subject
+
+	return ownerId, nil
+}
+
+func decodeAccessCodeString(accessCode string) (string, error) {
+
+	data, err := base64.StdEncoding.DecodeString(accessCode)
+
+	if err != nil {
+		log.Printf("WARN: issue decoding the Access Code: %v", err)
+		return "Error Decoding", err
+	}
+
+	return string(data), nil
+}
+
 func accessCodeFromString(input string) string {
 	data := []byte(input)
 	b64String := base64.RawURLEncoding.EncodeToString(data[:])
@@ -341,6 +393,17 @@ func randomString(length int) string {
 	rand.Read(b)
 	return fmt.Sprintf("%x", b)[:length]
 }
+
+func containsString(s []*string, str string) (bool, int) {
+	for i, v := range s {
+		if *v == str {
+			return true, i
+		}
+	}
+
+	return false, -1
+}
+
 func generateDefaultTeamContractsMetadata() *team.ContractsMetadata {
 	return &team.ContractsMetadata{
 		Year:              time.Now().Year(),
