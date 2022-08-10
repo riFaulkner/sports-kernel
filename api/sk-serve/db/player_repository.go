@@ -117,8 +117,7 @@ func transformResultsToPlayers(results []*firestore.DocumentSnapshot, ctx contex
 
 		age := 0
 		if err != nil {
-			gqlerror.Errorf("Error formatting birthday for player %v")
-			//log.Errorf(ctx, "Error formatting birthday for player %v", player.ID)
+			gqlerror.Errorf("Error formatting birthday for player %v", player.ID)
 		} else {
 			age = int(time.Now().Sub(birthday).Hours() / 24 / 365)
 		}
