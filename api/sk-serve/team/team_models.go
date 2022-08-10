@@ -15,6 +15,7 @@ type Team struct {
 	TeamLiabilities          *TeamLiabilities     `json:"teamLiabilities"`
 	TeamOwners               []string             `json:"teamOwners"`
 	AccessCodes              []*string            `json:"accessCodes"`
+	TeamScoring              []TeamScoring        `json:"teamScoring"`
 }
 
 type ContractsMetadata struct {
@@ -60,6 +61,27 @@ type DeadCapYear struct {
 type CapUtilizationSummary struct {
 	CapUtilization int `json:"capUtilization"`
 	NumContracts   int `json:"numContracts"`
+}
+
+type TeamScoring struct {
+	Year    int                      `json:"year"`
+	Summary TeamScoringSeasonSummary `json:"summary"`
+	Weeks   []TeamScoringWeek        `json:"weeks"`
+}
+
+type TeamScoringSeasonSummary struct {
+	Wins               int     `json:"wins"`
+	Losses             int     `json:"losses"`
+	Ties               int     `json:"ties"`
+	CurrentStreak      int     `json:"currentStreak"`
+	TotalPointsFor     float64 `json:"totalPointsFor"`
+	TotalPointsAgainst float64 `json:"totalPointsAgainst"`
+}
+
+type TeamScoringWeek struct {
+	Week          int     `json:"week"`
+	PointsFor     float64 `json:"pointsFor"`
+	PointsAgainst float64 `json:"pointsAgainst"`
 }
 
 type NewTeam struct {

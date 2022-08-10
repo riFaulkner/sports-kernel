@@ -10,11 +10,12 @@ import (
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/generated"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/team"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/web_utilities"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 func (r *deadCapResolver) Contract(ctx context.Context, obj *team.DeadCap) (*contract.Contract, error) {
-	if leagueID, ok := getLeagueIDFromContext(ctx); ok {
+	if leagueID, ok := web_utilities.GetLeagueIDFromContext(ctx); ok {
 		contract, ok := r.ContractResolver.GetById(ctx, leagueID, obj.AssociatedContractID)
 		if ok {
 			return contract, nil
@@ -39,9 +40,3 @@ func (r *Resolver) Team() generated.TeamResolver { return &teamResolver{r} }
 
 type deadCapResolver struct{ *Resolver }
 type teamResolver struct{ *Resolver }
-
-func getLeagueIDFromContext(ctx context.Context) (string, bool) {
-	leagueID := graphql.GetOperationContext(ctx).Variables["leagueId"]
-	str, ok := leagueID.(string)
-	return str, ok
-}
