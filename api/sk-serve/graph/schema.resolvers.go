@@ -5,6 +5,8 @@ package graph
 
 import (
 	"context"
+	"fmt"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/auth"
 	"log"
 
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
@@ -157,6 +159,7 @@ func (r *queryResolver) League(ctx context.Context, leagueID *string) (*league.L
 }
 
 func (r *queryResolver) LeagueContracts(ctx context.Context, leagueID string) ([]*contract.Contract, error) {
+	fmt.Printf("userId from context: %s", auth.GetUserIdFromContext(ctx))
 	return r.ContractResolver.GetAllLeagueContracts(ctx, leagueID)
 }
 

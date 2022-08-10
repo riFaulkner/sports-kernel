@@ -16,6 +16,7 @@ import (
 // A private key for context that only this package can access. This is important
 // to prevent collisions between different context uses
 var userCtxKey = &contextKey{"user_roles"}
+var userIdCtxKey = &contextKey{"user_id"}
 
 type contextKey struct {
 	name string
@@ -44,8 +45,11 @@ func LoadUserRoles(client firestore.Client, next http.Handler) http.Handler {
 			// return and don't let it go any further, they don't have any roles. or something bad happened
 		}
 
-		// put it in context
-		ctx := context.WithValue(r.Context(), userCtxKey, userRoles)
+		// Add the user id to the context
+		ctx := context.WithValue(r.Context(), userIdCtxKey, userId)
+
+		// put roles in context
+		ctx = context.WithValue(ctx, userCtxKey, userRoles)
 
 		// and call the next with our new context
 		r = r.WithContext(ctx)
@@ -54,6 +58,11 @@ func LoadUserRoles(client firestore.Client, next http.Handler) http.Handler {
 
 }
 
+func GetUserIdFromContext(ctx context.Context) string {
+	raw, _ := ctx.Value(userIdCtxKey).(string)
+
+	return raw
+}
 func GetUserRolesFromContext(ctx context.Context) UserRoles {
 	raw, _ := ctx.Value(userCtxKey).([]*model.UserRoles)
 	if raw == nil {
@@ -131,6 +140,7 @@ func getAdminRole() *string {
 	role := fmt.Sprintf("skAdmin")
 	return &role
 }
+
 func getTeamManagerRole(teamID string) *string {
 	role := fmt.Sprintf("teamOwner:%s", teamID)
 	return &role
