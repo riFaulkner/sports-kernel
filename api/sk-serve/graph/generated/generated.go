@@ -220,10 +220,12 @@ type ComplexityRoot struct {
 	}
 
 	TeamScoringSeasonSummary struct {
-		CurrentStreak func(childComplexity int) int
-		Losses        func(childComplexity int) int
-		Ties          func(childComplexity int) int
-		Wins          func(childComplexity int) int
+		CurrentStreak      func(childComplexity int) int
+		Losses             func(childComplexity int) int
+		Ties               func(childComplexity int) int
+		TotalPointsAgainst func(childComplexity int) int
+		TotalPointsFor     func(childComplexity int) int
+		Wins               func(childComplexity int) int
 	}
 
 	TeamScoringWeek struct {
@@ -1237,6 +1239,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TeamScoringSeasonSummary.Ties(childComplexity), true
 
+	case "TeamScoringSeasonSummary.totalPointsAgainst":
+		if e.complexity.TeamScoringSeasonSummary.TotalPointsAgainst == nil {
+			break
+		}
+
+		return e.complexity.TeamScoringSeasonSummary.TotalPointsAgainst(childComplexity), true
+
+	case "TeamScoringSeasonSummary.totalPointsFor":
+		if e.complexity.TeamScoringSeasonSummary.TotalPointsFor == nil {
+			break
+		}
+
+		return e.complexity.TeamScoringSeasonSummary.TotalPointsFor(childComplexity), true
+
 	case "TeamScoringSeasonSummary.wins":
 		if e.complexity.TeamScoringSeasonSummary.Wins == nil {
 			break
@@ -1685,12 +1701,14 @@ type TeamScoringSeasonSummary {
     losses: Int!
     ties: Int!
     currentStreak: Int!
+    totalPointsFor: Float!
+    totalPointsAgainst: Float!
 }
 
 type TeamScoringWeek {
     week: Int!
-    pointsFor: Int!
-    pointsAgainst: Int!
+    pointsFor: Float!
+    pointsAgainst: Float!
 }`, BuiltIn: false},
 	{Name: "graph/schema/user/user.graphqls", Input: `type User {
     id: ID!
@@ -8701,6 +8719,10 @@ func (ec *executionContext) fieldContext_TeamScoring_summary(ctx context.Context
 				return ec.fieldContext_TeamScoringSeasonSummary_ties(ctx, field)
 			case "currentStreak":
 				return ec.fieldContext_TeamScoringSeasonSummary_currentStreak(ctx, field)
+			case "totalPointsFor":
+				return ec.fieldContext_TeamScoringSeasonSummary_totalPointsFor(ctx, field)
+			case "totalPointsAgainst":
+				return ec.fieldContext_TeamScoringSeasonSummary_totalPointsAgainst(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TeamScoringSeasonSummary", field.Name)
 		},
@@ -8933,6 +8955,94 @@ func (ec *executionContext) fieldContext_TeamScoringSeasonSummary_currentStreak(
 	return fc, nil
 }
 
+func (ec *executionContext) _TeamScoringSeasonSummary_totalPointsFor(ctx context.Context, field graphql.CollectedField, obj *team.TeamScoringSeasonSummary) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TeamScoringSeasonSummary_totalPointsFor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalPointsFor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TeamScoringSeasonSummary_totalPointsFor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TeamScoringSeasonSummary",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TeamScoringSeasonSummary_totalPointsAgainst(ctx context.Context, field graphql.CollectedField, obj *team.TeamScoringSeasonSummary) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TeamScoringSeasonSummary_totalPointsAgainst(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalPointsAgainst, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TeamScoringSeasonSummary_totalPointsAgainst(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TeamScoringSeasonSummary",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _TeamScoringWeek_week(ctx context.Context, field graphql.CollectedField, obj *team.TeamScoringWeek) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_TeamScoringWeek_week(ctx, field)
 	if err != nil {
@@ -9003,9 +9113,9 @@ func (ec *executionContext) _TeamScoringWeek_pointsFor(ctx context.Context, fiel
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(float64)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_TeamScoringWeek_pointsFor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -9015,7 +9125,7 @@ func (ec *executionContext) fieldContext_TeamScoringWeek_pointsFor(ctx context.C
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
+			return nil, errors.New("field of type Float does not have child fields")
 		},
 	}
 	return fc, nil
@@ -9047,9 +9157,9 @@ func (ec *executionContext) _TeamScoringWeek_pointsAgainst(ctx context.Context, 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(float64)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_TeamScoringWeek_pointsAgainst(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -9059,7 +9169,7 @@ func (ec *executionContext) fieldContext_TeamScoringWeek_pointsAgainst(ctx conte
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
+			return nil, errors.New("field of type Float does not have child fields")
 		},
 	}
 	return fc, nil
@@ -13513,6 +13623,20 @@ func (ec *executionContext) _TeamScoringSeasonSummary(ctx context.Context, sel a
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "totalPointsFor":
+
+			out.Values[i] = ec._TeamScoringSeasonSummary_totalPointsFor(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "totalPointsAgainst":
+
+			out.Values[i] = ec._TeamScoringSeasonSummary_totalPointsAgainst(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -14360,6 +14484,21 @@ func (ec *executionContext) marshalNDraftYear2ᚕᚖgithubᚗcomᚋrifaulknerᚋ
 	wg.Wait()
 
 	return ret
+}
+
+func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v interface{}) (float64, error) {
+	res, err := graphql.UnmarshalFloatContext(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.SelectionSet, v float64) graphql.Marshaler {
+	res := graphql.MarshalFloatContext(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return graphql.WrapContextMarshaler(ctx, res)
 }
 
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {

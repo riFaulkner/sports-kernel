@@ -70,16 +70,18 @@ type TeamScoring struct {
 }
 
 type TeamScoringSeasonSummary struct {
-	Wins          int `json:"wins"`
-	Losses        int `json:"losses"`
-	Ties          int `json:"ties"`
-	CurrentStreak int `json:"currentStreak"`
+	Wins               int     `json:"wins"`
+	Losses             int     `json:"losses"`
+	Ties               int     `json:"ties"`
+	CurrentStreak      int     `json:"currentStreak"`
+	TotalPointsFor     float64 `json:"totalPointsFor"`
+	TotalPointsAgainst float64 `json:"totalPointsAgainst"`
 }
 
 type TeamScoringWeek struct {
-	Week          int `json:"week"`
-	PointsFor     int `json:"pointsFor"`
-	PointsAgainst int `json:"pointsAgainst"`
+	Week          int     `json:"week"`
+	PointsFor     float64 `json:"pointsFor"`
+	PointsAgainst float64 `json:"pointsAgainst"`
 }
 
 type NewTeam struct {

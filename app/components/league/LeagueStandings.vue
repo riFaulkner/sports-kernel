@@ -1,12 +1,11 @@
 <template>
   <v-card>
     <v-card-title>
-      {{ teams }}
       <v-row>
         <v-col cols="2">
           <v-select
               :items="leagueYears"
-              :value="leagueYears[0]"
+              v-model:value="selectedYear"
           />
         </v-col>
         <v-col offset="3">
@@ -15,30 +14,32 @@
       </v-row></v-card-title>
     <v-data-table
         :headers=headers
-        :items=items
-        group-by="divisionName"
+        :items=processedTeamData
+        group-by="division"
         hide-default-footer
+        :items-per-page="15"
+        dense
     >
       <template v-slot:group.header="{items, isOpen, toggle}">
         <th colspan="100%">
           <v-icon @click="toggle" small
           >{{ isOpen ? 'mdi-minus' : 'mdi-plus' }}
           </v-icon>
-          {{ items[0].divisionName }}
+          {{ items[0].division }}
         </th>
       </template>
 
       <template v-slot:item.record="{item}">
-        {{ item.outcomes.wins }}-{{ item.outcomes.losses }}-{{ item.outcomes.ties }}
+        {{ item.seasonSummary.wins }}-{{ item.seasonSummary.losses }}-{{ item.seasonSummary.ties }}
       </template>
       <template v-slot:item.winPct="{item}">
-        {{ getWinPercentage(item.outcomes) }}
+        {{ getWinPercentage(item.seasonSummary) }}%
       </template>
       <template v-slot:item.gamesBack="{item}">
         {{ getGamesBack(item) }}
       </template>
       <template v-slot:item.streak="{item}">
-        {{ getStreakDisplay(item.currentStreak) }}
+        {{ getStreakDisplay(item.seasonSummary) }}
       </template>
     </v-data-table>
   </v-card>
@@ -67,79 +68,56 @@ export default {
         {text: 'Record', value: 'record'},
         {text: 'Win Percentage', value: 'winPct'},
         {text: 'GB', value: 'gamesBack'},
-        {text: 'PF', value: 'pointsFor'},
-        {text: 'PA', value: 'pointsAgainst'},
+        {text: 'PF', value: 'seasonSummary.totalPointsFor'},
+        {text: 'PA', value: 'seasonSummary.totalPointsAgainst'},
         {text: 'Streak', value: 'streak', sortable: false},
-      ],
-      items: [
-        {
-          teamName: "Rick's team",
-          outcomes: {
-            wins: 10,
-            losses: 4,
-            ties: 0
-          },
-          divisionName: "West",
-          pointsFor: 1234,
-          pointsAgainst: 1200,
-          currentStreak: 8,
-        },
-        {
-          teamName: "Jeff's team",
-          outcomes: {
-            wins: 9,
-            losses: 5,
-            ties: 0
-          },
-          divisionName: "West",
-          pointsFor: 1234,
-          pointsAgainst: 1200,
-          currentStreak: 3,
-        },
-        {
-          teamName: "Kyle's team",
-          outcomes: {
-            wins: 5,
-            losses: 9,
-            ties: 0
-          },
-          divisionName: "East",
-          pointsFor: 1234,
-          pointsAgainst: 1200,
-          currentStreak: -3,
-        },
-        {
-          teamName: "Ramzi's team",
-          outcomes: {
-            wins: 1,
-            losses: 13,
-            ties: 0
-          },
-          divisionName: "West",
-          pointsFor: 1234,
-          pointsAgainst: 1200,
-          currentStreak: -8,
-        }
       ],
       leagueYears: [2022, 2021],
       selectedYear: new Date().getFullYear(),
-      teams: []
+      teams: [],
+      highestWinsPerDivisionByYear: new Map()
     }
   },
   methods: {
     getWinPercentage(teamOutcomes) {
-      return (teamOutcomes.wins / this.getTotalGamesPlayed(teamOutcomes)).toPrecision(3);
+      const totalGamesPlayed = this.getTotalGamesPlayed(teamOutcomes)
+      if (totalGamesPlayed === 0) {
+        return 0
+      }
+      return ((teamOutcomes.wins / totalGamesPlayed) * 100).toPrecision(3);
     },
     getTotalGamesPlayed(teamRecord) {
       return (teamRecord.wins + teamRecord.losses + teamRecord.ties);
     },
     getGamesBack(teamData) {
-      const division = this.leagueInfo.divisions?.find(it => it.divisionName === teamData.divisionName)
+      let yearWinsPerDivision = this.highestWinsPerDivisionByYear.get(this.selectedYear)
+      if (yearWinsPerDivision === undefined) {
+        this.highestWinsPerDivisionByYear.set(this.selectedYear, new Map())
+        yearWinsPerDivision = this.highestWinsPerDivisionByYear.get(this.selectedYear)
+      }
+      let highestWins = yearWinsPerDivision.get(teamData.division)
+      if (highestWins === undefined) {
+        const divisionTeams = this.teams.filter((team) => team.division === teamData.division)
+        highestWins = 0
+        divisionTeams.forEach((team) => {
+          const teamWinsThatYear = team.teamScoring.filter((year) => year.year === this.selectedYear)[0]?.summary?.wins
+          if (teamWinsThatYear !== undefined) {
+            if (highestWins < teamWinsThatYear) {
+              highestWins = teamWinsThatYear
+            }
+          }
+        })
+        this.highestWinsPerDivisionByYear.get(this.selectedYear).set(teamData.division, highestWins)
+      }
 
-      return division ? division.leadingWins - teamData.outcomes.wins : "";
+      return highestWins - teamData.seasonSummary.wins
     },
-    getStreakDisplay(currentStreak) {
-      if (currentStreak >= 0) {
+    getStreakDisplay(seasonSummary) {
+      const currentStreak = seasonSummary.currentStreak
+      if (currentStreak === 0) {
+        return currentStreak
+      }
+      if (currentStreak > 0) {
         return currentStreak + "W";
       }
       return Math.abs(currentStreak) + "L";
@@ -151,9 +129,33 @@ export default {
         return [];
       }
 
-      return this.teams.filter((team) => {
-        team.teamScoring.filter((yearScoring) => yearScoring.year === this.selectedYear)
+      const tableData = []
+
+      this.teams.forEach((team) => {
+        const fullSummary = team.teamScoring.filter(season => season.year === this.selectedYear)
+
+        let summary = {
+          currentStreak: 0,
+          losses: 0,
+          ties: 0,
+          wins: 0,
+          totalPointsFor: 0,
+          totalPointsAgainst: 0
+        }
+        if (fullSummary.length === 1) {
+          summary = fullSummary[0].summary
+        }
+
+        const tempTeam = {
+          teamName: team.teamName,
+          seasonSummary: summary,
+          division: team?.division
+        }
+
+        tableData.push(tempTeam)
       })
+
+      return tableData
     }
   },
   apollo: {

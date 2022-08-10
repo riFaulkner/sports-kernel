@@ -29,6 +29,7 @@ export const TEAMS_WITH_SCORING = gql`
         teams(leagueId: $leagueId) {
             teamName
             id
+            division
             teamScoring {
                 year
                 summary {
@@ -36,6 +37,8 @@ export const TEAMS_WITH_SCORING = gql`
                     losses
                     ties
                     currentStreak
+                    totalPointsFor
+                    totalPointsAgainst
                 }
             }
         }

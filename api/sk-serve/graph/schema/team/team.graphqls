@@ -70,10 +70,12 @@ type TeamScoringSeasonSummary {
     losses: Int!
     ties: Int!
     currentStreak: Int!
+    totalPointsFor: Float!
+    totalPointsAgainst: Float!
 }
 
 type TeamScoringWeek {
     week: Int!
-    pointsFor: Int!
-    pointsAgainst: Int!
+    pointsFor: Float!
+    pointsAgainst: Float!
 }
