@@ -6,9 +6,9 @@ package graph
 import (
 	"context"
 	"fmt"
-	"github.com/rifaulkner/sports-kernel/api/sk-serve/auth"
 	"log"
 
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/auth"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/generated"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
@@ -127,7 +127,8 @@ func (r *mutationResolver) GenerateAccessCode(ctx context.Context, leagueID stri
 	return r.TeamService.GenerateAccessCode(ctx, leagueID, teamID, role)
 }
 
-func (r *mutationResolver) AddUserToTeam(ctx context.Context, accessCode string, ownerID string) (string, error) {
+func (r *mutationResolver) AddUserToTeam(ctx context.Context, accessCode string) (string, error) {
+	ownerID := auth.GetUserIdFromContext(ctx)
 	return r.TeamService.AddUserToTeam(ctx, accessCode, ownerID)
 }
 

@@ -11,8 +11,10 @@ import (
 	"time"
 
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/league"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/team"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/user"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -23,7 +25,8 @@ import (
 )
 
 type TeamRepositoryImpl struct {
-	Client firestore.Client
+	Client   firestore.Client
+	UserImpl UserImpl
 }
 
 func (u *TeamRepositoryImpl) AddDeadCapToTeam(ctx context.Context, leagueID string, teamID string, deadCap []*team.DeadCap) bool {
@@ -315,7 +318,7 @@ func (u *TeamRepositoryImpl) GenerateAccessCode(ctx context.Context, leagueId st
 	codes := teamReference.AccessCodes
 	codes = append(codes, &accessCode)
 
-	u.Client.
+	_, err = u.Client.
 		Collection(firestore.LeaguesCollection).
 		Doc(leagueId).
 		Collection(firestore.TeamsCollection).
@@ -363,15 +366,140 @@ func (u *TeamRepositoryImpl) AddUserToTeam(ctx context.Context, accessCode strin
 	}
 
 	//Add User to Team
-	//token := ctx.Value(jwtmiddleware.ContextKey{}).(*validator.ValidatedClaims)
-	//userId := token.RegisteredClaims.Subject
+	team.TeamOwners = append(team.TeamOwners, ownerId)
 
-	return ownerId, nil
+	//Remove Access Code
+	newCodes := removeElement(team.AccessCodes, stringIndex)
+	team.AccessCodes = newCodes
+
+	_, err = u.Client.
+		Collection(firestore.LeaguesCollection).
+		Doc(rawTextArray[0]).
+		Collection(firestore.TeamsCollection).
+		Doc(rawTextArray[1]).
+		Update(ctx, []gFirestore.Update{
+			{
+				Path:  "AccessCodes",
+				Value: team.AccessCodes,
+			},
+			{
+				Path:  "TeamOwners",
+				Value: team.TeamOwners,
+			},
+		})
+
+	//Update or Create User Preferences
+	leagueRef, err := u.Client.Collection(firestore.LeaguesCollection).Doc(rawTextArray[0]).Get(ctx)
+
+	if err != nil {
+		return "Error getting league ref", err
+	}
+
+	league_obj := new(league.League)
+
+	err = leagueRef.DataTo(&league_obj)
+
+	if err != nil {
+		return "Error casting league to object", err
+	}
+
+	preferences, err := u.UserImpl.GetUserPreferences(ctx, ownerId)
+
+	if err != nil {
+		log.Printf("INFO: No User Preferences found")
+
+		leagues := make(map[string]string)
+		leagues["ID"] = leagueRef.Ref.ID
+		leagues["LeagueName"] = league_obj.LeagueName
+
+		newUser := model.User{
+			ID:        ownerId,
+			Avatar:    "",
+			OwnerName: "",
+			Email:     "",
+		}
+
+		err := u.UserImpl.Create(ctx, newUser)
+
+		if err != nil {
+			return "Error creating preferences", err
+		}
+
+		//Add League to new User
+		_, update_err := u.Client.
+			Collection(firestore.UsersCollection).
+			Doc(ownerId).
+			Update(ctx, []gFirestore.Update{
+				{
+					Path:  "Leagues",
+					Value: leagues,
+				},
+			})
+
+		if update_err != nil {
+			return "Error Updating User Doc", err
+		}
+
+		return "Completed", nil
+	}
+
+	newRole := model.NewUserRole{
+		UserID: ownerId,
+		Role:   rawTextArray[2] + ":" + rawTextArray[0],
+	}
+
+	u.UserImpl.CreateUserRole(ctx, &newRole)
+
+	//Add new league to preferences if applicable
+	userRef, err := u.Client.Collection(firestore.UsersCollection).Doc(ownerId).Get(ctx)
+
+	if err != nil {
+		return "Error retrieving user data", err
+	}
+
+	user := new(user.UserPreferences)
+
+	usercast_err := userRef.DataTo(&user)
+
+	if usercast_err != nil {
+		return "Error casting user to object", err
+	}
+
+	currentLeagues := user.Leagues
+
+	for _, curLeague := range currentLeagues {
+		if curLeague.ID == rawTextArray[0] {
+			return preferences.ID + ":Success", nil
+		}
+	}
+
+	newLeague := league.League{
+		ID:         leagueRef.Ref.ID,
+		LeagueName: league_obj.LeagueName,
+	}
+
+	currentLeagues = append(currentLeagues, &newLeague)
+
+	_, update_err := u.Client.
+		Collection(firestore.UsersCollection).
+		Doc(ownerId).
+		Update(ctx, []gFirestore.Update{
+			{
+				Path:  "Leagues",
+				Value: currentLeagues,
+			},
+		})
+
+	if update_err != nil {
+		return "Error updating league list", err
+	}
+
+	return preferences.ID + ":Success:Final:" + leagueRef.Ref.ID, nil
 }
 
 func decodeAccessCodeString(accessCode string) (string, error) {
 
-	data, err := base64.StdEncoding.DecodeString(accessCode)
+	data, err := base64.RawStdEncoding.DecodeString(accessCode)
 
 	if err != nil {
 		log.Printf("WARN: issue decoding the Access Code: %v", err)
@@ -402,6 +530,11 @@ func containsString(s []*string, str string) (bool, int) {
 	}
 
 	return false, -1
+}
+
+func removeElement(s []*string, i int) []*string {
+	s[i] = s[len(s)-1]
+	return s[:len(s)-1]
 }
 
 func generateDefaultTeamContractsMetadata() *team.ContractsMetadata {

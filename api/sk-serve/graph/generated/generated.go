@@ -139,7 +139,7 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		AddComment                func(childComplexity int, leagueID string, postID string, input *model.NewPostComment) int
-		AddUserToTeam             func(childComplexity int, accessCode string, ownerID string) int
+		AddUserToTeam             func(childComplexity int, accessCode string) int
 		ContractActionDrop        func(childComplexity int, leagueID string, teamID string, contractID string) int
 		ContractActionRestructure func(childComplexity int, leagueID string, restructureDetails contract.ContractRestructureInput) int
 		CreateContract            func(childComplexity int, leagueID string, input contract.ContractInput) int
@@ -263,7 +263,7 @@ type MutationResolver interface {
 	ContractActionDrop(ctx context.Context, leagueID string, teamID string, contractID string) (bool, error)
 	ContractActionRestructure(ctx context.Context, leagueID string, restructureDetails contract.ContractRestructureInput) (*contract.Contract, error)
 	GenerateAccessCode(ctx context.Context, leagueID string, teamID string, role model.Role) (string, error)
-	AddUserToTeam(ctx context.Context, accessCode string, ownerID string) (string, error)
+	AddUserToTeam(ctx context.Context, accessCode string) (string, error)
 }
 type QueryResolver interface {
 	Users(ctx context.Context) ([]*model.User, error)
@@ -679,7 +679,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.AddUserToTeam(childComplexity, args["accessCode"].(string), args["ownerId"].(string)), true
+		return e.complexity.Mutation.AddUserToTeam(childComplexity, args["accessCode"].(string)), true
 
 	case "Mutation.contractActionDrop":
 		if e.complexity.Mutation.ContractActionDrop == nil {
@@ -1524,7 +1524,7 @@ type Mutation {
   contractActionDrop(leagueId: ID!, teamId: ID!, contractId: ID!): Boolean! @hasRole(role: TEAM_OWNER)
   contractActionRestructure(leagueId: ID!, restructureDetails: ContractRestructureInput!): Contract! @hasRole(role: TEAM_OWNER)
   generateAccessCode(leagueId: ID!, teamId: ID!, role: Role!): String! @hasRole(role: LEAGUE_MANAGER)
-  addUserToTeam(accessCode: String!, ownerId: ID!): String!
+  addUserToTeam(accessCode: String!): String!
 }`, BuiltIn: false},
 	{Name: "graph/schema/team/team.graphqls", Input: `# Team types and inputs
 type Team {
@@ -1779,15 +1779,6 @@ func (ec *executionContext) field_Mutation_addUserToTeam_args(ctx context.Contex
 		}
 	}
 	args["accessCode"] = arg0
-	var arg1 string
-	if tmp, ok := rawArgs["ownerId"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ownerId"))
-		arg1, err = ec.unmarshalNID2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["ownerId"] = arg1
 	return args, nil
 }
 
@@ -5812,7 +5803,7 @@ func (ec *executionContext) _Mutation_addUserToTeam(ctx context.Context, field g
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().AddUserToTeam(rctx, fc.Args["accessCode"].(string), fc.Args["ownerId"].(string))
+		return ec.resolvers.Mutation().AddUserToTeam(rctx, fc.Args["accessCode"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
