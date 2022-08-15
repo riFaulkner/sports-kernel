@@ -1,7 +1,6 @@
 export const state = () => ({
   isInitialized: false,
   activeLeague: null,
-  submenu: null,
   activeTab: null,
   alert: {
     alert: false,
@@ -20,9 +19,6 @@ export const mutations = {
   updateActiveTab (state, payload) {
     state.activeTab = payload
   },
-  updateSubmenu (state, payload) {
-    state.submenu = payload
-  },
   UPDATE_ALERT (state, payload) {
     state.alert = payload
   }
@@ -35,9 +31,6 @@ export const actions = {
   },
   updateActiveTab (context, payload) {
     context.commit('updateActiveTab', payload)
-  },
-  updateSubmenu (context, payload) {
-    context.commit('updateSubmenu', payload)
   },
   alertDismiss (context) {
     const dismissAlert = {
