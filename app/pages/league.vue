@@ -66,18 +66,11 @@ export default {
     tab () {
       return this.$store.state.application.activeTab
     },
-    submenu () {
-      return this.$store.state.application.submenu
-    }
   },
   created () {
-    this.$store.dispatch('application/updateSubmenu', [
-      'Standings', 'My Team', 'Contracts Overview', 'Rules', 'League Management'
-    ])
     this.$store.dispatch('application/updateActiveTab', 'Rules')
   },
   destroyed () {
-    this.$store.dispatch('application/updateSubmenu', null)
     this.$store.dispatch('application/updateActiveTab', null)
   }
 }

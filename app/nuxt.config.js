@@ -1,7 +1,7 @@
 import colors from 'vuetify/es5/util/colors'
 
 export default {
-  ssr: false,
+  ssr: true,
   head: {
     title: 'Sports Kernel',
     meta: [
