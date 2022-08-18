@@ -127,7 +127,7 @@ func (r *mutationResolver) GenerateAccessCode(ctx context.Context, leagueID stri
 	return r.TeamService.GenerateAccessCode(ctx, leagueID, teamID, role)
 }
 
-func (r *mutationResolver) AddUserToTeam(ctx context.Context, accessCode string) (string, error) {
+func (r *mutationResolver) AddUserToTeam(ctx context.Context, accessCode string) (*user.UserPreferences, error) {
 	ownerID := auth.GetUserIdFromContext(ctx)
 	return r.TeamService.AddUserToTeam(ctx, accessCode, ownerID)
 }

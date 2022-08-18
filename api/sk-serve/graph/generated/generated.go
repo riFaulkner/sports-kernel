@@ -263,7 +263,7 @@ type MutationResolver interface {
 	ContractActionDrop(ctx context.Context, leagueID string, teamID string, contractID string) (bool, error)
 	ContractActionRestructure(ctx context.Context, leagueID string, restructureDetails contract.ContractRestructureInput) (*contract.Contract, error)
 	GenerateAccessCode(ctx context.Context, leagueID string, teamID string, role model.Role) (string, error)
-	AddUserToTeam(ctx context.Context, accessCode string) (string, error)
+	AddUserToTeam(ctx context.Context, accessCode string) (*user.UserPreferences, error)
 }
 type QueryResolver interface {
 	Users(ctx context.Context) ([]*model.User, error)
@@ -1524,7 +1524,7 @@ type Mutation {
   contractActionDrop(leagueId: ID!, teamId: ID!, contractId: ID!): Boolean! @hasRole(role: TEAM_OWNER)
   contractActionRestructure(leagueId: ID!, restructureDetails: ContractRestructureInput!): Contract! @hasRole(role: TEAM_OWNER)
   generateAccessCode(leagueId: ID!, teamId: ID!, role: Role!): String! @hasRole(role: LEAGUE_MANAGER)
-  addUserToTeam(accessCode: String!): String!
+  addUserToTeam(accessCode: String!): UserPreferences!
 }`, BuiltIn: false},
 	{Name: "graph/schema/team/team.graphqls", Input: `# Team types and inputs
 type Team {
@@ -5815,9 +5815,9 @@ func (ec *executionContext) _Mutation_addUserToTeam(ctx context.Context, field g
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*user.UserPreferences)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNUserPreferences2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋuserᚐUserPreferences(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_addUserToTeam(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5827,7 +5827,19 @@ func (ec *executionContext) fieldContext_Mutation_addUserToTeam(ctx context.Cont
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_UserPreferences_id(ctx, field)
+			case "ownerName":
+				return ec.fieldContext_UserPreferences_ownerName(ctx, field)
+			case "preferredLeagueId":
+				return ec.fieldContext_UserPreferences_preferredLeagueId(ctx, field)
+			case "isAdmin":
+				return ec.fieldContext_UserPreferences_isAdmin(ctx, field)
+			case "leagues":
+				return ec.fieldContext_UserPreferences_leagues(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type UserPreferences", field.Name)
 		},
 	}
 	defer func() {
@@ -13945,6 +13957,20 @@ func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋrifaulknerᚋsports�
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNUserPreferences2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋuserᚐUserPreferences(ctx context.Context, sel ast.SelectionSet, v user.UserPreferences) graphql.Marshaler {
+	return ec._UserPreferences(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNUserPreferences2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋuserᚐUserPreferences(ctx context.Context, sel ast.SelectionSet, v *user.UserPreferences) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._UserPreferences(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNUserRoles2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐUserRoles(ctx context.Context, sel ast.SelectionSet, v model.UserRoles) graphql.Marshaler {

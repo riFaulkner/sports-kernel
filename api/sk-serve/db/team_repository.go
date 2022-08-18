@@ -341,12 +341,13 @@ func (u *TeamRepositoryImpl) GenerateAccessCode(ctx context.Context, leagueId st
 	return accessCode, nil
 }
 
-func (u *TeamRepositoryImpl) AddUserToTeam(ctx context.Context, accessCode string, ownerId string) (string, error) {
+func (u *TeamRepositoryImpl) AddUserToTeam(ctx context.Context, accessCode string, ownerId string) (*user.UserPreferences, error) {
+
 	rawText, err := decodeAccessCodeString(accessCode)
 
 	if err != nil {
 		log.Printf("WARN: could not validate access code: %v", err)
-		return "Error Parsing Code", err
+		return nil, err
 	}
 	//0: League ID; 1:Team ID; 2: USER_ROLE; 3: Salt
 	rawTextArray := strings.Split(rawText, ",")
@@ -363,14 +364,14 @@ func (u *TeamRepositoryImpl) AddUserToTeam(ctx context.Context, accessCode strin
 	cast_err := doc.DataTo(&team)
 	if cast_err != nil {
 		log.Printf("WARN: Error casting team to object")
-		return "Error marshalling object", cast_err
+		return nil, cast_err
 	}
 
 	isInArray, stringIndex := containsString(team.AccessCodes, accessCode)
 
 	if isInArray == false && stringIndex == -1 {
 		log.Printf("INFO: Access code not found in document")
-		return "Access Code Not Found", nil
+		return nil, nil
 	}
 
 	//Add User to Team
@@ -400,7 +401,7 @@ func (u *TeamRepositoryImpl) AddUserToTeam(ctx context.Context, accessCode strin
 	leagueRef, err := u.Client.Collection(firestore.LeaguesCollection).Doc(rawTextArray[0]).Get(ctx)
 
 	if err != nil {
-		return "Error getting league ref", err
+		return nil, err
 	}
 
 	league_obj := new(league.League)
@@ -408,13 +409,13 @@ func (u *TeamRepositoryImpl) AddUserToTeam(ctx context.Context, accessCode strin
 	err = leagueRef.DataTo(&league_obj)
 
 	if err != nil {
-		return "Error casting league to object", err
+		return nil, err
 	}
 
 	preferences, err := u.UserImpl.GetUserPreferences(ctx, ownerId)
 
 	if err != nil {
-		log.Printf("INFO: No User Preferences found")
+		log.Printf("INFO: No User Preferences found, generating new user preferences")
 
 		leagues := make([]*league.League, 0)
 
@@ -437,7 +438,7 @@ func (u *TeamRepositoryImpl) AddUserToTeam(ctx context.Context, accessCode strin
 		err := u.UserImpl.Create(ctx, newUser)
 
 		if err != nil {
-			return "Error creating preferences", err
+			return nil, err
 		}
 
 		//Add League to new User
@@ -459,10 +460,16 @@ func (u *TeamRepositoryImpl) AddUserToTeam(ctx context.Context, accessCode strin
 		u.UserImpl.CreateUserRole(ctx, &newRole)
 
 		if update_err != nil {
-			return "Error Updating User Doc", err
+			return nil, err
 		}
 
-		return "NewUser:Success", nil
+		preferences, err = u.UserImpl.GetUserPreferences(ctx, ownerId)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return preferences, nil
 	}
 
 	newRole := model.NewUserRole{
@@ -476,7 +483,7 @@ func (u *TeamRepositoryImpl) AddUserToTeam(ctx context.Context, accessCode strin
 	userRef, err := u.Client.Collection(firestore.UsersCollection).Doc(ownerId).Get(ctx)
 
 	if err != nil {
-		return "Error retrieving user data", err
+		return nil, err
 	}
 
 	user := new(user.UserPreferences)
@@ -484,14 +491,14 @@ func (u *TeamRepositoryImpl) AddUserToTeam(ctx context.Context, accessCode strin
 	usercast_err := userRef.DataTo(&user)
 
 	if usercast_err != nil {
-		return "Error casting user to object", err
+		return nil, err
 	}
 
 	currentLeagues := user.Leagues
 
 	for _, curLeague := range currentLeagues {
 		if curLeague.ID == rawTextArray[0] {
-			return preferences.ID + ":Success", nil
+			return nil, nil
 		}
 	}
 
@@ -513,10 +520,10 @@ func (u *TeamRepositoryImpl) AddUserToTeam(ctx context.Context, accessCode strin
 		})
 
 	if update_err != nil {
-		return "Error updating league list", err
+		return nil, err
 	}
 
-	return preferences.ID + ":Success:Final:" + leagueRef.Ref.ID, nil
+	return preferences, nil
 }
 
 func decodeAccessCodeString(accessCode string) (string, error) {

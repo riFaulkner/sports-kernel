@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/user"
 
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -17,8 +18,9 @@ func (t TeamService) GenerateAccessCode(ctx context.Context, leagueID string, te
 	return t.TeamRepository.GenerateAccessCode(ctx, leagueID, teamID, string(role))
 }
 
-func (t TeamService) AddUserToTeam(ctx context.Context, accessCode string, ownerID string) (string, error) {
+func (t TeamService) AddUserToTeam(ctx context.Context, accessCode string, ownerID string) (*user.UserPreferences, error) {
 	return t.TeamRepository.AddUserToTeam(ctx, accessCode, ownerID)
+
 }
 
 func (t TeamService) GetTeamByOwnerID(ctx context.Context, leagueID string, ownerID string) (*Team, error) {
