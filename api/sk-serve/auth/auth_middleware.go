@@ -142,16 +142,16 @@ func getAdminRole() *string {
 }
 
 func getTeamManagerRole(teamID string) *string {
-	role := fmt.Sprintf("teamOwner:%s", teamID)
+	role := fmt.Sprintf("%s:%s", model.RoleTeamOwner, teamID)
 	return &role
 }
 
 func getLeagueMemberRole(leagueID string) *string {
-	role := fmt.Sprintf("leagueMember:%s", leagueID)
+	role := fmt.Sprintf("%s:%s", model.RoleLeagueMember, leagueID)
 	return &role
 }
 
 func getLeagueManagerRole(leagueID string) *string {
-	role := fmt.Sprintf("leagueManager:%s", leagueID)
+	role := fmt.Sprintf("%s:%s", model.RoleLeagueManager, leagueID)
 	return &role
 }
