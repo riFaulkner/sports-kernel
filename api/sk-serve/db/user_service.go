@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/firestore"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
@@ -45,7 +46,7 @@ func (u *UserImpl) GetAll(ctx context.Context) ([]*model.User, error) {
 }
 
 func (u *UserImpl) Create(ctx context.Context, user model.User) error {
-	_, _, err := u.Client.Collection(collectionName).Add(ctx, user)
+	_, err := u.Client.Collection(collectionName).Doc(user.ID).Set(ctx, user)
 	return err
 }
 

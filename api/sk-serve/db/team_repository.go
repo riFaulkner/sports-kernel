@@ -310,10 +310,18 @@ func (u *TeamRepositoryImpl) GenerateAccessCode(ctx context.Context, leagueId st
 		return "Issue creating access string", err
 	}
 
+	roleString := ""
+
+	if role == "TEAM_OWNER" {
+		roleString = "teamOwner"
+	} else {
+		roleString = "leagueManager"
+	}
+
 	//Generate a random string, length 5, to append to the pre-encoded string
 	randString := randomString(5)
 	//Concat data string, and encode in base64
-	accessCode := accessCodeFromString(leagueId + "," + teamId + "," + role + "," + randString)
+	accessCode := accessCodeFromString(leagueId + "," + teamId + "," + roleString + "," + randString)
 
 	codes := teamReference.AccessCodes
 	codes = append(codes, &accessCode)
@@ -408,9 +416,16 @@ func (u *TeamRepositoryImpl) AddUserToTeam(ctx context.Context, accessCode strin
 	if err != nil {
 		log.Printf("INFO: No User Preferences found")
 
-		leagues := make(map[string]string)
-		leagues["ID"] = leagueRef.Ref.ID
-		leagues["LeagueName"] = league_obj.LeagueName
+		leagues := make([]*league.League, 0)
+
+		newLeague := league.League{
+			ID:         leagueRef.Ref.ID,
+			LeagueName: league_obj.LeagueName,
+		}
+
+		leagues = append(leagues, &newLeague)
+		//leagues["ID"] = leagueRef.Ref.ID
+		//leagues["LeagueName"] = league_obj.LeagueName
 
 		newUser := model.User{
 			ID:        ownerId,
@@ -436,11 +451,18 @@ func (u *TeamRepositoryImpl) AddUserToTeam(ctx context.Context, accessCode strin
 				},
 			})
 
+		newRole := model.NewUserRole{
+			UserID: ownerId,
+			Role:   rawTextArray[2] + ":" + rawTextArray[0],
+		}
+
+		u.UserImpl.CreateUserRole(ctx, &newRole)
+
 		if update_err != nil {
 			return "Error Updating User Doc", err
 		}
 
-		return "Completed", nil
+		return "NewUser:Success", nil
 	}
 
 	newRole := model.NewUserRole{
