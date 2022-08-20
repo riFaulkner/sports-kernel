@@ -47,6 +47,7 @@ type ResolverRoot interface {
 	Mutation() MutationResolver
 	Query() QueryResolver
 	Team() TeamResolver
+	UserPreferencesLeagueSnippet() UserPreferencesLeagueSnippetResolver
 }
 
 type DirectiveRoot struct {
@@ -138,19 +139,19 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		AddComment                func(childComplexity int, leagueID string, postID string, input *model.NewPostComment) int
-		AddUserToTeam             func(childComplexity int, accessCode string) int
-		ContractActionDrop        func(childComplexity int, leagueID string, teamID string, contractID string) int
-		ContractActionRestructure func(childComplexity int, leagueID string, restructureDetails contract.ContractRestructureInput) int
-		CreateContract            func(childComplexity int, leagueID string, input contract.ContractInput) int
-		CreateLeague              func(childComplexity int, input league.NewLeagueInput) int
-		CreatePlayer              func(childComplexity int, input model.NewPlayerNfl) int
-		CreatePost                func(childComplexity int, leagueID string, input *model.NewLeaguePost) int
-		CreateTeam                func(childComplexity int, leagueID *string, input team.NewTeam) int
-		CreateUser                func(childComplexity int, input model.NewUser) int
-		CreateUserRole            func(childComplexity int, leagueID *string, newUserRole *model.NewUserRole) int
-		GenerateAccessCode        func(childComplexity int, leagueID string, teamID string, role model.Role) int
-		UpdateTeamMetaData        func(childComplexity int, leagueID string, teamID string) int
+		AddComment                      func(childComplexity int, leagueID string, postID string, input *model.NewPostComment) int
+		ContractActionDrop              func(childComplexity int, leagueID string, teamID string, contractID string) int
+		ContractActionRestructure       func(childComplexity int, leagueID string, restructureDetails contract.ContractRestructureInput) int
+		CreateContract                  func(childComplexity int, leagueID string, input contract.ContractInput) int
+		CreateLeague                    func(childComplexity int, input league.NewLeagueInput) int
+		CreatePlayer                    func(childComplexity int, input model.NewPlayerNfl) int
+		CreatePost                      func(childComplexity int, leagueID string, input *model.NewLeaguePost) int
+		CreateTeam                      func(childComplexity int, leagueID *string, input team.NewTeam) int
+		CreateUser                      func(childComplexity int, input model.NewUser) int
+		CreateUserRole                  func(childComplexity int, leagueID *string, newUserRole *model.NewUserRole) int
+		GenerateAccessCode              func(childComplexity int, leagueID string, teamID string, role model.Role) int
+		OnboardUserToTeamWithAccessCode func(childComplexity int, accessCode string) int
+		UpdateTeamMetaData              func(childComplexity int, leagueID string, teamID string) int
 	}
 
 	PlayerNFL struct {
@@ -234,6 +235,12 @@ type ComplexityRoot struct {
 		PreferredLeagueID func(childComplexity int) int
 	}
 
+	UserPreferencesLeagueSnippet struct {
+		Id           func(childComplexity int) int
+		LeagueName   func(childComplexity int) int
+		RoleInLeague func(childComplexity int) int
+	}
+
 	UserRoles struct {
 		ID     func(childComplexity int) int
 		Role   func(childComplexity int) int
@@ -263,7 +270,7 @@ type MutationResolver interface {
 	ContractActionDrop(ctx context.Context, leagueID string, teamID string, contractID string) (bool, error)
 	ContractActionRestructure(ctx context.Context, leagueID string, restructureDetails contract.ContractRestructureInput) (*contract.Contract, error)
 	GenerateAccessCode(ctx context.Context, leagueID string, teamID string, role model.Role) (string, error)
-	AddUserToTeam(ctx context.Context, accessCode string) (*user.UserPreferences, error)
+	OnboardUserToTeamWithAccessCode(ctx context.Context, accessCode string) (*user.UserPreferences, error)
 }
 type QueryResolver interface {
 	Users(ctx context.Context) ([]*model.User, error)
@@ -285,6 +292,9 @@ type QueryResolver interface {
 }
 type TeamResolver interface {
 	ActiveContracts(ctx context.Context, obj *team.Team) ([]*contract.Contract, error)
+}
+type UserPreferencesLeagueSnippetResolver interface {
+	RoleInLeague(ctx context.Context, obj *user.UserPreferencesLeagueSnippet) (model.Role, error)
 }
 
 type executableSchema struct {
@@ -669,18 +679,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.AddComment(childComplexity, args["leagueId"].(string), args["postId"].(string), args["input"].(*model.NewPostComment)), true
 
-	case "Mutation.addUserToTeam":
-		if e.complexity.Mutation.AddUserToTeam == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_addUserToTeam_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.AddUserToTeam(childComplexity, args["accessCode"].(string)), true
-
 	case "Mutation.contractActionDrop":
 		if e.complexity.Mutation.ContractActionDrop == nil {
 			break
@@ -800,6 +798,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.GenerateAccessCode(childComplexity, args["leagueId"].(string), args["teamId"].(string), args["role"].(model.Role)), true
+
+	case "Mutation.onboardUserToTeamWithAccessCode":
+		if e.complexity.Mutation.OnboardUserToTeamWithAccessCode == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_onboardUserToTeamWithAccessCode_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.OnboardUserToTeamWithAccessCode(childComplexity, args["accessCode"].(string)), true
 
 	case "Mutation.updateTeamMetaData":
 		if e.complexity.Mutation.UpdateTeamMetaData == nil {
@@ -1261,6 +1271,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.UserPreferences.PreferredLeagueID(childComplexity), true
 
+	case "UserPreferencesLeagueSnippet.id":
+		if e.complexity.UserPreferencesLeagueSnippet.Id == nil {
+			break
+		}
+
+		return e.complexity.UserPreferencesLeagueSnippet.Id(childComplexity), true
+
+	case "UserPreferencesLeagueSnippet.leagueName":
+		if e.complexity.UserPreferencesLeagueSnippet.LeagueName == nil {
+			break
+		}
+
+		return e.complexity.UserPreferencesLeagueSnippet.LeagueName(childComplexity), true
+
+	case "UserPreferencesLeagueSnippet.roleInLeague":
+		if e.complexity.UserPreferencesLeagueSnippet.RoleInLeague == nil {
+			break
+		}
+
+		return e.complexity.UserPreferencesLeagueSnippet.RoleInLeague(childComplexity), true
+
 	case "UserRoles.id":
 		if e.complexity.UserRoles.ID == nil {
 			break
@@ -1524,7 +1555,7 @@ type Mutation {
   contractActionDrop(leagueId: ID!, teamId: ID!, contractId: ID!): Boolean! @hasRole(role: TEAM_OWNER)
   contractActionRestructure(leagueId: ID!, restructureDetails: ContractRestructureInput!): Contract! @hasRole(role: TEAM_OWNER)
   generateAccessCode(leagueId: ID!, teamId: ID!, role: Role!): String! @hasRole(role: LEAGUE_MANAGER)
-  addUserToTeam(accessCode: String!): UserPreferences!
+  onboardUserToTeamWithAccessCode(accessCode: String!): UserPreferences
 }`, BuiltIn: false},
 	{Name: "graph/schema/team/team.graphqls", Input: `# Team types and inputs
 type Team {
@@ -1611,6 +1642,12 @@ type UserRoles {
     id: ID!
     userId: ID!
     role: String!
+}
+
+type UserPreferencesLeagueSnippet {
+    id:ID!
+    leagueName: String!
+    roleInLeague: Role!
 }
 
 #Mutations and Inputs
@@ -1764,21 +1801,6 @@ func (ec *executionContext) field_Mutation_addComment_args(ctx context.Context, 
 		}
 	}
 	args["input"] = arg2
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_addUserToTeam_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["accessCode"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("accessCode"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["accessCode"] = arg0
 	return args, nil
 }
 
@@ -2010,6 +2032,21 @@ func (ec *executionContext) field_Mutation_generateAccessCode_args(ctx context.C
 		}
 	}
 	args["role"] = arg2
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_onboardUserToTeamWithAccessCode_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["accessCode"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("accessCode"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["accessCode"] = arg0
 	return args, nil
 }
 
@@ -5791,8 +5828,8 @@ func (ec *executionContext) fieldContext_Mutation_generateAccessCode(ctx context
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_addUserToTeam(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_addUserToTeam(ctx, field)
+func (ec *executionContext) _Mutation_onboardUserToTeamWithAccessCode(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_onboardUserToTeamWithAccessCode(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -5805,24 +5842,21 @@ func (ec *executionContext) _Mutation_addUserToTeam(ctx context.Context, field g
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().AddUserToTeam(rctx, fc.Args["accessCode"].(string))
+		return ec.resolvers.Mutation().OnboardUserToTeamWithAccessCode(rctx, fc.Args["accessCode"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.(*user.UserPreferences)
 	fc.Result = res
-	return ec.marshalNUserPreferences2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋuserᚐUserPreferences(ctx, field.Selections, res)
+	return ec.marshalOUserPreferences2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋuserᚐUserPreferences(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_addUserToTeam(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_onboardUserToTeamWithAccessCode(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -5851,7 +5885,7 @@ func (ec *executionContext) fieldContext_Mutation_addUserToTeam(ctx context.Cont
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_addUserToTeam_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_onboardUserToTeamWithAccessCode_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -9043,6 +9077,138 @@ func (ec *executionContext) fieldContext_UserPreferences_leagues(ctx context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _UserPreferencesLeagueSnippet_id(ctx context.Context, field graphql.CollectedField, obj *user.UserPreferencesLeagueSnippet) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UserPreferencesLeagueSnippet_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Id, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UserPreferencesLeagueSnippet_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UserPreferencesLeagueSnippet",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UserPreferencesLeagueSnippet_leagueName(ctx context.Context, field graphql.CollectedField, obj *user.UserPreferencesLeagueSnippet) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UserPreferencesLeagueSnippet_leagueName(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.LeagueName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UserPreferencesLeagueSnippet_leagueName(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UserPreferencesLeagueSnippet",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UserPreferencesLeagueSnippet_roleInLeague(ctx context.Context, field graphql.CollectedField, obj *user.UserPreferencesLeagueSnippet) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UserPreferencesLeagueSnippet_roleInLeague(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.UserPreferencesLeagueSnippet().RoleInLeague(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.Role)
+	fc.Result = res
+	return ec.marshalNRole2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐRole(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UserPreferencesLeagueSnippet_roleInLeague(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UserPreferencesLeagueSnippet",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Role does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _UserRoles_id(ctx context.Context, field graphql.CollectedField, obj *model.UserRoles) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_UserRoles_id(ctx, field)
 	if err != nil {
@@ -12225,15 +12391,12 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "addUserToTeam":
+		case "onboardUserToTeamWithAccessCode":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_addUserToTeam(ctx, field)
+				return ec._Mutation_onboardUserToTeamWithAccessCode(ctx, field)
 			})
 
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -13013,6 +13176,61 @@ func (ec *executionContext) _UserPreferences(ctx context.Context, sel ast.Select
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var userPreferencesLeagueSnippetImplementors = []string{"UserPreferencesLeagueSnippet"}
+
+func (ec *executionContext) _UserPreferencesLeagueSnippet(ctx context.Context, sel ast.SelectionSet, obj *user.UserPreferencesLeagueSnippet) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, userPreferencesLeagueSnippetImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("UserPreferencesLeagueSnippet")
+		case "id":
+
+			out.Values[i] = ec._UserPreferencesLeagueSnippet_id(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "leagueName":
+
+			out.Values[i] = ec._UserPreferencesLeagueSnippet_leagueName(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "roleInLeague":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._UserPreferencesLeagueSnippet_roleInLeague(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

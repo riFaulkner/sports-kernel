@@ -12,6 +12,7 @@ import (
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/post"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/team"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/user"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/user/onboarding"
 )
 
 // This file will not be regenerated automatically.
@@ -25,7 +26,7 @@ type Resolver struct {
 	ContractResolver      contract.Resolver
 	PlayerService         playernfl.PlayerService
 	PostResolver          post.LeaguePost
-	UserOnBoardingService user.UserOnboardingService
+	UserOnBoardingService onboarding.UserOnboardingService
 }
 
 func Initialize(client firestore.Client) generated.Config {
@@ -77,8 +78,8 @@ func initializeUserService(client firestore.Client) user.UserService {
 	}
 }
 
-func initializeUserOnBoardingService(userService user.UserService, teamService team.TeamService) user.UserOnboardingService {
-	return user.UserOnboardingService{
+func initializeUserOnBoardingService(userService user.UserService, teamService team.TeamService) onboarding.UserOnboardingService {
+	return onboarding.UserOnboardingService{
 		UserService: userService,
 		TeamService: teamService,
 	}

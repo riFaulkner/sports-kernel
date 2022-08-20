@@ -5,6 +5,7 @@ import (
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/auth"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/league"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/user/crossfunctional"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"google.golang.org/appengine/log"
 	"google.golang.org/grpc/codes"
@@ -15,7 +16,7 @@ type UserService struct {
 	UserRepository UserRepository
 }
 
-func (u UserService) AddTeamToUser(ctx context.Context, decodedAccessCode DecodedAccessCode, userID string) (*UserPreferences, error) {
+func (u UserService) AddTeamToUser(ctx context.Context, decodedAccessCode crossfunctional.DecodedAccessCode, userID string) (*UserPreferences, error) {
 	//	Get the User's data, specifically user preferences
 	ok := false
 	//	If they have a user preferences record add the new league to their list of leagues, you'll need the new league's ID and name
@@ -33,7 +34,7 @@ func (u UserService) AddTeamToUser(ctx context.Context, decodedAccessCode Decode
 		}
 	}
 
-	ok = u.UserRepository.AddLeagueToUserPreferences(ctx, UserPreferencesLeagueSnippet{
+	ok = u.UserRepository.AddLeagueToUserPreferences(ctx, userID, UserPreferencesLeagueSnippet{
 		Id:           decodedAccessCode.LeagueID,
 		LeagueName:   decodedAccessCode.LeagueName,
 		RoleInLeague: decodedAccessCode.Role,
@@ -88,7 +89,7 @@ func (u UserService) createDefaultUserPreferences(ctx context.Context, userID st
 	}
 	return &userPreferences, true
 }
-func (u UserService) createRolesForNewUserLeague(ctx context.Context, userID string, decodedAccessCode DecodedAccessCode) bool {
+func (u UserService) createRolesForNewUserLeague(ctx context.Context, userID string, decodedAccessCode crossfunctional.DecodedAccessCode) bool {
 	leagueMemberRole := model.NewUserRole{
 		UserID: userID,
 		Role:   *auth.GetLeagueMemberRole(decodedAccessCode.LeagueID),

@@ -6,7 +6,7 @@ import (
 )
 
 type UserRepository interface {
-	AddLeagueToUserPreferences(ctx context.Context, leagueSnippet UserPreferencesLeagueSnippet) bool
+	AddLeagueToUserPreferences(ctx context.Context, userID string, leagueSnippet UserPreferencesLeagueSnippet) bool
 	GetAll(ctx context.Context) ([]*model.User, error)
 	Create(ctx context.Context, user UserPreferences) error
 	GetUserPreferences(ctx context.Context, userId string) (*UserPreferences, error)

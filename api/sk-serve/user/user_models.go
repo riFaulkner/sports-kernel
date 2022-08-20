@@ -10,14 +10,6 @@ type UserPreferences struct {
 	Leagues           []*league.League `json:"leagues"`
 }
 
-type DecodedAccessCode struct {
-	LeagueID   string
-	LeagueName string
-	TeamID     string
-	Role       string
-	AccessCode string
-}
-
 type UserPreferencesLeagueSnippet struct {
 	Id           string `json:"id"`
 	LeagueName   string `json:"leagueName"`

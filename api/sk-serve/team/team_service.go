@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"github.com/rifaulkner/sports-kernel/api/sk-serve/user"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/user/crossfunctional"
 	"log"
 	"math/rand"
 	"strings"
@@ -19,7 +19,7 @@ type TeamService struct {
 	TeamRepository TeamRepository
 }
 
-func (t TeamService) AddUserToTeamAndConsumeAccessCode(ctx context.Context, decodedAccessCode user.DecodedAccessCode, ownerID string) bool {
+func (t TeamService) AddUserToTeamAndConsumeAccessCode(ctx context.Context, decodedAccessCode crossfunctional.DecodedAccessCode, ownerID string) bool {
 	//	Add the user's ID to the TeamOwners array
 	//	Remove the Access token used from the ActiveAccessTokens array
 	ok := t.TeamRepository.AddUserToTeam(ctx, decodedAccessCode.LeagueID, decodedAccessCode.TeamID, ownerID)
@@ -55,8 +55,8 @@ func (t TeamService) GetTeamById(ctx context.Context, leagueId string, teamId st
 func (t TeamService) UpdateTeamContractMetaData(ctx context.Context, leagueId string, teamContracts []*contract.Contract) error {
 	return t.TeamRepository.UpdateTeamContractMetaData(ctx, leagueId, teamContracts)
 }
-func (t TeamService) ValidateAccessToken(ctx context.Context, accessCode string) (user.DecodedAccessCode, bool) {
-	decodedAccessCode := user.DecodedAccessCode{
+func (t TeamService) ValidateAccessToken(ctx context.Context, accessCode string) (crossfunctional.DecodedAccessCode, bool) {
+	decodedAccessCode := crossfunctional.DecodedAccessCode{
 		LeagueID:   "",
 		LeagueName: "",
 		TeamID:     "",

@@ -1,10 +1,11 @@
-package user
+package onboarding
 
 import (
 	"context"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/league"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/team"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/user"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -13,7 +14,7 @@ import (
 
 type UserOnboardingService struct {
 	LeagueService league.LeagueRepository
-	UserService   UserService
+	UserService   user.UserService
 	TeamService   team.TeamService
 }
 
@@ -21,7 +22,7 @@ func (s UserOnboardingService) GenerateAccessCode(ctx context.Context, leagueID 
 	return s.TeamService.GenerateAccessCode(ctx, leagueID, teamID, role)
 }
 
-func (s UserOnboardingService) OnboardWithAccessCode(ctx context.Context, accessCode string, ownerID string) (*UserPreferences, error) {
+func (s UserOnboardingService) OnboardWithAccessCode(ctx context.Context, accessCode string, ownerID string) (*user.UserPreferences, error) {
 	decodedAccessCode, ok := s.TeamService.ValidateAccessToken(ctx, accessCode)
 	if ok {
 		isUserAlreadyTeamOwnerInLeague := s.isUserPreexistingTeamOwnerInLeague(ctx, decodedAccessCode.LeagueID, ownerID)
