@@ -2,7 +2,7 @@ package user
 
 type UserPreferences struct {
 	ID                string                          `json:"id"`
-	OwnerName         string                          `json:"ownerName"`
+	OwnerName         *string                         `json:"ownerName"`
 	PreferredLeagueID *string                         `json:"preferredLeagueId"`
 	IsAdmin           *bool                           `json:"isAdmin"`
 	Leagues           []*UserPreferencesLeagueSnippet `json:"leagues"`

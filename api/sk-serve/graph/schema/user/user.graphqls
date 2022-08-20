@@ -7,10 +7,10 @@ type User {
 
 type UserPreferences {
     id: ID!
-    ownerName: String!
+    ownerName: String
     preferredLeagueId: String
     isAdmin: Boolean
-    leagues: [UserPreferencesLeagueSnippet!]!
+    leagues: [UserPreferencesLeagueSnippet!]
 }
 
 type UserRoles {
