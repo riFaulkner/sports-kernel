@@ -27,6 +27,7 @@ func (u *LeagueImpl) CreateLeague(ctx context.Context, input league.NewLeagueInp
 	}
 	return &newLeague, err
 }
+
 func (u *LeagueImpl) GetAll(ctx context.Context) ([]*league.League, error) {
 	leagues := make([]*league.League, 0)
 

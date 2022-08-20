@@ -88,6 +88,16 @@ models:
   TeamLiabilities:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/team.TeamLiabilities
+  TeamScoring:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/team.TeamScoring
+  TeamScoringSeasonSummary:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/team.TeamScoringSeasonSummary
+  TeamScoringWeek:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/team.TeamScoringWeek
+
   DraftPick:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/team.DraftPick

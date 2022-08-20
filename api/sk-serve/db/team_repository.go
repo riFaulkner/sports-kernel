@@ -191,6 +191,7 @@ func (u *TeamRepositoryImpl) Create(ctx context.Context, leagueId string, teamIn
 	defaultTeamContractsMetadata := generateDefaultTeamContractsMetadata()
 	defaultTeamAssets := generateTeamAssets(teamInput.ID)
 	defaultTeamLiabilities := &team.TeamLiabilities{}
+	defaultTeamScoring := generateDefaultTeamScoring()
 
 	team := team.Team{
 		ID:                       teamInput.ID,
@@ -201,9 +202,10 @@ func (u *TeamRepositoryImpl) Create(ctx context.Context, leagueId string, teamIn
 		TeamAssets:               defaultTeamAssets,
 		TeamLiabilities:          defaultTeamLiabilities,
 		TeamOwners:               make([]string, 0),
+		TeamScoring:              defaultTeamScoring,
 	}
 
-	_, err := league.Collection("teams").Doc(team.ID).Set(ctx, team)
+	_, err := league.Collection(firestore.TeamsCollection).Doc(team.ID).Set(ctx, team)
 	if err != nil {
 		return nil, err
 	}
@@ -374,6 +376,21 @@ func generateDefaultTeamContractsMetadata() *team.ContractsMetadata {
 		DeadCap: &team.CapUtilizationSummary{
 			CapUtilization: 0,
 			NumContracts:   0,
+		},
+	}
+}
+
+func generateDefaultTeamScoring() []team.TeamScoring {
+	return []team.TeamScoring{
+		{
+			Year: time.Now().Year(),
+			Summary: team.TeamScoringSeasonSummary{
+				Wins:          0,
+				Losses:        0,
+				Ties:          0,
+				CurrentStreak: 0,
+			},
+			Weeks: make([]team.TeamScoringWeek, 0),
 		},
 	}
 }

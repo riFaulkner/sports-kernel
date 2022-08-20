@@ -5,6 +5,7 @@ import (
 	"context"
 	appFirestore "github.com/rifaulkner/sports-kernel/api/sk-serve/firestore"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 	"google.golang.org/appengine/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -116,7 +117,7 @@ func transformResultsToPlayers(results []*firestore.DocumentSnapshot, ctx contex
 
 		age := 0
 		if err != nil {
-			log.Errorf(ctx, "Error formatting birthday for player %v", player.ID)
+			gqlerror.Errorf("Error formatting birthday for player %v", player.ID)
 		} else {
 			age = int(time.Now().Sub(birthday).Hours() / 24 / 365)
 		}
