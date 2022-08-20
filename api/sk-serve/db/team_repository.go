@@ -18,6 +18,10 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
+const (
+	accessCodesPath = "AccessCodes"
+)
+
 type TeamRepositoryImpl struct {
 	Client firestore.Client
 }
@@ -303,7 +307,7 @@ func (u *TeamRepositoryImpl) AddAccessCode(ctx context.Context, leagueId string,
 		Doc(teamId).
 		Update(ctx, []gFirestore.Update{
 			{
-				Path:  "AccessCodes",
+				Path:  accessCodesPath,
 				Value: gFirestore.ArrayUnion(accessCode),
 			},
 		})
@@ -335,7 +339,7 @@ func (u *TeamRepositoryImpl) RemoveAccessCode(ctx context.Context, leagueID stri
 		Collection(firestore.TeamsCollection).
 		Doc(teamID).Update(ctx, []gFirestore.Update{
 		{
-			Path:  "AccessCode",
+			Path:  accessCodesPath,
 			Value: gFirestore.ArrayRemove(accessCode),
 		},
 	})

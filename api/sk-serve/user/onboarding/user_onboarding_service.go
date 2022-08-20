@@ -41,21 +41,18 @@ func (s UserOnboardingService) OnboardWithAccessCode(ctx context.Context, access
 }
 
 func (s UserOnboardingService) isUserPreexistingTeamOwnerInLeague(ctx context.Context, leagueID string, ownerID string) bool {
-	_, err := s.TeamService.GetTeamByOwnerID(ctx, leagueID, ownerID)
+	preExistingTeam, err := s.TeamService.GetTeamByOwnerID(ctx, leagueID, ownerID)
 	if err != nil {
 		if status.Code(err) != codes.NotFound {
 			gqlerror.Errorf("Error validating user is not already a member of the league")
 			return true
 		}
-	} else {
-		gqlerror.Errorf("Error adding user to team, user is already owner of a team in the league")
-		return true
 	}
-	return false
+	return preExistingTeam != nil
 }
 func (s UserOnboardingService) getLeagueNameForOnBoarding(ctx context.Context, leagueID string) string {
 	league, err := s.LeagueService.GetByLeagueId(ctx, leagueID)
-	if err != nil {
+	if err != nil || league == nil {
 		log.Printf("Error getting league to add user, please try again")
 		return ""
 	}

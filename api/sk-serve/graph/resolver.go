@@ -35,6 +35,7 @@ func Initialize(client firestore.Client) generated.Config {
 
 	userService := initializeUserService(client)
 	teamService := initializeTeamService(client)
+	leagueService := &db.LeagueImpl{Client: client}
 
 	r := Resolver{}
 	r.ContractResolver = &db.ContractImpl{
@@ -42,12 +43,12 @@ func Initialize(client firestore.Client) generated.Config {
 		TeamImpl:        teamImpl,
 		TransactionImpl: transactionImpl,
 	}
-	r.LeagueResolver = &db.LeagueImpl{Client: client}
+	r.LeagueResolver = leagueService
 	r.TeamService = teamService
 	r.UserResolver = userService
 	r.PlayerService = initializePlayerService(client)
 	r.PostResolver = &db.PostImpl{Client: client}
-	r.UserOnBoardingService = initializeUserOnBoardingService(userService, teamService)
+	r.UserOnBoardingService = initializeUserOnBoardingService(userService, teamService, leagueService)
 
 	return generated.Config{
 		Resolvers: &r,
@@ -78,9 +79,10 @@ func initializeUserService(client firestore.Client) user.UserService {
 	}
 }
 
-func initializeUserOnBoardingService(userService user.UserService, teamService team.TeamService) onboarding.UserOnboardingService {
+func initializeUserOnBoardingService(userService user.UserService, teamService team.TeamService, leagueService *db.LeagueImpl) onboarding.UserOnboardingService {
 	return onboarding.UserOnboardingService{
-		UserService: userService,
-		TeamService: teamService,
+		UserService:   userService,
+		TeamService:   teamService,
+		LeagueService: leagueService,
 	}
 }
