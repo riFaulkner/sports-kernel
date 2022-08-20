@@ -123,14 +123,14 @@ func getAcceptableRoleStrings(role model.Role, leagueID string, teamID string) [
 
 	// league managers can do any action that concerns their league
 	if leagueID != "" {
-		acceptableRoles = append(acceptableRoles, getLeagueManagerRole(leagueID))
+		acceptableRoles = append(acceptableRoles, GetLeagueManagerRole(leagueID))
 	}
 
 	if leagueID != "" && strings.Contains(strings.ToLower(role.String()), "league") {
-		acceptableRoles = append(acceptableRoles, getLeagueMemberRole(leagueID))
+		acceptableRoles = append(acceptableRoles, GetLeagueMemberRole(leagueID))
 	}
 	if teamID != "" && strings.Contains(strings.ToLower(role.String()), "team") {
-		acceptableRoles = append(acceptableRoles, getTeamManagerRole(teamID))
+		acceptableRoles = append(acceptableRoles, GetTeamManagerRole(teamID))
 	}
 
 	return acceptableRoles
@@ -141,17 +141,17 @@ func getAdminRole() *string {
 	return &role
 }
 
-func getTeamManagerRole(teamID string) *string {
+func GetTeamManagerRole(teamID string) *string {
 	role := fmt.Sprintf("%s:%s", model.RoleTeamOwner, teamID)
 	return &role
 }
 
-func getLeagueMemberRole(leagueID string) *string {
+func GetLeagueMemberRole(leagueID string) *string {
 	role := fmt.Sprintf("%s:%s", model.RoleLeagueMember, leagueID)
 	return &role
 }
 
-func getLeagueManagerRole(leagueID string) *string {
+func GetLeagueManagerRole(leagueID string) *string {
 	role := fmt.Sprintf("%s:%s", model.RoleLeagueManager, leagueID)
 	return &role
 }

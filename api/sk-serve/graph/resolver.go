@@ -19,18 +19,21 @@ import (
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	UserResolver     user.User
-	LeagueResolver   league.LeagueRepository
-	TeamService      team.TeamService
-	ContractResolver contract.Resolver
-	PlayerService    playernfl.PlayerService
-	PostResolver     post.LeaguePost
+	UserResolver          user.UserService
+	LeagueResolver        league.LeagueRepository
+	TeamService           team.TeamService
+	ContractResolver      contract.Resolver
+	PlayerService         playernfl.PlayerService
+	PostResolver          post.LeaguePost
+	UserOnBoardingService user.UserOnboardingService
 }
 
 func Initialize(client firestore.Client) generated.Config {
 	transactionImpl := db.TransactionImpl{Client: client}
 	teamImpl := db.TeamRepositoryImpl{Client: client}
-	userImpl := db.UserImpl{Client: client}
+
+	userService := initializeUserService(client)
+	teamService := initializeTeamService(client)
 
 	r := Resolver{}
 	r.ContractResolver = &db.ContractImpl{
@@ -38,12 +41,12 @@ func Initialize(client firestore.Client) generated.Config {
 		TeamImpl:        teamImpl,
 		TransactionImpl: transactionImpl,
 	}
-
 	r.LeagueResolver = &db.LeagueImpl{Client: client}
-	r.TeamService = initializeTeamService(client, userImpl)
-	r.UserResolver = &db.UserImpl{Client: client}
+	r.TeamService = teamService
+	r.UserResolver = userService
 	r.PlayerService = initializePlayerService(client)
 	r.PostResolver = &db.PostImpl{Client: client}
+	r.UserOnBoardingService = initializeUserOnBoardingService(userService, teamService)
 
 	return generated.Config{
 		Resolvers: &r,
@@ -58,11 +61,25 @@ func initializePlayerService(client firestore.Client) playernfl.PlayerService {
 	}
 }
 
-func initializeTeamService(client firestore.Client, userImpl db.UserImpl) team.TeamService {
+func initializeTeamService(client firestore.Client) team.TeamService {
 	return team.TeamService{
 		TeamRepository: &db.TeamRepositoryImpl{
-			Client:   client,
-			UserImpl: userImpl,
+			Client: client,
 		},
+	}
+}
+
+func initializeUserService(client firestore.Client) user.UserService {
+	return user.UserService{
+		UserRepository: &db.UserImpl{
+			Client: client,
+		},
+	}
+}
+
+func initializeUserOnBoardingService(userService user.UserService, teamService team.TeamService) user.UserOnboardingService {
+	return user.UserOnboardingService{
+		UserService: userService,
+		TeamService: teamService,
 	}
 }

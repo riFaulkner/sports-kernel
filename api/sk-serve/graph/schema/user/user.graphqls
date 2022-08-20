@@ -19,6 +19,12 @@ type UserRoles {
     role: String!
 }
 
+type UserPreferencesLeagueSnippet {
+    id:ID!
+    leagueName: String!
+    roleInLeague: Role!
+}
+
 #Mutations and Inputs
 input NewUser {
     ownerName: String!

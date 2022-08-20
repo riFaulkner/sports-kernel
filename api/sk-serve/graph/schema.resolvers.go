@@ -22,11 +22,9 @@ func (r *mutationResolver) CreateLeague(ctx context.Context, input league.NewLea
 	return r.LeagueResolver.CreateLeague(ctx, input)
 }
 
-func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*model.User, error) {
-	user := model.User{
+func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*user.UserPreferences, error) {
+	user := user.UserPreferences{
 		OwnerName: input.OwnerName,
-		Email:     input.Email,
-		Avatar:    input.Avatar,
 	}
 
 	err := r.UserResolver.Create(ctx, user)
@@ -124,12 +122,12 @@ func (r *mutationResolver) ContractActionRestructure(ctx context.Context, league
 }
 
 func (r *mutationResolver) GenerateAccessCode(ctx context.Context, leagueID string, teamID string, role model.Role) (string, error) {
-	return r.TeamService.GenerateAccessCode(ctx, leagueID, teamID, role)
+	return r.UserOnBoardingService.GenerateAccessCode(ctx, leagueID, teamID, role)
 }
 
-func (r *mutationResolver) AddUserToTeam(ctx context.Context, accessCode string) (*user.UserPreferences, error) {
+func (r *mutationResolver) OnboardUserToTeamWithAccessCode(ctx context.Context, accessCode string) (*user.UserPreferences, error) {
 	ownerID := auth.GetUserIdFromContext(ctx)
-	return r.TeamService.AddUserToTeam(ctx, accessCode, ownerID)
+	return r.UserOnBoardingService.OnboardWithAccessCode(ctx, accessCode, ownerID)
 }
 
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {

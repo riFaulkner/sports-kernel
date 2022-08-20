@@ -252,7 +252,7 @@ type LeagueResolver interface {
 }
 type MutationResolver interface {
 	CreateLeague(ctx context.Context, input league.NewLeagueInput) (*league.League, error)
-	CreateUser(ctx context.Context, input model.NewUser) (*model.User, error)
+	CreateUser(ctx context.Context, input model.NewUser) (*user.UserPreferences, error)
 	CreateTeam(ctx context.Context, leagueID *string, input team.NewTeam) (*team.Team, error)
 	UpdateTeamMetaData(ctx context.Context, leagueID string, teamID string) (*team.Team, error)
 	CreateContract(ctx context.Context, leagueID string, input contract.ContractInput) (*contract.Contract, error)
@@ -1513,7 +1513,7 @@ input NewLeaguePost {
 
 type Mutation {
   createLeague(input: NewLeagueInput!): League!
-  createUser(input: NewUser!): User! @hasRole(role: LEAGUE_MANAGER)
+  createUser(input: NewUser!): UserPreferences! @hasRole(role: LEAGUE_MANAGER)
   createTeam(leagueId: ID, input: NewTeam!): Team! @hasRole(role: LEAGUE_MANAGER)
   updateTeamMetaData(leagueId: ID!, teamId: ID!): Team! @hasRole(role: LEAGUE_MEMBER)
   createContract(leagueId: ID!, input: ContractInput!): Contract! @hasRole(role: LEAGUE_MEMBER)
@@ -4793,10 +4793,10 @@ func (ec *executionContext) _Mutation_createUser(ctx context.Context, field grap
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.(*model.User); ok {
+		if data, ok := tmp.(*user.UserPreferences); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model.User`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/rifaulkner/sports-kernel/api/sk-serve/user.UserPreferences`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4808,9 +4808,9 @@ func (ec *executionContext) _Mutation_createUser(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.User)
+	res := resTmp.(*user.UserPreferences)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUserPreferences2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋuserᚐUserPreferences(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4822,15 +4822,17 @@ func (ec *executionContext) fieldContext_Mutation_createUser(ctx context.Context
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_User_id(ctx, field)
+				return ec.fieldContext_UserPreferences_id(ctx, field)
 			case "ownerName":
-				return ec.fieldContext_User_ownerName(ctx, field)
-			case "email":
-				return ec.fieldContext_User_email(ctx, field)
-			case "avatar":
-				return ec.fieldContext_User_avatar(ctx, field)
+				return ec.fieldContext_UserPreferences_ownerName(ctx, field)
+			case "preferredLeagueId":
+				return ec.fieldContext_UserPreferences_preferredLeagueId(ctx, field)
+			case "isAdmin":
+				return ec.fieldContext_UserPreferences_isAdmin(ctx, field)
+			case "leagues":
+				return ec.fieldContext_UserPreferences_leagues(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type UserPreferences", field.Name)
 		},
 	}
 	defer func() {
@@ -13943,20 +13945,6 @@ func (ec *executionContext) unmarshalNTransactionType2githubᚗcomᚋrifaulkner�
 
 func (ec *executionContext) marshalNTransactionType2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐTransactionType(ctx context.Context, sel ast.SelectionSet, v model.TransactionType) graphql.Marshaler {
 	return v
-}
-
-func (ec *executionContext) marshalNUser2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
-	return ec._User(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._User(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNUserPreferences2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋuserᚐUserPreferences(ctx context.Context, sel ast.SelectionSet, v user.UserPreferences) graphql.Marshaler {

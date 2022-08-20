@@ -1,6 +1,7 @@
 package db
 
 import (
+	gFirestore "cloud.google.com/go/firestore"
 	"context"
 
 	"github.com/99designs/gqlgen/graphql"
@@ -10,17 +11,28 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-const collectionName = "users"
-
 type UserImpl struct {
 	Client firestore.Client
+}
+
+func (u *UserImpl) AddLeagueToUserPreferences(ctx context.Context, userID string, leagueSnippet user.UserPreferencesLeagueSnippet) bool {
+	u.Client.
+		Collection(firestore.UsersCollection).
+		Doc(userID).
+		Update(ctx, []gFirestore.Update{
+			{
+				Path:  "Leagues",
+				Value: gFirestore.ArrayUnion(leagueSnippet),
+			},
+		})
+	return false
 }
 
 func (u *UserImpl) GetAll(ctx context.Context) ([]*model.User, error) {
 	users := make([]*model.User, 0)
 
 	results, err := u.Client.
-		Collection(collectionName).
+		Collection(firestore.UsersCollection).
 		Documents(ctx).
 		GetAll()
 	if err != nil {
@@ -45,13 +57,13 @@ func (u *UserImpl) GetAll(ctx context.Context) ([]*model.User, error) {
 	return users, nil
 }
 
-func (u *UserImpl) Create(ctx context.Context, user model.User) error {
-	_, err := u.Client.Collection(collectionName).Doc(user.ID).Set(ctx, user)
+func (u *UserImpl) Create(ctx context.Context, user user.UserPreferences) error {
+	_, err := u.Client.Collection(firestore.UsersCollection).Doc(user.ID).Set(ctx, user)
 	return err
 }
 
 func (u *UserImpl) GetUserPreferences(ctx context.Context, userId string) (*user.UserPreferences, error) {
-	result, err := u.Client.Collection(collectionName).Doc(userId).Get(ctx)
+	result, err := u.Client.Collection(firestore.UsersCollection).Doc(userId).Get(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -85,11 +97,11 @@ func (u *UserImpl) CreateUserRole(ctx context.Context, newRole *model.NewUserRol
 	return &role, nil
 }
 
-func (u *UserImpl) GetUserRoles(cxt context.Context, userID *string) ([]*model.UserRoles, error) {
+func (u *UserImpl) GetUserRoles(ctx context.Context, userID *string) ([]*model.UserRoles, error) {
 	league := u.Client.Collection(firestore.UsersCollection).Doc(*userID)
 
 	iter := league.Collection(firestore.UserRolesCollection).
-		Documents(cxt)
+		Documents(ctx)
 
 	userLeagueRoles := make([]*model.UserRoles, 0)
 
@@ -104,7 +116,7 @@ func (u *UserImpl) GetUserRoles(cxt context.Context, userID *string) ([]*model.U
 		role := new(model.UserRoles)
 		err = doc.DataTo(role)
 		if err != nil {
-			graphql.AddError(cxt, err)
+			graphql.AddError(ctx, err)
 			continue
 		}
 		role.ID = doc.Ref.ID
