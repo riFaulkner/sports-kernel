@@ -3,6 +3,7 @@ package db
 import (
 	gFirestore "cloud.google.com/go/firestore"
 	"context"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/firestore"
@@ -16,7 +17,7 @@ type UserImpl struct {
 }
 
 func (u *UserImpl) AddLeagueToUserPreferences(ctx context.Context, userID string, leagueSnippet user.UserPreferencesLeagueSnippet) bool {
-	u.Client.
+	_, err := u.Client.
 		Collection(firestore.UsersCollection).
 		Doc(userID).
 		Update(ctx, []gFirestore.Update{
@@ -25,7 +26,9 @@ func (u *UserImpl) AddLeagueToUserPreferences(ctx context.Context, userID string
 				Value: gFirestore.ArrayUnion(leagueSnippet),
 			},
 		})
-	return false
+	gqlerror.Errorf("Error updating new roles for user")
+
+	return err == nil
 }
 
 func (u *UserImpl) GetAll(ctx context.Context) ([]*model.User, error) {
