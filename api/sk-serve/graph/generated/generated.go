@@ -1635,7 +1635,7 @@ type UserPreferences {
     ownerName: String!
     preferredLeagueId: String
     isAdmin: Boolean
-    leagues: [League!]!
+    leagues: [UserPreferencesLeagueSnippet!]!
 }
 
 type UserRoles {
@@ -9045,9 +9045,9 @@ func (ec *executionContext) _UserPreferences_leagues(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*league.League)
+	res := resTmp.([]*user.UserPreferencesLeagueSnippet)
 	fc.Result = res
-	return ec.marshalNLeague2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋleagueᚐLeagueᚄ(ctx, field.Selections, res)
+	return ec.marshalNUserPreferencesLeagueSnippet2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋuserᚐUserPreferencesLeagueSnippetᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_UserPreferences_leagues(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -9059,19 +9059,13 @@ func (ec *executionContext) fieldContext_UserPreferences_leagues(ctx context.Con
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_League_id(ctx, field)
+				return ec.fieldContext_UserPreferencesLeagueSnippet_id(ctx, field)
 			case "leagueName":
-				return ec.fieldContext_League_leagueName(ctx, field)
-			case "logoUrl":
-				return ec.fieldContext_League_logoUrl(ctx, field)
-			case "startDate":
-				return ec.fieldContext_League_startDate(ctx, field)
-			case "teams":
-				return ec.fieldContext_League_teams(ctx, field)
-			case "divisions":
-				return ec.fieldContext_League_divisions(ctx, field)
+				return ec.fieldContext_UserPreferencesLeagueSnippet_leagueName(ctx, field)
+			case "roleInLeague":
+				return ec.fieldContext_UserPreferencesLeagueSnippet_roleInLeague(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type League", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type UserPreferencesLeagueSnippet", field.Name)
 		},
 	}
 	return fc, nil
@@ -13931,50 +13925,6 @@ func (ec *executionContext) marshalNLeague2githubᚗcomᚋrifaulknerᚋsportsᚑ
 	return ec._League(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNLeague2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋleagueᚐLeagueᚄ(ctx context.Context, sel ast.SelectionSet, v []*league.League) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNLeague2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋleagueᚐLeague(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
 func (ec *executionContext) marshalNLeague2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋleagueᚐLeague(ctx context.Context, sel ast.SelectionSet, v *league.League) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -14177,6 +14127,60 @@ func (ec *executionContext) marshalNUserPreferences2ᚖgithubᚗcomᚋrifaulkner
 		return graphql.Null
 	}
 	return ec._UserPreferences(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNUserPreferencesLeagueSnippet2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋuserᚐUserPreferencesLeagueSnippetᚄ(ctx context.Context, sel ast.SelectionSet, v []*user.UserPreferencesLeagueSnippet) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNUserPreferencesLeagueSnippet2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋuserᚐUserPreferencesLeagueSnippet(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNUserPreferencesLeagueSnippet2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋuserᚐUserPreferencesLeagueSnippet(ctx context.Context, sel ast.SelectionSet, v *user.UserPreferencesLeagueSnippet) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._UserPreferencesLeagueSnippet(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNUserRoles2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐUserRoles(ctx context.Context, sel ast.SelectionSet, v model.UserRoles) graphql.Marshaler {

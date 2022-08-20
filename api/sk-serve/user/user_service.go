@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/auth"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
-	"github.com/rifaulkner/sports-kernel/api/sk-serve/league"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/user/crossfunctional"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"google.golang.org/appengine/log"
@@ -80,7 +79,7 @@ func (u UserService) createDefaultUserPreferences(ctx context.Context, userID st
 	userPreferences := UserPreferences{
 		ID:        userID,
 		OwnerName: "",
-		Leagues:   []*league.League{},
+		Leagues:   []*UserPreferencesLeagueSnippet{},
 		IsAdmin:   &isAdmin,
 	}
 	err := u.Create(ctx, userPreferences)
