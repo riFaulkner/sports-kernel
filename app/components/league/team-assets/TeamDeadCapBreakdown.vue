@@ -28,11 +28,6 @@ export default {
       }
     }
   },
-  data: function () {
-    return {
-
-    }
-  },
   computed: {
     processedDeadCap() {
       if (this.deadCap === null || this.deadCap.length === 0) {
