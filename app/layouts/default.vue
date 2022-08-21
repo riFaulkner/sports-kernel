@@ -120,7 +120,6 @@
         </v-tabs>
       </template>
     </v-app-bar>
-
     <v-main
     >
       <v-container
@@ -175,7 +174,7 @@ export default {
           name: 'league',
           adminOnly: false,
           submenuItems: [
-            'Standings', 'My Team', 'Contracts Overview', 'Rules', 'League Management'
+            'Standings', 'My Team', 'Contracts Overview', 'Rules'
           ]
         },
         {
@@ -274,9 +273,15 @@ export default {
           // query for the full league info
       ).then((response) => {
         this.$store.dispatch('application/updateActiveLeague', response.data.league);
-        this.$store.dispatch('application/alertSuccess', {message: "Successfully switched active league."});
-      })
-          .catch((error) => {
+        // this.$store.dispatch('application/alertSuccess', {message: "Successfully switched active league."});
+        const leagueSubMenuItems = [
+          'Standings', 'My Team', 'Contracts Overview', 'Rules'
+        ]
+        if (league.roleInLeague === 'LEAGUE_MANAGER') {
+          leagueSubMenuItems.push('League Management')
+        }
+        this.menuItems.filter((menuItem) => menuItem.name === "league")[0].submenuItems = leagueSubMenuItems
+      }).catch((error) => {
             this.$store.dispatch('application/alertError', {message: "Unable to switch active league, try again later."});
             console.error("Failed to update the users league, server response: ", error);
           });
