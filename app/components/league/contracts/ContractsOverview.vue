@@ -12,21 +12,6 @@
         hide-default-footer
         show-expand
     >
-      <template v-slot:item.capUtilization="{item}">
-          <v-tooltip top>
-            <template v-slot:activator="{ on, attrs }">
-              <v-progress-linear
-                  v-bind="attrs"
-                  v-on="on"
-                  :value=getContractSpendPct(item)
-                  :buffer-value=getDeadCapSpendPct(item)
-                  background-color="warning"
-                  width="200px"
-              />
-            </template>
-            <span>Contract Values: ${{getContractSpendTotal(item).toLocaleString()}} Dead Cap: ${{getDeadCapSpendTotal(item).toLocaleString()}}</span>
-          </v-tooltip>
-      </template>
       <template v-slot:item.currentContractsMetadata.totalUtilizedCap="{item}">
         ${{ item.currentContractsMetadata.totalUtilizedCap.toLocaleString() }}
       </template>
@@ -53,6 +38,11 @@
       <template v-slot:item.currentContractsMetadata.teUtilizedCap="{ item }">
         ${{ item.currentContractsMetadata.teUtilizedCap.capUtilization.toLocaleString() }}
         ({{ item.currentContractsMetadata.teUtilizedCap.numContracts }})
+      </template>
+      <template v-slot:item.currentContractsMetadata.deadCap="{ item }" >
+        ${{ item.currentContractsMetadata.deadCap.capUtilization.toLocaleString() }}
+        ({{ item.currentContractsMetadata.deadCap.numContracts }})
+
       </template>
       <template v-slot:expanded-item="{ headers, item }" v-slot:>
         <td :colspan="headers.length">
@@ -85,7 +75,6 @@ export default {
       expanded: [],
       headers: [
         {text: 'Team', value: 'teamName', width: 200},
-        {text: 'Cap Utilization', value: 'capUtilization'},
         {text: 'Total Cap Utilization', value: 'currentContractsMetadata.totalUtilizedCap', width: 105},
         {
           text: 'Available Cap',
@@ -117,6 +106,11 @@ export default {
           value: 'currentContractsMetadata.teUtilizedCap',
           align: 'center',
           sort: (a, b) => (a.capUtilization - b.capUtilization)
+        },
+        {
+          text: 'Dead Cap (# Contracts)',
+          value: 'currentContractsMetadata.deadCap',
+          align: 'center',
         },
         {
           text: '',
