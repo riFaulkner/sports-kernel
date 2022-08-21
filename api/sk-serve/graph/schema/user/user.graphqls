@@ -22,7 +22,7 @@ type UserRoles {
 type UserPreferencesLeagueSnippet {
     id:ID!
     leagueName: String!
-    roleInLeague: Role!
+    roleInLeague: String!
 }
 
 #Mutations and Inputs

@@ -47,7 +47,6 @@ type ResolverRoot interface {
 	Mutation() MutationResolver
 	Query() QueryResolver
 	Team() TeamResolver
-	UserPreferencesLeagueSnippet() UserPreferencesLeagueSnippetResolver
 }
 
 type DirectiveRoot struct {
@@ -314,9 +313,6 @@ type QueryResolver interface {
 }
 type TeamResolver interface {
 	ActiveContracts(ctx context.Context, obj *team.Team) ([]*contract.Contract, error)
-}
-type UserPreferencesLeagueSnippetResolver interface {
-	RoleInLeague(ctx context.Context, obj *user.UserPreferencesLeagueSnippet) (model.Role, error)
 }
 
 type executableSchema struct {
@@ -1765,10 +1761,10 @@ type TeamScoringWeek {
 
 type UserPreferences {
     id: ID!
-    ownerName: String!
+    ownerName: String
     preferredLeagueId: String
     isAdmin: Boolean
-    leagues: [UserPreferencesLeagueSnippet!]!
+    leagues: [UserPreferencesLeagueSnippet!]
 }
 
 type UserRoles {
@@ -1780,7 +1776,7 @@ type UserRoles {
 type UserPreferencesLeagueSnippet {
     id:ID!
     leagueName: String!
-    roleInLeague: Role!
+    roleInLeague: String!
 }
 
 #Mutations and Inputs
@@ -9705,14 +9701,11 @@ func (ec *executionContext) _UserPreferences_ownerName(ctx context.Context, fiel
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_UserPreferences_ownerName(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -9831,14 +9824,11 @@ func (ec *executionContext) _UserPreferences_leagues(ctx context.Context, field 
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.([]*user.UserPreferencesLeagueSnippet)
 	fc.Result = res
-	return ec.marshalNUserPreferencesLeagueSnippet2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋuserᚐUserPreferencesLeagueSnippetᚄ(ctx, field.Selections, res)
+	return ec.marshalOUserPreferencesLeagueSnippet2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋuserᚐUserPreferencesLeagueSnippetᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_UserPreferences_leagues(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -9964,7 +9954,7 @@ func (ec *executionContext) _UserPreferencesLeagueSnippet_roleInLeague(ctx conte
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.UserPreferencesLeagueSnippet().RoleInLeague(rctx, obj)
+		return obj.RoleInLeague, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -9976,19 +9966,19 @@ func (ec *executionContext) _UserPreferencesLeagueSnippet_roleInLeague(ctx conte
 		}
 		return graphql.Null
 	}
-	res := resTmp.(model.Role)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNRole2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐRole(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_UserPreferencesLeagueSnippet_roleInLeague(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "UserPreferencesLeagueSnippet",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Role does not have child fields")
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -14091,9 +14081,6 @@ func (ec *executionContext) _UserPreferences(ctx context.Context, sel ast.Select
 
 			out.Values[i] = ec._UserPreferences_ownerName(ctx, field, obj)
 
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		case "preferredLeagueId":
 
 			out.Values[i] = ec._UserPreferences_preferredLeagueId(ctx, field, obj)
@@ -14106,9 +14093,6 @@ func (ec *executionContext) _UserPreferences(ctx context.Context, sel ast.Select
 
 			out.Values[i] = ec._UserPreferences_leagues(ctx, field, obj)
 
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -14135,35 +14119,22 @@ func (ec *executionContext) _UserPreferencesLeagueSnippet(ctx context.Context, s
 			out.Values[i] = ec._UserPreferencesLeagueSnippet_id(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "leagueName":
 
 			out.Values[i] = ec._UserPreferencesLeagueSnippet_leagueName(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "roleInLeague":
-			field := field
 
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._UserPreferencesLeagueSnippet_roleInLeague(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
+			out.Values[i] = ec._UserPreferencesLeagueSnippet_roleInLeague(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
 			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
-
-			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -15154,50 +15125,6 @@ func (ec *executionContext) marshalNUserPreferences2ᚖgithubᚗcomᚋrifaulkner
 		return graphql.Null
 	}
 	return ec._UserPreferences(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNUserPreferencesLeagueSnippet2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋuserᚐUserPreferencesLeagueSnippetᚄ(ctx context.Context, sel ast.SelectionSet, v []*user.UserPreferencesLeagueSnippet) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNUserPreferencesLeagueSnippet2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋuserᚐUserPreferencesLeagueSnippet(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
 }
 
 func (ec *executionContext) marshalNUserPreferencesLeagueSnippet2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋuserᚐUserPreferencesLeagueSnippet(ctx context.Context, sel ast.SelectionSet, v *user.UserPreferencesLeagueSnippet) graphql.Marshaler {
@@ -16339,6 +16266,53 @@ func (ec *executionContext) marshalOUserPreferences2ᚖgithubᚗcomᚋrifaulkner
 		return graphql.Null
 	}
 	return ec._UserPreferences(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOUserPreferencesLeagueSnippet2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋuserᚐUserPreferencesLeagueSnippetᚄ(ctx context.Context, sel ast.SelectionSet, v []*user.UserPreferencesLeagueSnippet) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNUserPreferencesLeagueSnippet2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋuserᚐUserPreferencesLeagueSnippet(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalOUserRoles2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐUserRoles(ctx context.Context, sel ast.SelectionSet, v []*model.UserRoles) graphql.Marshaler {

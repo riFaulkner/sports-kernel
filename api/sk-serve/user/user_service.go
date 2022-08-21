@@ -78,7 +78,7 @@ func (u UserService) createDefaultUserPreferences(ctx context.Context, userID st
 	isAdmin := false
 	userPreferences := UserPreferences{
 		ID:        userID,
-		OwnerName: "",
+		OwnerName: nil,
 		Leagues:   []*UserPreferencesLeagueSnippet{},
 		IsAdmin:   &isAdmin,
 	}

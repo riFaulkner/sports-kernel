@@ -24,7 +24,7 @@ func (r *mutationResolver) CreateLeague(ctx context.Context, input league.NewLea
 
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*user.UserPreferences, error) {
 	user := user.UserPreferences{
-		OwnerName: input.OwnerName,
+		OwnerName: &input.OwnerName,
 	}
 
 	err := r.UserResolver.Create(ctx, user)
