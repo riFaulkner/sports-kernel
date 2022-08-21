@@ -2,7 +2,10 @@ package user
 
 import (
 	"context"
+<<<<<<< HEAD
 
+=======
+>>>>>>> 0f8a4ab (60 onboard users to team (#107))
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/auth"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/user/crossfunctional"
@@ -34,6 +37,7 @@ func (u UserService) AddTeamToUser(ctx context.Context, decodedAccessCode crossf
 		}
 	}
 
+<<<<<<< HEAD
 	snippet := UserPreferencesLeagueSnippet{
 		Id:           decodedAccessCode.LeagueID,
 		LeagueName:   decodedAccessCode.LeagueName,
@@ -41,13 +45,23 @@ func (u UserService) AddTeamToUser(ctx context.Context, decodedAccessCode crossf
 	}
 
 	ok = u.UserRepository.AddLeagueToUserPreferences(ctx, userID, snippet)
+=======
+	ok = u.UserRepository.AddLeagueToUserPreferences(ctx, userID, UserPreferencesLeagueSnippet{
+		Id:           decodedAccessCode.LeagueID,
+		LeagueName:   decodedAccessCode.LeagueName,
+		RoleInLeague: decodedAccessCode.Role,
+	})
+>>>>>>> 0f8a4ab (60 onboard users to team (#107))
 
 	if ok {
 		//	Add the user roles for their new league
 		//	Included in the payload is the level of permissions to give the user, use that to give the user permissions
 		ok = u.createRolesForNewUserLeague(ctx, userID, decodedAccessCode)
 		if ok {
+<<<<<<< HEAD
 			userPreferences.Leagues = append(userPreferences.Leagues, &snippet)
+=======
+>>>>>>> 0f8a4ab (60 onboard users to team (#107))
 			return userPreferences, nil
 		} else {
 			err = gqlerror.Errorf("Error updating new roles for user")
