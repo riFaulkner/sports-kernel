@@ -5,8 +5,10 @@ package graph
 
 import (
 	"context"
+	"fmt"
 	"log"
 
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/auth"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/generated"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
@@ -20,11 +22,9 @@ func (r *mutationResolver) CreateLeague(ctx context.Context, input league.NewLea
 	return r.LeagueResolver.CreateLeague(ctx, input)
 }
 
-func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*model.User, error) {
-	user := model.User{
-		OwnerName: input.OwnerName,
-		Email:     input.Email,
-		Avatar:    input.Avatar,
+func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*user.UserPreferences, error) {
+	user := user.UserPreferences{
+		OwnerName: &input.OwnerName,
 	}
 
 	err := r.UserResolver.Create(ctx, user)
@@ -122,7 +122,12 @@ func (r *mutationResolver) ContractActionRestructure(ctx context.Context, league
 }
 
 func (r *mutationResolver) GenerateAccessCode(ctx context.Context, leagueID string, teamID string, role model.Role) (string, error) {
-	return r.TeamService.GenerateAccessCode(ctx, leagueID, teamID, role)
+	return r.UserOnBoardingService.GenerateAccessCode(ctx, leagueID, teamID, role)
+}
+
+func (r *mutationResolver) OnboardUserToTeamWithAccessCode(ctx context.Context, accessCode string) (*user.UserPreferences, error) {
+	ownerID := auth.GetUserIdFromContext(ctx)
+	return r.UserOnBoardingService.OnboardWithAccessCode(ctx, accessCode, ownerID)
 }
 
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
@@ -153,6 +158,7 @@ func (r *queryResolver) League(ctx context.Context, leagueID *string) (*league.L
 }
 
 func (r *queryResolver) LeagueContracts(ctx context.Context, leagueID string) ([]*contract.Contract, error) {
+	fmt.Printf("userId from context: %s", auth.GetUserIdFromContext(ctx))
 	return r.ContractResolver.GetAllLeagueContracts(ctx, leagueID)
 }
 

@@ -68,7 +68,7 @@ export default {
     },
   },
   created () {
-    this.$store.dispatch('application/updateActiveTab', 'Rules')
+    this.$store.dispatch('application/updateActiveTab', 0)
   },
   destroyed () {
     this.$store.dispatch('application/updateActiveTab', null)

@@ -2,14 +2,17 @@ package team
 
 import (
 	"context"
+
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 )
 
 type TeamRepository interface {
+	AddUserToTeam(ctx context.Context, leagueID string, teamID string, ownerID string) bool
 	Create(ctx context.Context, leagueId string, team NewTeam) (*Team, error)
-	GenerateAccessCode(ctx context.Context, leagueId string, teamId string, role string) (string, error)
+	AddAccessCode(ctx context.Context, leagueId string, teamId string, accessCode string) error
 	GetAllLeagueTeams(ctx context.Context, leagueId string) ([]*Team, error)
 	GetTeamById(ctx context.Context, leagueId string, teamId string) (*Team, error)
 	GetTeamByOwnerID(ctx context.Context, leagueID string, ownerID string) (*Team, bool)
+	RemoveAccessCode(ctx context.Context, leagueID string, teamID string, accessCode string) bool
 	UpdateTeamContractMetaData(ctx context.Context, leagueId string, teamContracts []*contract.Contract) error
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/post"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/team"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/user"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/user/onboarding"
 )
 
 // This file will not be regenerated automatically.
@@ -19,17 +20,22 @@ import (
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	UserResolver     user.User
-	LeagueResolver   league.LeagueRepository
-	TeamService      team.TeamService
-	ContractResolver contract.Resolver
-	PlayerService    playernfl.PlayerService
-	PostResolver     post.LeaguePost
+	UserResolver          user.UserService
+	LeagueResolver        league.LeagueRepository
+	TeamService           team.TeamService
+	ContractResolver      contract.Resolver
+	PlayerService         playernfl.PlayerService
+	PostResolver          post.LeaguePost
+	UserOnBoardingService onboarding.UserOnboardingService
 }
 
 func Initialize(client firestore.Client) generated.Config {
 	transactionImpl := db.TransactionImpl{Client: client}
 	teamImpl := db.TeamRepositoryImpl{Client: client}
+
+	userService := initializeUserService(client)
+	teamService := initializeTeamService(client)
+	leagueService := &db.LeagueImpl{Client: client}
 
 	r := Resolver{}
 	r.ContractResolver = &db.ContractImpl{
@@ -37,12 +43,12 @@ func Initialize(client firestore.Client) generated.Config {
 		TeamImpl:        teamImpl,
 		TransactionImpl: transactionImpl,
 	}
-
-	r.LeagueResolver = &db.LeagueImpl{Client: client}
-	r.TeamService = initializeTeamService(client)
-	r.UserResolver = &db.UserImpl{Client: client}
+	r.LeagueResolver = leagueService
+	r.TeamService = teamService
+	r.UserResolver = userService
 	r.PlayerService = initializePlayerService(client)
 	r.PostResolver = &db.PostImpl{Client: client}
+	r.UserOnBoardingService = initializeUserOnBoardingService(userService, teamService, leagueService)
 
 	return generated.Config{
 		Resolvers: &r,
@@ -62,5 +68,21 @@ func initializeTeamService(client firestore.Client) team.TeamService {
 		TeamRepository: &db.TeamRepositoryImpl{
 			Client: client,
 		},
+	}
+}
+
+func initializeUserService(client firestore.Client) user.UserService {
+	return user.UserService{
+		UserRepository: &db.UserImpl{
+			Client: client,
+		},
+	}
+}
+
+func initializeUserOnBoardingService(userService user.UserService, teamService team.TeamService, leagueService *db.LeagueImpl) onboarding.UserOnboardingService {
+	return onboarding.UserOnboardingService{
+		UserService:   userService,
+		TeamService:   teamService,
+		LeagueService: leagueService,
 	}
 }

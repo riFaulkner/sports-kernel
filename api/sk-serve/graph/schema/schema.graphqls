@@ -29,7 +29,7 @@ enum Role {
 type Query {
   users: [User]
   leagues: [League!] @hasRole(role: ADMIN)
-  league(leagueId: ID): League
+  league(leagueId: ID): League @hasRole(role: LEAGUE_MEMBER)
   leagueContracts(leagueId: ID!): [Contract!] @hasRole(role: LEAGUE_MEMBER)
   teams(leagueId: ID!): [Team!] @hasRole(role: LEAGUE_MEMBER)
   teamById(leagueId: ID!, teamId: ID!): Team @hasRole(role: LEAGUE_MEMBER)
@@ -58,7 +58,7 @@ input NewLeaguePost {
 
 type Mutation {
   createLeague(input: NewLeagueInput!): League!
-  createUser(input: NewUser!): User! @hasRole(role: LEAGUE_MANAGER)
+  createUser(input: NewUser!): UserPreferences! @hasRole(role: LEAGUE_MANAGER)
   createTeam(leagueId: ID, input: NewTeam!): Team! @hasRole(role: LEAGUE_MANAGER)
   updateTeamMetaData(leagueId: ID!, teamId: ID!): Team! @hasRole(role: LEAGUE_MEMBER)
   createContract(leagueId: ID!, input: ContractInput!): Contract! @hasRole(role: LEAGUE_MEMBER)
@@ -69,4 +69,5 @@ type Mutation {
   contractActionDrop(leagueId: ID!, teamId: ID!, contractId: ID!): Boolean! @hasRole(role: TEAM_OWNER)
   contractActionRestructure(leagueId: ID!, restructureDetails: ContractRestructureInput!): Contract! @hasRole(role: TEAM_OWNER)
   generateAccessCode(leagueId: ID!, teamId: ID!, role: Role!): String! @hasRole(role: LEAGUE_MANAGER)
+  onboardUserToTeamWithAccessCode(accessCode: String!): UserPreferences
 }
