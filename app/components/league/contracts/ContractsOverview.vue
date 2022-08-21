@@ -130,18 +130,6 @@ export default {
       }
       return 'success'
     },
-    getContractSpendPct(team) {
-      return 60
-    },
-    getDeadCapSpendPct(team) {
-      return 70
-    },
-    getContractSpendTotal(team) {
-      return 100000
-    },
-    getDeadCapSpendTotal(team) {
-      return 100000
-    }
   },
   apollo: {
     teams: {
