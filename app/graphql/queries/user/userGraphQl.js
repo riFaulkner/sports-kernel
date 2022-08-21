@@ -10,6 +10,7 @@ query UserPreferences($userId: ID!) {
         leagues {
             id
             leagueName
+            roleInLeague
         }
     }
 }

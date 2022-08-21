@@ -2,10 +2,7 @@ package db
 
 import (
 	"context"
-	"encoding/base64"
-	"fmt"
 	"log"
-	"math/rand"
 	"sort"
 	"time"
 
@@ -19,6 +16,10 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/firestore"
 	"github.com/vektah/gqlparser/v2/gqlerror"
+)
+
+const (
+	accessCodesPath = "AccessCodes"
 )
 
 type TeamRepositoryImpl struct {
@@ -300,48 +301,55 @@ func (u *TeamRepositoryImpl) UpdateTeamContractMetaData(ctx context.Context, lea
 	return err
 }
 
-func (u *TeamRepositoryImpl) GenerateAccessCode(ctx context.Context, leagueId string, teamId string, role string) (string, error) {
-	//Get the designated team
-	teamReference, err := u.GetTeamById(ctx, leagueId, teamId)
-
-	if err != nil {
-		return "Issue creating access string", err
-	}
-
-	//Generate a random string, length 5, to append to the pre-encoded string
-	randString := randomString(5)
-	//Concat data string, and encode in base64
-	accessCode := accessCodeFromString(leagueId + "," + teamId + "," + role + "," + randString)
-
-	codes := teamReference.AccessCodes
-	codes = append(codes, &accessCode)
-
-	u.Client.
+func (u *TeamRepositoryImpl) AddAccessCode(ctx context.Context, leagueId string, teamId string, accessCode string) error {
+	_, err := u.Client.
 		Collection(firestore.LeaguesCollection).
 		Doc(leagueId).
 		Collection(firestore.TeamsCollection).
 		Doc(teamId).
 		Update(ctx, []gFirestore.Update{
 			{
-				Path:  "AccessCodes",
-				Value: codes,
+				Path:  accessCodesPath,
+				Value: gFirestore.ArrayUnion(accessCode),
 			},
 		})
 
-	return accessCode, nil
+	return err
 }
 
-func accessCodeFromString(input string) string {
-	data := []byte(input)
-	b64String := base64.RawURLEncoding.EncodeToString(data[:])
-	return b64String
+func (u *TeamRepositoryImpl) AddUserToTeam(ctx context.Context, leagueID string, teamID string, ownerID string) bool {
+	_, err := u.Client.
+		Collection(firestore.LeaguesCollection).
+		Doc(leagueID).
+		Collection(firestore.TeamsCollection).
+		Doc(teamID).Update(ctx, []gFirestore.Update{
+		{
+			Path:  "TeamOwners",
+			Value: gFirestore.ArrayUnion(ownerID)},
+	})
+	if err != nil {
+		log.Printf("error adding user to team")
+		return false
+	}
+	return true
 }
 
-func randomString(length int) string {
-	rand.Seed(time.Now().UnixNano())
-	b := make([]byte, length)
-	rand.Read(b)
-	return fmt.Sprintf("%x", b)[:length]
+func (u *TeamRepositoryImpl) RemoveAccessCode(ctx context.Context, leagueID string, teamID string, accessCode string) bool {
+	_, err := u.Client.
+		Collection(firestore.LeaguesCollection).
+		Doc(leagueID).
+		Collection(firestore.TeamsCollection).
+		Doc(teamID).Update(ctx, []gFirestore.Update{
+		{
+			Path:  accessCodesPath,
+			Value: gFirestore.ArrayRemove(accessCode),
+		},
+	})
+	if err != nil {
+		log.Printf("Error removing access code for user")
+		return false
+	}
+	return true
 }
 
 func generateDefaultTeamContractsMetadata() *team.ContractsMetadata {
