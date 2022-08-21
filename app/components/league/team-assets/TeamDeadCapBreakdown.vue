@@ -35,7 +35,7 @@ export default {
   },
   computed: {
     processedDeadCap() {
-      if (this.deadCap === null || this.deadCap.length === 1) {
+      if (this.deadCap === null || this.deadCap.length === 0) {
         return []
       }
       let tableView = []
@@ -64,10 +64,9 @@ export default {
       return tableView
     },
     headers() {
-      let nextDeadCapYear = new Date().getFullYear()
-
+      const nextDeadCapYear = new Date().getFullYear()
       if (this.deadCap?.length > 0) {
-        nextDeadCapYear = this.deadCap[0].year
+        this.deadCap[0].year
       }
 
       return [

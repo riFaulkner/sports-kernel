@@ -134,4 +134,6 @@ models:
   UserPreferences:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/user.UserPreferences
-
+  UserPreferencesLeagueSnippet:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/user.UserPreferencesLeagueSnippet
