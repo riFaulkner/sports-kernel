@@ -19,7 +19,8 @@
           <v-list-item-content>
             <v-list-item-title>{{ contract.player.playerName }}
               <v-spacer/>
-              ${{ contract.totalContractValue.toLocaleString() }}
+              ${{contractCurrentYearValue(contract).toLocaleString()}}
+              <br/>
             </v-list-item-title>
           </v-list-item-content>
         </template>
@@ -63,9 +64,14 @@ export default {
       default: () => []
     }
   },
-  data: function () {
+  data: function() {
     return {
       active: []
+    }
+  },
+  methods: {
+    contractCurrentYearValue(contract) {
+      return contract.contractDetails[contract.currentYear-1].totalAmount
     }
   }
 }

@@ -16,9 +16,18 @@
         </v-col>
       </v-row>
       <v-row>
-        <team-draft-picks-breakdown
-            :draft-picks="this.teamAssets?.draftPicks"
-        />
+        <v-col cols="12" md="8">
+          <team-draft-picks-breakdown
+              :draft-picks="this.teamAssets?.draftPicks"
+          />
+        </v-col>
+        <v-divider vertical/>
+        <v-col cols="12" md="4">
+          <team-dead-cap-breakdown
+              :dead-cap="this.teamLiabilities?.deadCap"
+            />
+        </v-col>
+
       </v-row>
       <v-row>
         <v-spacer/>
@@ -32,11 +41,12 @@
 <script>
 import DraftBreakDownList from "@/components/league/team-assets/DraftBreakDownList";
 import TeamContractsBreakdown from "@/components/league/team-assets/TeamContractsBreakdown";
-import {TEAM_CONTRACTS, TEAM_DRAFT_PICKS} from "@/graphql/queries/team/teamGraphQL";
+import {TEAM_CONTRACTS, TEAM_DEAD_CAP, TEAM_DRAFT_PICKS} from "@/graphql/queries/team/teamGraphQL";
 import TeamDraftPicksBreakdown from "@/components/league/team-assets/TeamDraftPicksBreakdown";
+import TeamDeadCapBreakdown from "@/components/league/team-assets/TeamDeadCapBreakdown";
 export default {
   name: "TeamAssetsBreakdown",
-  components: {TeamDraftPicksBreakdown, TeamContractsBreakdown, DraftBreakDownList},
+  components: {TeamDeadCapBreakdown, TeamDraftPicksBreakdown, TeamContractsBreakdown, DraftBreakDownList},
   props: {
     teamId: {
       type: String,
@@ -53,6 +63,7 @@ export default {
       teamAssets: {
         draftPicks: []
       },
+      teamLiabilities: {},
       assets: {
         draftPicksTitle: "Draft Picks",
         quarterBacksTitle: "Quarter Backs",
@@ -96,6 +107,16 @@ export default {
         }
       },
       update: data => data.teamById.teamAssets,
+    },
+    teamLiabilities: {
+      query: TEAM_DEAD_CAP,
+      variables() {
+        return {
+          leagueId: this.leagueId,
+          teamId: this.teamId
+        }
+      },
+      update: data => data.teamById.teamLiabilities,
     }
   }
 }

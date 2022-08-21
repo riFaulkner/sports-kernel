@@ -21,6 +21,10 @@ export const LEAGUE_TEAMS_BY_LEAGUE_ID = gql`
         currentContractsMetadata {
           totalUtilizedCap
           totalAvailableCap
+          deadCap {
+              capUtilization
+              numContracts
+          }
           qbUtilizedCap {
             capUtilization
             numContracts
