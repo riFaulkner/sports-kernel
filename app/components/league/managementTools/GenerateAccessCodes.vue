@@ -135,9 +135,6 @@ export default {
     },
     copy(){
       navigator.clipboard.writeText(this.accessCode)
-      //this.$refs.clone.focus()
-      //document.execCommand('copy')
-      //this.dialog = false
       this.overlay = true
     },
     overlayConfirm(){
