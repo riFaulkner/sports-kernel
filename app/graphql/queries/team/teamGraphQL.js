@@ -85,3 +85,18 @@ export const GENERATE_ACCESS_CODE = gql`
         generateAccessCode(leagueId: $leagueId, teamId: $teamId, role: $role)
     }
 `
+
+export const ONBOARD_USER = gql`
+mutation onboardUserToTeamWithAccessCode($accessCode: string!){
+    onboardUserToTeamWithAccessCode(accessCode: $accessCode){
+        id
+        ownerName
+        preferredLeagueId
+        isAdmin
+        leagues{
+            id
+            leagueName
+        }
+    }
+}
+`

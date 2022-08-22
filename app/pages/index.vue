@@ -26,7 +26,8 @@
             <v-col md="auto">
               <v-dialog
                 v-model="dialog"
-                width="500">
+                persistent
+                width="600">
                 <template v-slot:activator="{ on, attrs }">
                   <v-btn
                     color="green lighten-1"
@@ -39,17 +40,26 @@
                 </template>
 
                 <v-card>
-                  <v-card-title class="text-h5 grey darken-1">
-                    Enter Access Code Here
+                  <v-card-title class="text-h5 grey darken-3">
+                    Enter Access Code
                   </v-card-title>
-                    <v-text-field :rules="rules"></v-text-field>
+                  <v-card-text>
+                    Please copy your unique access code from your league welcome email and paste it below.
+                  </v-card-text>
+                  <v-container>
+                     <v-text-field
+                     v-model="accessCode"
+                     label="Access Code">
+                     </v-text-field>
+                  </v-container>
                   <v-divider></v-divider>
+                  
                   <v-card-actions>
                   <v-spacer></v-spacer>
                     <v-btn
                       color="green lighten-1"
                       text
-                      @click="dialog = false"
+                      @click="testSubmit"
                     >
                       Join League
                     </v-btn>
@@ -65,11 +75,34 @@
 </template>
 
 <script>
-  export default {
-      data () {
-        return {
-          dialog: false,
-        }
+import {ONBOARD_USER} from "~/graphql/queries/user/userGraphQl";
+
+export default {
+    data () {
+       return {
+        dialog: false,
+        userPreferences: null,
+        accessCode: "",
+      }
+    },
+    methods: {
+      submitAccessCode(){
+        const response = this.$apollo.mutate({
+        mutation: ADD_USER,
+        variables: {
+          accessCode: this.accessCode,
+        },
+      }).then(result => {
+          this.userPreferences = result.data.addUserToTeam
+          this.loading = false
+      });
       },
-    }
+      testSubmit(){
+        this.dialog = false
+        console.log(this.accessCode)
+      },
+    },
+  }
+
+
 </script>

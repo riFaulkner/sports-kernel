@@ -14,17 +14,3 @@ query UserPreferences($userId: ID!) {
     }
 }
 `
-export const ADD_USER = gql`
-mutation addUserToTeam($accessCode: string!){
-    addUserToTeam(accessCode: $accessCode){
-        id
-        ownerName
-        preferredLeagueId
-        isAdmin
-        leagues{
-            id
-            leagueName
-        }
-    }
-}
-`
