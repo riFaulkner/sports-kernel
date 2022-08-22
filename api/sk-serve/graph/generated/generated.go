@@ -225,7 +225,7 @@ type ComplexityRoot struct {
 	}
 
 	TeamMutations struct {
-		AddDeadCap func(childComplexity int, leagueID string, teamID string, deadCap *team.DeadCapInput) int
+		AddDeadCap func(childComplexity int, leagueID string, teamID string, deadCap team.DeadCapInput) int
 	}
 
 	TeamScoring struct {
@@ -335,7 +335,7 @@ type TeamResolver interface {
 	ActiveContracts(ctx context.Context, obj *team.Team) ([]*contract.Contract, error)
 }
 type TeamMutationsResolver interface {
-	AddDeadCap(ctx context.Context, obj *team.TeamMutations, leagueID string, teamID string, deadCap *team.DeadCapInput) (*team.DeadCap, error)
+	AddDeadCap(ctx context.Context, obj *team.TeamMutations, leagueID string, teamID string, deadCap team.DeadCapInput) (bool, error)
 }
 
 type executableSchema struct {
@@ -1295,7 +1295,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.TeamMutations.AddDeadCap(childComplexity, args["leagueId"].(string), args["teamId"].(string), args["deadCap"].(*team.DeadCapInput)), true
+		return e.complexity.TeamMutations.AddDeadCap(childComplexity, args["leagueId"].(string), args["teamId"].(string), args["deadCap"].(team.DeadCapInput)), true
 
 	case "TeamScoring.summary":
 		if e.complexity.TeamScoring.Summary == nil {
@@ -1777,7 +1777,7 @@ type Team {
 }
 
 type TeamMutations {
-    addDeadCap(leagueId: ID!, teamId: ID!, deadCap: DeadCapInput): DeadCap
+    addDeadCap(leagueId: ID!, teamId: ID!, deadCap: DeadCapInput!): Boolean!
 }
 
 input NewTeam {
@@ -1790,7 +1790,7 @@ input NewTeam {
 input DeadCapInput {
     associatedContractId: ID
     amount: Int!
-    deadCapNote: String!
+    deadCapNote: String
 }
 
 type CapUtilizationSummary {
@@ -1812,7 +1812,7 @@ type DeadCap {
     associatedContractId: ID
     amount: Int!
     contract: Contract
-    deadCapNote: String!
+    deadCapNote: String
 }
 type DeadCapYear {
     year: Int!
@@ -2669,10 +2669,10 @@ func (ec *executionContext) field_TeamMutations_addDeadCap_args(ctx context.Cont
 		}
 	}
 	args["teamId"] = arg1
-	var arg2 *team.DeadCapInput
+	var arg2 team.DeadCapInput
 	if tmp, ok := rawArgs["deadCap"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deadCap"))
-		arg2, err = ec.unmarshalODeadCapInput2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋteamᚐDeadCapInput(ctx, tmp)
+		arg2, err = ec.unmarshalNDeadCapInput2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋteamᚐDeadCapInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -4145,9 +4145,9 @@ func (ec *executionContext) _DeadCap_associatedContractId(ctx context.Context, f
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOID2string(ctx, field.Selections, res)
+	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_DeadCap_associatedContractId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4295,14 +4295,11 @@ func (ec *executionContext) _DeadCap_deadCapNote(ctx context.Context, field grap
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_DeadCap_deadCapNote(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -9316,18 +9313,21 @@ func (ec *executionContext) _TeamMutations_addDeadCap(ctx context.Context, field
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.TeamMutations().AddDeadCap(rctx, obj, fc.Args["leagueId"].(string), fc.Args["teamId"].(string), fc.Args["deadCap"].(*team.DeadCapInput))
+		return ec.resolvers.TeamMutations().AddDeadCap(rctx, obj, fc.Args["leagueId"].(string), fc.Args["teamId"].(string), fc.Args["deadCap"].(team.DeadCapInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*team.DeadCap)
+	res := resTmp.(bool)
 	fc.Result = res
-	return ec.marshalODeadCap2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋteamᚐDeadCap(ctx, field.Selections, res)
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_TeamMutations_addDeadCap(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -9337,17 +9337,7 @@ func (ec *executionContext) fieldContext_TeamMutations_addDeadCap(ctx context.Co
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "associatedContractId":
-				return ec.fieldContext_DeadCap_associatedContractId(ctx, field)
-			case "amount":
-				return ec.fieldContext_DeadCap_amount(ctx, field)
-			case "contract":
-				return ec.fieldContext_DeadCap_contract(ctx, field)
-			case "deadCapNote":
-				return ec.fieldContext_DeadCap_deadCapNote(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type DeadCap", field.Name)
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	defer func() {
@@ -12671,7 +12661,7 @@ func (ec *executionContext) unmarshalInputDeadCapInput(ctx context.Context, obj 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deadCapNote"))
-			it.DeadCapNote, err = ec.unmarshalNString2string(ctx, v)
+			it.DeadCapNote, err = ec.unmarshalOString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -13438,9 +13428,6 @@ func (ec *executionContext) _DeadCap(ctx context.Context, sel ast.SelectionSet, 
 
 			out.Values[i] = ec._DeadCap_deadCapNote(ctx, field, obj)
 
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -14544,6 +14531,9 @@ func (ec *executionContext) _TeamMutations(ctx context.Context, sel ast.Selectio
 					}
 				}()
 				res = ec._TeamMutations_addDeadCap(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			}
 
@@ -15403,6 +15393,11 @@ func (ec *executionContext) marshalNDeadCap2ᚖgithubᚗcomᚋrifaulknerᚋsport
 		return graphql.Null
 	}
 	return ec._DeadCap(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNDeadCapInput2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋteamᚐDeadCapInput(ctx context.Context, v interface{}) (team.DeadCapInput, error) {
+	res, err := ec.unmarshalInputDeadCapInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNDivision2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋleagueᚐDivisionᚄ(ctx context.Context, sel ast.SelectionSet, v []*league.Division) graphql.Marshaler {
@@ -16368,21 +16363,6 @@ func (ec *executionContext) marshalODeadCap2ᚕᚖgithubᚗcomᚋrifaulknerᚋsp
 	return ret
 }
 
-func (ec *executionContext) marshalODeadCap2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋteamᚐDeadCap(ctx context.Context, sel ast.SelectionSet, v *team.DeadCap) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._DeadCap(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalODeadCapInput2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋteamᚐDeadCapInput(ctx context.Context, v interface{}) (*team.DeadCapInput, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputDeadCapInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) marshalODeadCapYear2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋteamᚐDeadCapYear(ctx context.Context, sel ast.SelectionSet, v []*team.DeadCapYear) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -16443,16 +16423,6 @@ func (ec *executionContext) marshalODraftYear2ᚖgithubᚗcomᚋrifaulknerᚋspo
 		return graphql.Null
 	}
 	return ec._DraftYear(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalOID2string(ctx context.Context, v interface{}) (string, error) {
-	res, err := graphql.UnmarshalID(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOID2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	res := graphql.MarshalID(v)
-	return res
 }
 
 func (ec *executionContext) unmarshalOID2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
@@ -16750,6 +16720,16 @@ func (ec *executionContext) marshalOPostComment2ᚕᚖgithubᚗcomᚋrifaulkner�
 	}
 
 	return ret
+}
+
+func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
+	res, err := graphql.UnmarshalString(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	res := graphql.MarshalString(v)
+	return res
 }
 
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
