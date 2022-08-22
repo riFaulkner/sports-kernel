@@ -87,7 +87,7 @@ export const GENERATE_ACCESS_CODE = gql`
 `
 
 export const ONBOARD_USER = gql`
-mutation onboardUserToTeamWithAccessCode($accessCode: string!){
+mutation onboardUserToTeamWithAccessCode($accessCode: String!){
     onboardUserToTeamWithAccessCode(accessCode: $accessCode){
         id
         ownerName

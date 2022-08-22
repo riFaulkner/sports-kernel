@@ -38,33 +38,41 @@
                     Join a League
                   </v-btn>
                 </template>
-
-                <v-card>
-                  <v-card-title class="text-h5 grey darken-3">
-                    Enter Access Code
-                  </v-card-title>
-                  <v-card-text>
-                    Please copy your unique access code from your league welcome email and paste it below.
-                  </v-card-text>
-                  <v-container>
-                     <v-text-field
-                     v-model="accessCode"
-                     label="Access Code">
-                     </v-text-field>
-                  </v-container>
-                  <v-divider></v-divider>
-                  
-                  <v-card-actions>
-                  <v-spacer></v-spacer>
-                    <v-btn
-                      color="green lighten-1"
-                      text
-                      @click="testSubmit"
-                    >
-                      Join League
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
+                <v-skeleton-loader :loading="loading" type="article, actions">
+                  <v-card>
+                    <v-card-title class="text-h5 grey darken-3">
+                      Enter Access Code
+                    </v-card-title>
+                    <v-card-text>
+                      Please copy your unique access code from your league welcome email and paste it below.
+                    </v-card-text>
+                    <v-container>
+                      <v-text-field
+                      v-model="accessCode"
+                      label="Access Code">
+                      </v-text-field>
+                    </v-container>
+                    <v-divider></v-divider>
+                    
+                    <v-card-actions>
+                    <v-spacer></v-spacer>
+                      <v-btn
+                        color="green lighten-1"
+                        text
+                        @click="submitAccessCode"
+                      >
+                        Join League
+                      </v-btn>
+                      <v-btn
+                        color="red darken-1"
+                        text
+                        @click="dialog = false"
+                        >
+                        Exit
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-skeleton-loader>
               </v-dialog>
             </v-col>
           </v-row>
@@ -75,7 +83,7 @@
 </template>
 
 <script>
-import {ONBOARD_USER} from "~/graphql/queries/user/userGraphQl";
+import {ONBOARD_USER} from "~/graphql/queries/team/teamGraphQL";
 
 export default {
     data () {
@@ -83,23 +91,31 @@ export default {
         dialog: false,
         userPreferences: null,
         accessCode: "",
+        loading: false,
+        testLeagueId: "5PpDkHSRciXwSRSA8iKe"
       }
     },
     methods: {
       submitAccessCode(){
+        this.loading = true
         const response = this.$apollo.mutate({
-        mutation: ADD_USER,
+        mutation: ONBOARD_USER,
         variables: {
           accessCode: this.accessCode,
         },
       }).then(result => {
-          this.userPreferences = result.data.addUserToTeam
+          this.$store.dispatch("application/alertSuccess", {message: "User Onbarded"})
+          this.userPreferences = result.data.onboardUserToTeamWithAccessCode
+          this.$store.dispatch("application/updateActiveLeague", this.testLeagueId)
+          console.log(this.userPreferences)
+          this.loading = false
+          this.dialog = false
+      }).catch((data) => {
+          this.$store.dispatch("application/alertError", {message: "Failed to onboard user"})
+          console.error("Failed to onboard user ", data)
+          this.dialog = false
           this.loading = false
       });
-      },
-      testSubmit(){
-        this.dialog = false
-        console.log(this.accessCode)
       },
     },
   }
