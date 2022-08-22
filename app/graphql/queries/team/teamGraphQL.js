@@ -96,6 +96,7 @@ mutation onboardUserToTeamWithAccessCode($accessCode: String!){
         leagues{
             id
             leagueName
+            roleInLeague
         }
     }
 }

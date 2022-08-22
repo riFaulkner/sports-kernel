@@ -1,8 +1,9 @@
 package db
 
 import (
-	gFirestore "cloud.google.com/go/firestore"
 	"context"
+
+	gFirestore "cloud.google.com/go/firestore"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 
 	"github.com/99designs/gqlgen/graphql"
@@ -26,7 +27,7 @@ func (u *UserImpl) AddLeagueToUserPreferences(ctx context.Context, userID string
 				Value: gFirestore.ArrayUnion(leagueSnippet),
 			},
 		})
-	gqlerror.Errorf("Error updating new roles for user")
+	gqlerror.Errorf("Error updating new leagues for user")
 
 	return err == nil
 }

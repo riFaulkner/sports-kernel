@@ -4,7 +4,7 @@
       <v-card class="logo py-4 d-flex justify-center" />
       <v-card>
         <v-card-title class="headline">
-          Welcome to Sports-kernel
+          Welcome to Sports-Kernel
         </v-card-title>
         <v-card-text>
           Look around and explore the application
@@ -19,7 +19,7 @@
                 nuxt
                 to="/league"
                 col=3
-              >
+                    >
                 Continue to League
               </v-btn>
             </v-col>
@@ -39,7 +39,7 @@
                   </v-btn>
                 </template>
                 <v-skeleton-loader :loading="loading" type="article, actions">
-                  <v-card>
+                  <v-card ref="form">
                     <v-card-title class="text-h5 grey darken-3">
                       Enter Access Code
                     </v-card-title>
@@ -49,7 +49,11 @@
                     <v-container>
                       <v-text-field
                       v-model="accessCode"
-                      label="Access Code">
+                      ref="accessCode"
+                      label="Access Code"
+                      :rules="[rules.required]"
+                      required
+                      >
                       </v-text-field>
                     </v-container>
                     <v-divider></v-divider>
@@ -92,9 +96,15 @@ export default {
         userPreferences: null,
         accessCode: "",
         loading: false,
-        testLeagueId: "5PpDkHSRciXwSRSA8iKe"
+        testLeagueId: "5PpDkHSRciXwSRSA8iKe",
+        errorMessages: '',
+        formHasErrors: false,
+        rules: {
+          required: value => !!value || 'Access Code is Required.',
+        },
       }
     },
+    
     methods: {
       submitAccessCode(){
         this.loading = true
@@ -106,14 +116,13 @@ export default {
       }).then(result => {
           this.$store.dispatch("application/alertSuccess", {message: "User Onbarded"})
           this.userPreferences = result.data.onboardUserToTeamWithAccessCode
-          this.$store.dispatch("application/updateActiveLeague", this.testLeagueId)
+          //this.$store.dispatch("application/updateActiveLeague", this.testLeagueId)
           console.log(this.userPreferences)
           this.loading = false
           this.dialog = false
       }).catch((data) => {
           this.$store.dispatch("application/alertError", {message: "Failed to onboard user"})
           console.error("Failed to onboard user ", data)
-          this.dialog = false
           this.loading = false
       });
       },
