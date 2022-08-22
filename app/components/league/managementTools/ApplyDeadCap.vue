@@ -22,19 +22,28 @@
         </v-col>
       </v-row>
       <v-divider/>
-      <v-row>
-        <v-col>
-          <v-form>
+      <v-form>
+        <v-row>
+          <v-col>
             <v-text-field
                 type="number"
-                label="Dead Cap amount"
+                label="Dead Cap amount year 1"
             />
+          </v-col>
+          <v-col>
+            <v-text-field
+                type="number"
+                label="Dead Cap amount year 2"
+            />
+          </v-col>
+          <v-col cols="12">
             <v-text-field
                 label="Player Name/Note"
                 hint="This is what will show up when viewing deadcap for the team"
                 persistent-hint
             />
-            <v-col offset="11">
+          </v-col>
+          <v-col offset="11">
 
             <v-btn
                 color="primary"
@@ -43,10 +52,10 @@
             >
               Save
             </v-btn>
-            </v-col>
-          </v-form>
-        </v-col>
-      </v-row>
+          </v-col>
+        </v-row>
+      </v-form>
+
     </template>
   </v-container>
 </template>
@@ -65,7 +74,7 @@ export default {
       required: true
     },
   },
-  data: function() {
+  data: function () {
     return {
       selectedTeam: null,
       loadingSelectedTeam: false,
@@ -79,20 +88,20 @@ export default {
       this.$apollo.query({
         query: TEAM_DEAD_CAP,
         variables: {
-            leagueId: this.leagueId,
-            teamId: teamId
+          leagueId: this.leagueId,
+          teamId: teamId
         }
       }).then((data) => {
         this.deadCap = data.data.teamById.teamLiabilities.deadCap
       })
-      .catch((error) => {
-        console.error("Error getting team dead cap for team: ", error)
-        this.$store.dispatch("application/alertError", {message: "Failed to get team's current dead cap"})
-      }).finally(() => {
+          .catch((error) => {
+            console.error("Error getting team dead cap for team: ", error)
+            this.$store.dispatch("application/alertError", {message: "Failed to get team's current dead cap"})
+          }).finally(() => {
         this.loadingSelectedTeam = false
       })
     }
-},
+  },
   apollo: {
     teams: {
       query: LEAGUE_TEAMS_BY_LEAGUE_ID,

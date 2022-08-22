@@ -53,3 +53,5 @@ type ContractYearInput struct {
 	PaidAmount       int `json:"paidAmount"`
 	GuaranteedAmount int `json:"guaranteedAmount"`
 }
+
+type ContractMutations struct{}

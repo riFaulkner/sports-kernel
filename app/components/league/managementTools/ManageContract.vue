@@ -13,7 +13,6 @@
       />
     </v-card-text>
     <div v-if="selectedContract !== null">
-
       <v-dialog
           :value="true"
           max-width="500px"

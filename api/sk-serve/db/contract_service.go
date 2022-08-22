@@ -305,10 +305,12 @@ func (u *ContractImpl) DropContract(ctx context.Context, leagueID string, teamID
 	})
 	currentContractYear := playerContract.CurrentYear
 	currentContractDetails := playerContract.ContractDetails[(currentContractYear - 1)]
+	playerName := u.getPlayerName(ctx, playerContract.PlayerID)
 
 	deadCapYears = append(deadCapYears, &team.DeadCap{
-		AssociatedContractID: playerContract.ID,
+		AssociatedContractID: &playerContract.ID,
 		Amount:               calculateDeadCap(currentContractDetails),
+		DeadCapNote:          &playerName,
 	})
 
 	futureAccumulatedDeadCap := 0
@@ -319,8 +321,9 @@ func (u *ContractImpl) DropContract(ctx context.Context, leagueID string, teamID
 	}
 
 	deadCapYears = append(deadCapYears, &team.DeadCap{
-		AssociatedContractID: playerContract.ID,
+		AssociatedContractID: &playerContract.ID,
 		Amount:               futureAccumulatedDeadCap,
+		DeadCapNote:          &playerName,
 	})
 	// Add dead cap to the team
 	ok = u.TeamImpl.AddDeadCapToTeam(ctx, leagueID, teamID, deadCapYears)
@@ -446,6 +449,23 @@ func getAndValidateContractTotalValue(ctx context.Context, contractYears []*cont
 		graphql.AddError(ctx, gqlerror.Errorf("Invalid contract, contract total value is 0"))
 	}
 	return &totalContractValue
+}
+
+// TODO: This is terrible, we should be using the player repository but I didn't want to deal with what I knew would give a circular
+// dependency issue and cause a bunch or refactoring. Bad rick.
+func (u *ContractImpl) getPlayerName(ctx context.Context, playerID string) string {
+	playerRef, err := u.Client.
+		Collection(firestore.PlayerCollection).
+		Doc(playerID).
+		Get(ctx)
+
+	if err != nil {
+		log.Printf("Error getting player name from DB")
+		return ""
+	}
+	player := new(model.PlayerNfl)
+	playerRef.DataTo(&player)
+	return player.PlayerName
 }
 
 func calculateDeadCap(contractDetails *contract.ContractYear) int {

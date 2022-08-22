@@ -4,6 +4,9 @@ import (
 	"time"
 )
 
+type TeamMutations struct {
+}
+
 type Team struct {
 	ID                       string               `json:"id"`
 	FoundedDate              time.Time            `json:"foundedDate"`
@@ -49,8 +52,15 @@ type DraftYear struct {
 }
 
 type DeadCap struct {
-	AssociatedContractID string `json:"associatedContractId"`
-	Amount               int    `json:"amount"`
+	AssociatedContractID *string `json:"associatedContractId"`
+	Amount               int     `json:"amount"`
+	DeadCapNote          *string `json:"deadCapNote"`
+}
+
+type DeadCapInput struct {
+	Amount               int     `json:"amount"`
+	AssociatedContractID *string `json:"associatedContractId"`
+	DeadCapNote          string  `json:"deadCapNote"`
 }
 
 type DeadCapYear struct {

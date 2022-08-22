@@ -19,43 +19,57 @@ type TeamService struct {
 	TeamRepository TeamRepository
 }
 
-func (t TeamService) AddUserToTeamAndConsumeAccessCode(ctx context.Context, decodedAccessCode crossfunctional.DecodedAccessCode, ownerID string) bool {
+func (s TeamService) AddDeadCapToTeam(ctx context.Context, leagueID string, teamID string, input DeadCapInput) (bool, error) {
+	// Create the new dead cap object
+	deadCapList := []*DeadCap{
+		{
+			Amount:      input.Amount,
+			DeadCapNote: &input.DeadCapNote,
+		},
+	}
+
+	ok := s.TeamRepository.AddDeadCapToTeam(ctx, leagueID, teamID, deadCapList)
+
+	return ok, nil
+}
+
+func (s TeamService) AddUserToTeamAndConsumeAccessCode(ctx context.Context, decodedAccessCode crossfunctional.DecodedAccessCode, ownerID string) bool {
 	//	Add the user's ID to the TeamOwners array
 	//	Remove the Access token used from the ActiveAccessTokens array
-	ok := t.TeamRepository.AddUserToTeam(ctx, decodedAccessCode.LeagueID, decodedAccessCode.TeamID, ownerID)
+	ok := s.TeamRepository.AddUserToTeam(ctx, decodedAccessCode.LeagueID, decodedAccessCode.TeamID, ownerID)
 	if ok {
-		return t.TeamRepository.RemoveAccessCode(ctx, decodedAccessCode.LeagueID, decodedAccessCode.TeamID, decodedAccessCode.AccessCode)
+		return s.TeamRepository.RemoveAccessCode(ctx, decodedAccessCode.LeagueID, decodedAccessCode.TeamID, decodedAccessCode.AccessCode)
 	}
 	return false
 }
-func (t TeamService) Create(ctx context.Context, leagueId string, team NewTeam) (*Team, error) {
-	return t.TeamRepository.Create(ctx, leagueId, team)
+func (s TeamService) Create(ctx context.Context, leagueId string, team NewTeam) (*Team, error) {
+	return s.TeamRepository.Create(ctx, leagueId, team)
 }
-func (t TeamService) GenerateAccessCode(ctx context.Context, leagueID string, teamID string, role model.Role) (string, error) {
+func (s TeamService) GenerateAccessCode(ctx context.Context, leagueID string, teamID string, role model.Role) (string, error) {
 	//Generate a random string, length 5, to append to the pre-encoded string
 	randString := randomString(5)
 	//Concat data string, and encode in base64
 	accessCode := accessCodeFromString(leagueID + "," + teamID + "," + role.String() + "," + randString)
 
-	return accessCode, t.TeamRepository.AddAccessCode(ctx, leagueID, teamID, accessCode)
+	return accessCode, s.TeamRepository.AddAccessCode(ctx, leagueID, teamID, accessCode)
 }
-func (t TeamService) GetTeamByOwnerID(ctx context.Context, leagueID string, ownerID string) (*Team, error) {
-	team, ok := t.TeamRepository.GetTeamByOwnerID(ctx, leagueID, ownerID)
+func (s TeamService) GetTeamByOwnerID(ctx context.Context, leagueID string, ownerID string) (*Team, error) {
+	team, ok := s.TeamRepository.GetTeamByOwnerID(ctx, leagueID, ownerID)
 	if !ok {
 		return nil, gqlerror.Errorf("Error occurred getting ownerID: %v teams in league: %v", ownerID, leagueID)
 	}
 	return team, nil
 }
-func (t TeamService) GetAllLeagueTeams(ctx context.Context, leagueId string) ([]*Team, error) {
-	return t.TeamRepository.GetAllLeagueTeams(ctx, leagueId)
+func (s TeamService) GetAllLeagueTeams(ctx context.Context, leagueId string) ([]*Team, error) {
+	return s.TeamRepository.GetAllLeagueTeams(ctx, leagueId)
 }
-func (t TeamService) GetTeamById(ctx context.Context, leagueId string, teamId string) (*Team, error) {
-	return t.TeamRepository.GetTeamById(ctx, leagueId, teamId)
+func (s TeamService) GetTeamById(ctx context.Context, leagueId string, teamId string) (*Team, error) {
+	return s.TeamRepository.GetTeamById(ctx, leagueId, teamId)
 }
-func (t TeamService) UpdateTeamContractMetaData(ctx context.Context, leagueId string, teamContracts []*contract.Contract) error {
-	return t.TeamRepository.UpdateTeamContractMetaData(ctx, leagueId, teamContracts)
+func (s TeamService) UpdateTeamContractMetaData(ctx context.Context, leagueId string, teamContracts []*contract.Contract) error {
+	return s.TeamRepository.UpdateTeamContractMetaData(ctx, leagueId, teamContracts)
 }
-func (t TeamService) ValidateAccessToken(ctx context.Context, accessCode string) (crossfunctional.DecodedAccessCode, bool) {
+func (s TeamService) ValidateAccessToken(ctx context.Context, accessCode string) (crossfunctional.DecodedAccessCode, bool) {
 	decodedAccessCode := crossfunctional.DecodedAccessCode{
 		LeagueID:   "",
 		LeagueName: "",
@@ -72,7 +86,7 @@ func (t TeamService) ValidateAccessToken(ctx context.Context, accessCode string)
 
 	leagueID, teamID, role := parseAccessCodeElements(rawText)
 
-	team, err := t.GetTeamById(ctx, leagueID, teamID)
+	team, err := s.GetTeamById(ctx, leagueID, teamID)
 	isInArray, stringIndex := containsString(team.AccessCodes, accessCode)
 	if isInArray == false && stringIndex == -1 {
 		log.Printf("INFO: Access code not found in document")

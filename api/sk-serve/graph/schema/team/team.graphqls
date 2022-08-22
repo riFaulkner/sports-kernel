@@ -14,11 +14,21 @@ type Team {
     teamScoring(year: Int): [TeamScoring!]!
 }
 
+type TeamMutations {
+    addDeadCap(leagueId: ID!, teamId: ID!, deadCap: DeadCapInput!): Boolean!
+}
+
 input NewTeam {
     id: ID!
     teamName: String!
     division: String
     foundedDate: Time
+}
+
+input DeadCapInput {
+    associatedContractId: ID
+    amount: Int!
+    deadCapNote: String
 }
 
 type CapUtilizationSummary {
@@ -37,9 +47,10 @@ type ContractsMetadata {
     deadCap: CapUtilizationSummary!
 }
 type DeadCap {
-    associatedContractId: ID!
+    associatedContractId: ID
     amount: Int!
     contract: Contract
+    deadCapNote: String
 }
 type DeadCapYear {
     year: Int!
