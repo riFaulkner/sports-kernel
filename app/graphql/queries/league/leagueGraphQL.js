@@ -114,6 +114,7 @@ export const LEAGUE_FILTER_TEAMS_BY_OWNER_ID = gql`
                         deadCapAccrued {
                             amount
                             associatedContractId
+                            deadCapNote
                             contract {
                                 player {
                                     playerName

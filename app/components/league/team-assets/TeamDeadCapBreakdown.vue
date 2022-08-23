@@ -40,11 +40,11 @@ export default {
         // Search through all the dead cap contracts and add them to the table view
         year.deadCapAccrued.forEach((contract) => {
           const filterResult = tableView.filter((item) => {
-            return item.id === contract.associatedContractId
+            return item.id === contract.deadCapNote
           })
           let tableItem = {
-            id: contract.associatedContractId,
-            name: contract.contract.player.playerName,
+            id: contract.deadCapNote,
+            name: contract.deadCapNote,
             amounts: []
           }
           if(filterResult.length === 1) {
