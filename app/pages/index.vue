@@ -11,7 +11,12 @@
         </v-card-text>
         <v-card-actions>
           <v-row justify="end">
-            <v-col></v-col>
+            <v-col md="auto">
+              <v-btn
+                  @click="dialog = true"
+                  color="success darken-1"
+              >Join League</v-btn>
+            </v-col>
             <v-col md="auto">
               <v-spacer />
               <v-btn
@@ -23,66 +28,56 @@
                 Continue to League
               </v-btn>
             </v-col>
-            <v-col md="auto">
-              <v-dialog
-                v-model="dialog"
-                persistent
-                width="600">
-                <template v-slot:activator="{ on, attrs }">
-                  <v-btn
-                    color="green lighten-1"
-                    dark
-                    v-bind="attrs"
-                    v-on="on"
-                  >
-                    Join a League
-                  </v-btn>
-                </template>
-                <v-skeleton-loader :loading="loading" type="article, actions">
-                  <v-card ref="form">
-                    <v-card-title class="text-h5 grey darken-3">
-                      Enter Access Code
-                    </v-card-title>
-                    <v-card-text>
-                      Please copy your unique access code from your league welcome email and paste it below.
-                    </v-card-text>
-                    <v-container>
-                      <v-text-field
-                      v-model="accessCode"
-                      ref="accessCode"
-                      label="Access Code"
-                      :rules="[rules.required]"
-                      required
-                      >
-                      </v-text-field>
-                    </v-container>
-                    <v-divider></v-divider>
-                    
-                    <v-card-actions>
-                    <v-spacer></v-spacer>
-                      <v-btn
-                        color="green lighten-1"
-                        text
-                        @click="submitAccessCode"
-                      >
-                        Join League
-                      </v-btn>
-                      <v-btn
-                        color="red darken-1"
-                        text
-                        @click="dialog = false"
-                        >
-                        Exit
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-skeleton-loader>
-              </v-dialog>
-            </v-col>
           </v-row>
         </v-card-actions>
       </v-card>
     </v-col>
+    <v-dialog
+        v-model="dialog"
+        width="600">
+      <v-skeleton-loader :loading="loading" type="article, actions">
+        <v-card ref="form">
+          <v-card-title class="text-h5 grey darken-3">
+            Enter Access Code
+          </v-card-title>
+          <br/>
+          <v-card-text>
+
+            Please copy your unique access code from your league welcome email and paste it below.
+          </v-card-text>
+          <v-container>
+            <v-form v-model="formValid">
+              <v-text-field
+                  v-model="accessCode"
+                  ref="accessCode"
+                  label="Access Code"
+                  :rules="[rules.required]"
+                  required
+              />
+            </v-form>
+          </v-container>
+          <v-divider></v-divider>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+                color="green lighten-1"
+                text
+                @click="submitAccessCode"
+                :disabled="!formValid"
+            >
+              Join League
+            </v-btn>
+            <v-btn
+                color="red darken-1"
+                text
+                @click="dialog = false"
+            >
+              Exit
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-skeleton-loader>
+    </v-dialog>
   </v-row>
 </template>
 
@@ -93,12 +88,10 @@ export default {
     data () {
        return {
         dialog: false,
-        userPreferences: null,
         accessCode: "",
         loading: false,
-        testLeagueId: "5PpDkHSRciXwSRSA8iKe",
         errorMessages: '',
-        formHasErrors: false,
+        formValid: false,
         rules: {
           required: value => !!value || 'Access Code is Required.',
         },
@@ -115,9 +108,11 @@ export default {
         },
       }).then(result => {
           this.$store.dispatch("application/alertSuccess", {message: "User Onbarded"})
-          this.userPreferences = result.data.onboardUserToTeamWithAccessCode
-          //this.$store.dispatch("application/updateActiveLeague", this.testLeagueId)
-          console.log(this.userPreferences)
+          const userPreferences = result.data.onboardUserToTeamWithAccessCode
+          this.$store.dispatch("user/setUserPreferences", userPreferences)
+          this.$store.dispatch("application/updateActiveLeague", userPreferences?.leagues[0])
+          this.$router.push("/league" )
+
           this.loading = false
           this.dialog = false
       }).catch((data) => {

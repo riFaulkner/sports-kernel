@@ -50,5 +50,8 @@ export const actions = {
 
       await commit('setUserPreferences', result)
     }
+  },
+  setUserPreferences(context, payload) {
+    context.commit("setUserPreferences", payload)
   }
 }
