@@ -33,17 +33,20 @@ func (u UserService) AddTeamToUser(ctx context.Context, decodedAccessCode crossf
 		}
 	}
 
-	ok = u.UserRepository.AddLeagueToUserPreferences(ctx, userID, UserPreferencesLeagueSnippet{
+	snippet := UserPreferencesLeagueSnippet{
 		Id:           decodedAccessCode.LeagueID,
 		LeagueName:   decodedAccessCode.LeagueName,
 		RoleInLeague: decodedAccessCode.Role,
-	})
+	}
+
+	ok = u.UserRepository.AddLeagueToUserPreferences(ctx, userID, snippet)
 
 	if ok {
 		//	Add the user roles for their new league
 		//	Included in the payload is the level of permissions to give the user, use that to give the user permissions
 		ok = u.createRolesForNewUserLeague(ctx, userID, decodedAccessCode)
 		if ok {
+			userPreferences.Leagues = append(userPreferences.Leagues, &snippet)
 			return userPreferences, nil
 		} else {
 			err = gqlerror.Errorf("Error updating new roles for user")
