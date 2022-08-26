@@ -67,13 +67,8 @@ export const TEAM_DEAD_CAP = gql`
                 deadCap {
                     year
                     deadCapAccrued {
-                        associatedContractId
                         amount
-                        contract {
-                            player {
-                                playerName
-                            }
-                        }
+                        deadCapNote
                     }
                 }
             }

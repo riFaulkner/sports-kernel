@@ -37,7 +37,7 @@ type TeamAssets struct {
 }
 
 type TeamLiabilities struct {
-	DeadCap []*DeadCapYear `json:"deadCap"`
+	DeadCap []*DeadCap `json:"deadCap"`
 }
 
 type DraftPick struct {
@@ -52,20 +52,26 @@ type DraftYear struct {
 }
 
 type DeadCap struct {
-	AssociatedContractID *string `json:"associatedContractId"`
-	Amount               int     `json:"amount"`
-	DeadCapNote          *string `json:"deadCapNote"`
+	ID                   string        `json:"id"`
+	AssociatedContractID *string       `json:"associatedContractId"`
+	DeadCapYears         []DeadCapYear `json:"deadCapYears"`
+	DeadCapNote          *string       `json:"deadCapNote"`
 }
 
 type DeadCapInput struct {
-	Amount               int     `json:"amount"`
-	AssociatedContractID *string `json:"associatedContractId"`
-	DeadCapNote          string  `json:"deadCapNote"`
+	AssociatedContractID *string            `json:"associatedContractId"`
+	deadCapYears         []DeadCapYearInput `json:"deadCapYears"`
+	DeadCapNote          string             `json:"deadCapNote"`
+}
+
+type DeadCapYearInput struct {
+	Year   int `json:"year"`
+	Amount int `json:"amount"`
 }
 
 type DeadCapYear struct {
-	Year           int        `json:"year"`
-	DeadCapAccrued []*DeadCap `json:"deadCapAccrued"`
+	Year   int `json:"year"`
+	Amount int `json:"amount"`
 }
 
 type CapUtilizationSummary struct {

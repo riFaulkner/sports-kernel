@@ -27,8 +27,13 @@ input NewTeam {
 
 input DeadCapInput {
     associatedContractId: ID
-    amount: Int!
+    deadCapYears: [DeadCapYearInput!]!
     deadCapNote: String
+}
+
+input DeadCapYearInput {
+    year: Int!
+    amount: Int!
 }
 
 type CapUtilizationSummary {
@@ -46,16 +51,19 @@ type ContractsMetadata {
     teUtilizedCap: CapUtilizationSummary!
     deadCap: CapUtilizationSummary!
 }
+
 type DeadCap {
+    id: ID!
     associatedContractId: ID
-    amount: Int!
-    contract: Contract
-    deadCapNote: String
+    deadCapYears: [DeadCapYear!]!
+    deadCapNote: String!
 }
+
 type DeadCapYear {
     year: Int!
-    deadCapAccrued: [DeadCap!]
+    amount: Int!
 }
+
 type DraftPick {
     round: Int!
     value: Int

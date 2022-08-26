@@ -65,7 +65,6 @@ export default {
       type: Object,
       require: true,
       validator: function (value) {
-        // Object.values(value).includes("divisions")
         return true
       }
     }
