@@ -9,6 +9,11 @@ import (
 	"time"
 )
 
+type DeadCapYearInput struct {
+	Year   int `json:"year"`
+	Amount int `json:"amount"`
+}
+
 type LeaguePost struct {
 	ID       string         `json:"id"`
 	Author   string         `json:"author"`

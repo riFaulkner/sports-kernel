@@ -21,10 +21,19 @@ type TeamService struct {
 
 func (s TeamService) AddDeadCapToTeam(ctx context.Context, leagueID string, teamID string, input DeadCapInput) (bool, error) {
 	// Create the new dead cap object
+	deadCapYears := make([]DeadCapYear, 0, len(input.DeadCapYears))
+	for _, year := range input.DeadCapYears {
+		deadCapYear := DeadCapYear{
+			Year:   year.Year,
+			Amount: year.Amount,
+		}
+		deadCapYears = append(deadCapYears, deadCapYear)
+	}
 	deadCapList := []*DeadCap{
 		{
-			Amount:      input.Amount,
-			DeadCapNote: &input.DeadCapNote,
+			AssociatedContractID: input.AssociatedContractID,
+			DeadCapYears:         deadCapYears,
+			DeadCapNote:          &input.DeadCapNote,
 		},
 	}
 

@@ -60,7 +60,7 @@ type DeadCap struct {
 
 type DeadCapInput struct {
 	AssociatedContractID *string            `json:"associatedContractId"`
-	deadCapYears         []DeadCapYearInput `json:"deadCapYears"`
+	DeadCapYears         []DeadCapYearInput `json:"deadCapYears"`
 	DeadCapNote          string             `json:"deadCapNote"`
 }
 
