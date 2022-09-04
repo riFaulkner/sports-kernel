@@ -22,14 +22,14 @@ type Team struct {
 }
 
 type ContractsMetadata struct {
-	Year              int                    `json:"year"`
-	TotalUtilizedCap  int                    `json:"totalUtilizedCap"`
-	TotalAvailableCap int                    `json:"totalAvailableCap"`
-	QbUtilizedCap     *CapUtilizationSummary `json:"qbUtilizedCap"`
-	RbUtilizedCap     *CapUtilizationSummary `json:"rbUtilizedCap"`
-	WrUtilizedCap     *CapUtilizationSummary `json:"wrUtilizedCap"`
-	TeUtilizedCap     *CapUtilizationSummary `json:"teUtilizedCap"`
-	DeadCap           *CapUtilizationSummary `json:"deadCap"`
+	Year               int                    `json:"year"`
+	TotalUtilizedCap   int                    `json:"totalUtilizedCap"`
+	TotalAvailableCap  int                    `json:"totalAvailableCap"`
+	QbUtilizedCap      *CapUtilizationSummary `json:"qbUtilizedCap"`
+	RbUtilizedCap      *CapUtilizationSummary `json:"rbUtilizedCap"`
+	WrUtilizedCap      *CapUtilizationSummary `json:"wrUtilizedCap"`
+	TeUtilizedCap      *CapUtilizationSummary `json:"teUtilizedCap"`
+	DeadCapUtilizedCap *CapUtilizationSummary `json:"deadCapUtilizedCap"`
 }
 
 type TeamAssets struct {

@@ -22,10 +22,6 @@ func (r *teamResolver) ActiveContracts(ctx context.Context, obj *team.Team) ([]*
 	return nil, gqlerror.Errorf("Error getting leagueId to retrieve active contract")
 }
 
-func (r *teamLiabilitiesResolver) DeadCap(ctx context.Context, obj *team.TeamLiabilities) ([]*team.DeadCapYear, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
 func (r *teamMutationsResolver) AddDeadCap(ctx context.Context, obj *team.TeamMutations, leagueID string, teamID string, deadCap team.DeadCapInput) (bool, error) {
 	panic(fmt.Errorf("not implemented"))
 }
