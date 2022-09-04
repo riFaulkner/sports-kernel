@@ -19,7 +19,7 @@ func TestTeamImpl_AddDeadCapToTeam(t *testing.T) {
 		ctx      context.Context
 		leagueID string
 		teamID   string
-		deadCap  []*team.DeadCap
+		deadCap  team.DeadCap
 	}
 	tests := []struct {
 		name    string

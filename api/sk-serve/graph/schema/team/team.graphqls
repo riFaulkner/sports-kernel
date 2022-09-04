@@ -77,7 +77,7 @@ type TeamAssets {
     draftPicks: [DraftYear]!
 }
 type TeamLiabilities {
-    deadCap: [DeadCapYear]
+    deadCap: [DeadCap]
 }
 type TeamScoring {
     year: Int!

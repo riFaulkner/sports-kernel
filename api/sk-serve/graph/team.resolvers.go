@@ -5,8 +5,6 @@ package graph
 
 import (
 	"context"
-	"fmt"
-
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/generated"
@@ -23,20 +21,14 @@ func (r *teamResolver) ActiveContracts(ctx context.Context, obj *team.Team) ([]*
 }
 
 func (r *teamMutationsResolver) AddDeadCap(ctx context.Context, obj *team.TeamMutations, leagueID string, teamID string, deadCap team.DeadCapInput) (bool, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.TeamService.AddDeadCapToTeam(ctx, leagueID, teamID, deadCap)
 }
 
 // Team returns generated.TeamResolver implementation.
 func (r *Resolver) Team() generated.TeamResolver { return &teamResolver{r} }
 
-// TeamLiabilities returns generated.TeamLiabilitiesResolver implementation.
-func (r *Resolver) TeamLiabilities() generated.TeamLiabilitiesResolver {
-	return &teamLiabilitiesResolver{r}
-}
-
 // TeamMutations returns generated.TeamMutationsResolver implementation.
 func (r *Resolver) TeamMutations() generated.TeamMutationsResolver { return &teamMutationsResolver{r} }
 
 type teamResolver struct{ *Resolver }
-type teamLiabilitiesResolver struct{ *Resolver }
 type teamMutationsResolver struct{ *Resolver }
