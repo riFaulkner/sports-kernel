@@ -49,7 +49,6 @@ type ResolverRoot interface {
 	Team() TeamResolver
 	TeamLiabilities() TeamLiabilitiesResolver
 	TeamMutations() TeamMutationsResolver
-	DeadCapInput() DeadCapInputResolver
 }
 
 type DirectiveRoot struct {
@@ -337,10 +336,6 @@ type TeamLiabilitiesResolver interface {
 }
 type TeamMutationsResolver interface {
 	AddDeadCap(ctx context.Context, obj *team.TeamMutations, leagueID string, teamID string, deadCap team.DeadCapInput) (bool, error)
-}
-
-type DeadCapInputResolver interface {
-	DeadCapYears(ctx context.Context, obj *team.DeadCapInput, data []*model.DeadCapYearInput) error
 }
 
 type executableSchema struct {
@@ -12646,11 +12641,8 @@ func (ec *executionContext) unmarshalInputDeadCapInput(ctx context.Context, obj 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deadCapYears"))
-			data, err := ec.unmarshalNDeadCapYearInput2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐDeadCapYearInputᚄ(ctx, v)
+			it.DeadCapYears, err = ec.unmarshalNDeadCapYearInput2ᚕgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋteamᚐDeadCapYearInputᚄ(ctx, v)
 			if err != nil {
-				return it, err
-			}
-			if err = ec.resolvers.DeadCapInput().DeadCapYears(ctx, &it, data); err != nil {
 				return it, err
 			}
 		case "deadCapNote":
@@ -12667,8 +12659,8 @@ func (ec *executionContext) unmarshalInputDeadCapInput(ctx context.Context, obj 
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputDeadCapYearInput(ctx context.Context, obj interface{}) (model.DeadCapYearInput, error) {
-	var it model.DeadCapYearInput
+func (ec *executionContext) unmarshalInputDeadCapYearInput(ctx context.Context, obj interface{}) (team.DeadCapYearInput, error) {
+	var it team.DeadCapYearInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -15474,26 +15466,26 @@ func (ec *executionContext) marshalNDeadCapYear2ᚕgithubᚗcomᚋrifaulknerᚋs
 	return ret
 }
 
-func (ec *executionContext) unmarshalNDeadCapYearInput2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐDeadCapYearInputᚄ(ctx context.Context, v interface{}) ([]*model.DeadCapYearInput, error) {
+func (ec *executionContext) unmarshalNDeadCapYearInput2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋteamᚐDeadCapYearInput(ctx context.Context, v interface{}) (team.DeadCapYearInput, error) {
+	res, err := ec.unmarshalInputDeadCapYearInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNDeadCapYearInput2ᚕgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋteamᚐDeadCapYearInputᚄ(ctx context.Context, v interface{}) ([]team.DeadCapYearInput, error) {
 	var vSlice []interface{}
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
 	var err error
-	res := make([]*model.DeadCapYearInput, len(vSlice))
+	res := make([]team.DeadCapYearInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNDeadCapYearInput2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐDeadCapYearInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNDeadCapYearInput2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋteamᚐDeadCapYearInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
 	}
 	return res, nil
-}
-
-func (ec *executionContext) unmarshalNDeadCapYearInput2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐDeadCapYearInput(ctx context.Context, v interface{}) (*model.DeadCapYearInput, error) {
-	res, err := ec.unmarshalInputDeadCapYearInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNDivision2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋleagueᚐDivisionᚄ(ctx context.Context, sel ast.SelectionSet, v []*league.Division) graphql.Marshaler {

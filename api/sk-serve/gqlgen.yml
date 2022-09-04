@@ -113,15 +113,15 @@ models:
   DeadCap:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/team.DeadCap
-    fields:
-      Contract:
-        resolver: true
   DeadCapInput:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/team.DeadCapInput
   DeadCapYear:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/team.DeadCapYear
+  DeadCapYearInput:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/team.DeadCapYearInput
   CapUtilizationSummary:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/team.CapUtilizationSummary

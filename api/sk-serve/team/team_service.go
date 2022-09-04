@@ -62,6 +62,7 @@ func (s TeamService) GenerateAccessCode(ctx context.Context, leagueID string, te
 
 	return accessCode, s.TeamRepository.AddAccessCode(ctx, leagueID, teamID, accessCode)
 }
+
 func (s TeamService) GetTeamByOwnerID(ctx context.Context, leagueID string, ownerID string) (*Team, error) {
 	team, ok := s.TeamRepository.GetTeamByOwnerID(ctx, leagueID, ownerID)
 	if !ok {
@@ -69,6 +70,7 @@ func (s TeamService) GetTeamByOwnerID(ctx context.Context, leagueID string, owne
 	}
 	return team, nil
 }
+
 func (s TeamService) GetAllLeagueTeams(ctx context.Context, leagueId string) ([]*Team, error) {
 	return s.TeamRepository.GetAllLeagueTeams(ctx, leagueId)
 }
