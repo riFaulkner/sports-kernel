@@ -65,10 +65,10 @@ export const TEAM_DEAD_CAP = gql`
             id
             teamLiabilities {
                 deadCap {
-                    year
-                    deadCapAccrued {
+                    deadCapNote
+                    deadCapYears {
                         amount
-                        deadCapNote
+                        year
                     }
                 }
             }

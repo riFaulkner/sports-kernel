@@ -27,6 +27,11 @@ type Contract {
     totalRemainingValue: Int!
 }
 
+type ContractMutations {
+    drop(contractId: ID!, leagueId: ID!, teamId: ID!): Boolean!
+    restructure(contractId: ID!, leagueId: ID!, teamId: ID!): Contract!
+}
+
 type ContractYear {
     guaranteedAmount: Int!
     paidAmount: Int!
@@ -35,7 +40,7 @@ type ContractYear {
 }
 
 type ContractsMetadata {
-    deadCap: CapUtilizationSummary!
+    deadCapUtilizedCap: CapUtilizationSummary!
     qbUtilizedCap: CapUtilizationSummary!
     rbUtilizedCap: CapUtilizationSummary!
     teUtilizedCap: CapUtilizationSummary!
@@ -46,13 +51,14 @@ type ContractsMetadata {
 }
 
 type DeadCap {
-    amount: Int!
-    associatedContractId: ID!
-    contract: Contract
+    associatedContractId: ID
+    deadCapNote: String!
+    deadCapYears: [DeadCapYear!]!
+    id: ID!
 }
 
 type DeadCapYear {
-    deadCapAccrued: [DeadCap!]
+    amount: Int!
     year: Int!
 }
 
@@ -94,13 +100,17 @@ type Mutation {
     addComment(input: NewPostComment, leagueId: ID!, postId: ID!): PostComment!
     contractActionDrop(contractId: ID!, leagueId: ID!, teamId: ID!): Boolean!
     contractActionRestructure(leagueId: ID!, restructureDetails: ContractRestructureInput!): Contract!
+    contractMutations: ContractMutations
     createContract(input: ContractInput!, leagueId: ID!): Contract!
+    createLeague(input: NewLeagueInput!): League!
     createPlayer(input: NewPlayerNFL!): PlayerNFL!
     createPost(input: NewLeaguePost, leagueId: ID!): LeaguePost!
     createTeam(input: NewTeam!, leagueId: ID): Team!
-    createUser(input: NewUser!): User!
+    createUser(input: NewUser!): UserPreferences!
     createUserRole(leagueId: ID, newUserRole: NewUserRole): UserRoles!
     generateAccessCode(leagueId: ID!, role: Role!, teamId: ID!): String!
+    onboardUserToTeamWithAccessCode(accessCode: String!): UserPreferences
+    teamMutations: TeamMutations
     updateTeamMetaData(leagueId: ID!, teamId: ID!): Team!
 }
 
@@ -129,7 +139,6 @@ type Query {
     getUserRoles(userId: ID): [UserRoles]
     league(leagueId: ID): League
     leagueContracts(leagueId: ID!): [Contract!]
-    leagueContractsByOwnerId(leagueId: ID!, ownerId: ID!): [Contract!]
     leagues: [League!]
     player(playerId: ID): PlayerNFL!
     players(numOfResults: Int): [PlayerNFL!]
@@ -144,7 +153,7 @@ type Query {
 }
 
 type Team {
-    accessCodes: [String]
+    accessCodes: [String!]
     activeContracts: [Contract!]
     contractsMetadata: [ContractsMetadata!]
     currentContractsMetadata: ContractsMetadata
@@ -155,6 +164,7 @@ type Team {
     teamLiabilities: TeamLiabilities
     teamName: String!
     teamOwners: [ID!]
+    teamScoring(year: Int): [TeamScoring!]!
 }
 
 type TeamAssets {
@@ -162,7 +172,32 @@ type TeamAssets {
 }
 
 type TeamLiabilities {
-    deadCap: [DeadCapYear]
+    deadCap: [DeadCap]
+}
+
+type TeamMutations {
+    addDeadCap(deadCap: DeadCapInput!, leagueId: ID!, teamId: ID!): Boolean!
+}
+
+type TeamScoring {
+    summary: TeamScoringSeasonSummary
+    weeks: [TeamScoringWeek!]
+    year: Int!
+}
+
+type TeamScoringSeasonSummary {
+    currentStreak: Int!
+    losses: Int!
+    ties: Int!
+    totalPointsAgainst: Float!
+    totalPointsFor: Float!
+    wins: Int!
+}
+
+type TeamScoringWeek {
+    pointsAgainst: Float!
+    pointsFor: Float!
+    week: Int!
 }
 
 type Transaction {
@@ -181,9 +216,15 @@ type User {
 type UserPreferences {
     id: ID!
     isAdmin: Boolean
-    leagues: [League!]!
-    ownerName: String!
+    leagues: [UserPreferencesLeagueSnippet!]
+    ownerName: String
     preferredLeagueId: String
+}
+
+type UserPreferencesLeagueSnippet {
+    id: ID!
+    leagueName: String!
+    roleInLeague: String!
 }
 
 type UserRoles {
@@ -286,9 +327,27 @@ input ContractYearInput {
     year: Int!
 }
 
+input DeadCapInput {
+    associatedContractId: ID
+    deadCapNote: String
+    deadCapYears: [DeadCapYearInput!]!
+}
+
+input DeadCapYearInput {
+    amount: Int!
+    year: Int!
+}
+
 input LeagueTeamFiltering {
     ownerId: ID
     teamId: ID
+}
+
+input NewLeagueInput {
+    divisions: [String!]
+    leagueName: String!
+    logoUrl: String
+    startDate: Time
 }
 
 input NewLeaguePost {
