@@ -29,15 +29,13 @@ func (s TeamService) AddDeadCapToTeam(ctx context.Context, leagueID string, team
 		}
 		deadCapYears = append(deadCapYears, deadCapYear)
 	}
-	deadCapList := []*DeadCap{
-		{
-			AssociatedContractID: input.AssociatedContractID,
-			DeadCapYears:         deadCapYears,
-			DeadCapNote:          &input.DeadCapNote,
-		},
+	deadCap := DeadCap{
+		AssociatedContractID: input.AssociatedContractID,
+		DeadCapYears:         deadCapYears,
+		DeadCapNote:          &input.DeadCapNote,
 	}
 
-	ok := s.TeamRepository.AddDeadCapToTeam(ctx, leagueID, teamID, deadCapList)
+	ok := s.TeamRepository.AddDeadCapToTeam(ctx, leagueID, teamID, deadCap)
 
 	return ok, nil
 }
@@ -51,9 +49,11 @@ func (s TeamService) AddUserToTeamAndConsumeAccessCode(ctx context.Context, deco
 	}
 	return false
 }
+
 func (s TeamService) Create(ctx context.Context, leagueId string, team NewTeam) (*Team, error) {
 	return s.TeamRepository.Create(ctx, leagueId, team)
 }
+
 func (s TeamService) GenerateAccessCode(ctx context.Context, leagueID string, teamID string, role model.Role) (string, error) {
 	//Generate a random string, length 5, to append to the pre-encoded string
 	randString := randomString(5)

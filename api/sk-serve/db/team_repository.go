@@ -254,17 +254,31 @@ func (u *TeamRepositoryImpl) UpdateTeamContractMetaData(ctx context.Context, lea
 	}
 	if teamRef.TeamLiabilities != nil {
 		if teamRef.TeamLiabilities.DeadCap != nil {
+			currentYear := contractsMetadata[0].Year
 			// Process dead cap
-			for i, deadCapYear := range teamRef.TeamLiabilities.DeadCap {
-				deadCapTotal := 0
-				totalContracts := 0
-				for _, deadCap := range deadCapYear.DeadCapAccrued {
-					totalContracts++
-					deadCapTotal += deadCap.Amount
-				}
-				contractsMetadata[i].DeadCap = &team.CapUtilizationSummary{
-					CapUtilization: deadCapTotal,
-					NumContracts:   totalContracts,
+			// Dead cap only ever has two year, so just create both utilization objects here
+			currentYearDeadCapUtilization := team.CapUtilizationSummary{
+				CapUtilization: 0,
+				NumContracts:   0,
+			}
+			futureYearDeadCapUtilization := team.CapUtilizationSummary{
+				CapUtilization: 0,
+				NumContracts:   0,
+			}
+
+			for _, deadCap := range teamRef.TeamLiabilities.DeadCap {
+				for _, deadCapYear := range deadCap.DeadCapYears {
+					if deadCapYear.Year == currentYear {
+						currentYearDeadCapUtilization.CapUtilization += deadCapYear.Amount
+						currentYearDeadCapUtilization.NumContracts++
+						continue
+					}
+					if deadCapYear.Year == (currentYear + 1) {
+						futureYearDeadCapUtilization.CapUtilization += deadCapYear.Amount
+						futureYearDeadCapUtilization.NumContracts++
+						continue
+					}
+					log.Printf("Unexpected Dead cap year found %v", deadCapYear.Year)
 				}
 			}
 		}

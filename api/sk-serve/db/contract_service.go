@@ -298,35 +298,10 @@ func (u *ContractImpl) DropContract(ctx context.Context, leagueID string, teamID
 		return false, gqlerror.Errorf("TeamId provided did not match the contract's teamID")
 	}
 
-	deadCapYears := make([]*team.DeadCap, 0, 2)
+	contractDeadCap := u.generateContractDeadCap(ctx, playerContract)
 
-	sort.Slice(playerContract.ContractDetails, func(i, j int) bool {
-		return playerContract.ContractDetails[i].Year < playerContract.ContractDetails[j].Year
-	})
-	currentContractYear := playerContract.CurrentYear
-	currentContractDetails := playerContract.ContractDetails[(currentContractYear - 1)]
-	playerName := u.getPlayerName(ctx, playerContract.PlayerID)
-
-	deadCapYears = append(deadCapYears, &team.DeadCap{
-		AssociatedContractID: &playerContract.ID,
-		Amount:               calculateDeadCap(currentContractDetails),
-		DeadCapNote:          &playerName,
-	})
-
-	futureAccumulatedDeadCap := 0
-	for _, year := range playerContract.ContractDetails {
-		if year.Year > playerContract.CurrentYear {
-			futureAccumulatedDeadCap += calculateDeadCap(year)
-		}
-	}
-
-	deadCapYears = append(deadCapYears, &team.DeadCap{
-		AssociatedContractID: &playerContract.ID,
-		Amount:               futureAccumulatedDeadCap,
-		DeadCapNote:          &playerName,
-	})
 	// Add dead cap to the team
-	ok = u.TeamImpl.AddDeadCapToTeam(ctx, leagueID, teamID, deadCapYears)
+	ok = u.TeamImpl.AddDeadCapToTeam(ctx, leagueID, teamID, contractDeadCap)
 
 	if !ok {
 		// consider using a transaction here to roll back
@@ -352,7 +327,7 @@ func (u *ContractImpl) DropContract(ctx context.Context, leagueID string, teamID
 	// Save the transaction
 	inputData, err := json.Marshal(map[string]interface{}{
 		"contractID":   contractID,
-		"deadCapAdded": deadCapYears,
+		"deadCapAdded": contractDeadCap,
 	})
 
 	if err != nil {
@@ -449,6 +424,39 @@ func getAndValidateContractTotalValue(ctx context.Context, contractYears []*cont
 		graphql.AddError(ctx, gqlerror.Errorf("Invalid contract, contract total value is 0"))
 	}
 	return &totalContractValue
+}
+
+func (u *ContractImpl) generateContractDeadCap(ctx context.Context, playerContract *contract.Contract) team.DeadCap {
+	sort.Slice(playerContract.ContractDetails, func(i, j int) bool {
+		return playerContract.ContractDetails[i].Year < playerContract.ContractDetails[j].Year
+	})
+
+	deadCapYears := make([]*team.DeadCapYear, 0, 2)
+	currentContractYear := playerContract.CurrentYear
+	currentContractDetails := playerContract.ContractDetails[(currentContractYear - 1)]
+	playerName := u.getPlayerName(ctx, playerContract.PlayerID)
+
+	deadCapYears = append(deadCapYears, &team.DeadCapYear{
+		Amount: calculateDeadCap(currentContractDetails),
+		Year:   currentContractYear,
+	})
+
+	futureAccumulatedDeadCap := 0
+	for _, year := range playerContract.ContractDetails {
+		if year.Year > playerContract.CurrentYear {
+			futureAccumulatedDeadCap += calculateDeadCap(year)
+		}
+	}
+
+	deadCapYears = append(deadCapYears, &team.DeadCapYear{
+		Amount: futureAccumulatedDeadCap,
+		Year:   currentContractYear + 1,
+	})
+
+	return team.DeadCap{
+		AssociatedContractID: &playerContract.ID,
+		DeadCapNote:          &playerName,
+	}
 }
 
 // TODO: This is terrible, we should be using the player repository but I didn't want to deal with what I knew would give a circular
