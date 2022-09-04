@@ -374,7 +374,7 @@ func generateDefaultTeamContractsMetadata() *team.ContractsMetadata {
 			CapUtilization: 0,
 			NumContracts:   0,
 		},
-		DeadCap: &team.CapUtilizationSummary{
+		DeadCapUtilizedCap: &team.CapUtilizationSummary{
 			CapUtilization: 0,
 			NumContracts:   0,
 		},

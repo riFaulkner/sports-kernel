@@ -89,14 +89,14 @@ type ComplexityRoot struct {
 	}
 
 	ContractsMetadata struct {
-		DeadCap           func(childComplexity int) int
-		QbUtilizedCap     func(childComplexity int) int
-		RbUtilizedCap     func(childComplexity int) int
-		TeUtilizedCap     func(childComplexity int) int
-		TotalAvailableCap func(childComplexity int) int
-		TotalUtilizedCap  func(childComplexity int) int
-		WrUtilizedCap     func(childComplexity int) int
-		Year              func(childComplexity int) int
+		DeadCapUtilizedCap func(childComplexity int) int
+		QbUtilizedCap      func(childComplexity int) int
+		RbUtilizedCap      func(childComplexity int) int
+		TeUtilizedCap      func(childComplexity int) int
+		TotalAvailableCap  func(childComplexity int) int
+		TotalUtilizedCap   func(childComplexity int) int
+		WrUtilizedCap      func(childComplexity int) int
+		Year               func(childComplexity int) int
 	}
 
 	DeadCap struct {
@@ -503,12 +503,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ContractYear.Year(childComplexity), true
 
-	case "ContractsMetadata.deadCap":
-		if e.complexity.ContractsMetadata.DeadCap == nil {
+	case "ContractsMetadata.deadCapUtilizedCap":
+		if e.complexity.ContractsMetadata.DeadCapUtilizedCap == nil {
 			break
 		}
 
-		return e.complexity.ContractsMetadata.DeadCap(childComplexity), true
+		return e.complexity.ContractsMetadata.DeadCapUtilizedCap(childComplexity), true
 
 	case "ContractsMetadata.qbUtilizedCap":
 		if e.complexity.ContractsMetadata.QbUtilizedCap == nil {
@@ -1812,7 +1812,7 @@ type ContractsMetadata {
     rbUtilizedCap: CapUtilizationSummary!
     wrUtilizedCap: CapUtilizationSummary!
     teUtilizedCap: CapUtilizationSummary!
-    deadCap: CapUtilizationSummary!
+    deadCapUtilizedCap: CapUtilizationSummary!
 }
 
 type DeadCap {
@@ -4081,8 +4081,8 @@ func (ec *executionContext) fieldContext_ContractsMetadata_teUtilizedCap(ctx con
 	return fc, nil
 }
 
-func (ec *executionContext) _ContractsMetadata_deadCap(ctx context.Context, field graphql.CollectedField, obj *team.ContractsMetadata) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ContractsMetadata_deadCap(ctx, field)
+func (ec *executionContext) _ContractsMetadata_deadCapUtilizedCap(ctx context.Context, field graphql.CollectedField, obj *team.ContractsMetadata) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ContractsMetadata_deadCapUtilizedCap(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4095,7 +4095,7 @@ func (ec *executionContext) _ContractsMetadata_deadCap(ctx context.Context, fiel
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.DeadCap, nil
+		return obj.DeadCapUtilizedCap, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4112,7 +4112,7 @@ func (ec *executionContext) _ContractsMetadata_deadCap(ctx context.Context, fiel
 	return ec.marshalNCapUtilizationSummary2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋteamᚐCapUtilizationSummary(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ContractsMetadata_deadCap(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ContractsMetadata_deadCapUtilizedCap(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ContractsMetadata",
 		Field:      field,
@@ -8820,8 +8820,8 @@ func (ec *executionContext) fieldContext_Team_currentContractsMetadata(ctx conte
 				return ec.fieldContext_ContractsMetadata_wrUtilizedCap(ctx, field)
 			case "teUtilizedCap":
 				return ec.fieldContext_ContractsMetadata_teUtilizedCap(ctx, field)
-			case "deadCap":
-				return ec.fieldContext_ContractsMetadata_deadCap(ctx, field)
+			case "deadCapUtilizedCap":
+				return ec.fieldContext_ContractsMetadata_deadCapUtilizedCap(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ContractsMetadata", field.Name)
 		},
@@ -8879,8 +8879,8 @@ func (ec *executionContext) fieldContext_Team_contractsMetadata(ctx context.Cont
 				return ec.fieldContext_ContractsMetadata_wrUtilizedCap(ctx, field)
 			case "teUtilizedCap":
 				return ec.fieldContext_ContractsMetadata_teUtilizedCap(ctx, field)
-			case "deadCap":
-				return ec.fieldContext_ContractsMetadata_deadCap(ctx, field)
+			case "deadCapUtilizedCap":
+				return ec.fieldContext_ContractsMetadata_deadCapUtilizedCap(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ContractsMetadata", field.Name)
 		},
@@ -13387,9 +13387,9 @@ func (ec *executionContext) _ContractsMetadata(ctx context.Context, sel ast.Sele
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "deadCap":
+		case "deadCapUtilizedCap":
 
-			out.Values[i] = ec._ContractsMetadata_deadCap(ctx, field, obj)
+			out.Values[i] = ec._ContractsMetadata_deadCapUtilizedCap(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++

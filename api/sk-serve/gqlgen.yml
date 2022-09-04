@@ -103,7 +103,6 @@ models:
   TeamScoringWeek:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/team.TeamScoringWeek
-
   DraftPick:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/team.DraftPick
