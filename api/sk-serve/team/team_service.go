@@ -36,7 +36,6 @@ func (s TeamService) AddDeadCapToTeam(ctx context.Context, leagueID string, team
 	}
 
 	ok := s.TeamRepository.AddDeadCapToTeam(ctx, leagueID, teamID, deadCap)
-
 	return ok, nil
 }
 

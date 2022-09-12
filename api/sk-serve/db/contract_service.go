@@ -431,12 +431,12 @@ func (u *ContractImpl) generateContractDeadCap(ctx context.Context, playerContra
 		return playerContract.ContractDetails[i].Year < playerContract.ContractDetails[j].Year
 	})
 
-	deadCapYears := make([]*team.DeadCapYear, 0, 2)
+	deadCapYears := make([]team.DeadCapYear, 0, 2)
 	currentContractYear := playerContract.CurrentYear
 	currentContractDetails := playerContract.ContractDetails[(currentContractYear - 1)]
 	playerName := u.getPlayerName(ctx, playerContract.PlayerID)
 
-	deadCapYears = append(deadCapYears, &team.DeadCapYear{
+	deadCapYears = append(deadCapYears, team.DeadCapYear{
 		Amount: calculateDeadCap(currentContractDetails),
 		Year:   currentContractYear,
 	})
@@ -448,7 +448,7 @@ func (u *ContractImpl) generateContractDeadCap(ctx context.Context, playerContra
 		}
 	}
 
-	deadCapYears = append(deadCapYears, &team.DeadCapYear{
+	deadCapYears = append(deadCapYears, team.DeadCapYear{
 		Amount: futureAccumulatedDeadCap,
 		Year:   currentContractYear + 1,
 	})
@@ -456,6 +456,7 @@ func (u *ContractImpl) generateContractDeadCap(ctx context.Context, playerContra
 	return team.DeadCap{
 		AssociatedContractID: &playerContract.ID,
 		DeadCapNote:          &playerName,
+		DeadCapYears:         deadCapYears,
 	}
 }
 

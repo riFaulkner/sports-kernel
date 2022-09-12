@@ -21,7 +21,18 @@ func (r *teamResolver) ActiveContracts(ctx context.Context, obj *team.Team) ([]*
 }
 
 func (r *teamMutationsResolver) AddDeadCap(ctx context.Context, obj *team.TeamMutations, leagueID string, teamID string, deadCap team.DeadCapInput) (bool, error) {
-	return r.TeamService.AddDeadCapToTeam(ctx, leagueID, teamID, deadCap)
+	result, err := r.TeamService.AddDeadCapToTeam(ctx, leagueID, teamID, deadCap)
+
+	if err != nil {
+		return false, err
+	}
+	teamContracts, err := r.ContractResolver.GetAllActiveTeamContracts(ctx, leagueID, teamID)
+	if err != nil {
+		return true, gqlerror.Errorf("Unable to recalculate team metadata")
+	}
+	r.TeamService.UpdateTeamContractMetaData(ctx, leagueID, teamContracts)
+
+	return result, err
 }
 
 // Team returns generated.TeamResolver implementation.

@@ -15,7 +15,7 @@ export const TEAM_CONTRACTS = gql`
             totalContractValue
             contractLength
             playerPosition
-            contractDetails{
+            contractDetails {
                 year
                 totalAmount
                 paidAmount
@@ -47,6 +47,7 @@ export const TEAMS_WITH_SCORING = gql`
 export const TEAM_DRAFT_PICKS = gql`
     query getTeamById($leagueId:ID!, $teamId: ID!) {
         teamById(leagueId: $leagueId, teamId:$teamId) {
+            id
             teamAssets{
                 draftPicks{
                     year
@@ -80,7 +81,13 @@ export const GENERATE_ACCESS_CODE = gql`
         generateAccessCode(leagueId: $leagueId, teamId: $teamId, role: $role)
     }
 `
-
+export const APPLY_DEAD_CAP = gql`
+    mutation addDeadCapToTeam($leagueId:ID!, $teamId:ID!, $input: DeadCapInput!) {
+        teamMutations{
+            addDeadCap(leagueId: $leagueId, teamId: $teamId, deadCap: $input)
+        }
+    }
+`
 export const ONBOARD_USER = gql`
 mutation onboardUserToTeamWithAccessCode($accessCode: String!){
     onboardUserToTeamWithAccessCode(accessCode: $accessCode){

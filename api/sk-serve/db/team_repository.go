@@ -26,43 +26,6 @@ type TeamRepositoryImpl struct {
 }
 
 func (u *TeamRepositoryImpl) AddDeadCapToTeam(ctx context.Context, leagueID string, teamID string, deadCap team.DeadCap) bool {
-	// Get the team
-	//teamRef, ok := u.GetTeamByIdOk(ctx, leagueID, teamID)
-	//if !ok || teamRef == nil {
-	//	if teamRef == nil {
-	//		gqlerror.Errorf("WARN: Team does not exist, failed update contract")
-	//	}
-	//	return false
-	//}
-	//
-	//if teamRef.TeamLiabilities == nil || teamRef.TeamLiabilities.DeadCap == nil {
-	//	teamRef.TeamLiabilities = &team.TeamLiabilities{
-	//		DeadCap: make([]*team.DeadCap, 0, 0),
-	//	}
-	//}
-
-	//teamDeadCap := teamRef.TeamLiabilities.DeadCap
-	//if len(teamDeadCap) != 0 {
-	//	sort.Slice(teamDeadCap, func(i, j int) bool {
-	//		return teamDeadCap[i].Year < teamDeadCap[j].Year
-	//	})
-	//}
-	//
-	//for i, value := range deadCap {
-	//	if value.Amount != 0 {
-	//		if len(teamDeadCap) > i {
-	//			teamDeadCap[i].DeadCapAccrued = append(teamDeadCap[i].DeadCapAccrued, value)
-	//		} else {
-	//			deadCapYear := &team.DeadCapYear{
-	//				Year:           time.Now().Year() + i,
-	//				DeadCapAccrued: make([]*team.DeadCap, 0, 1),
-	//			}
-	//			deadCapYear.DeadCapAccrued = append(deadCapYear.DeadCapAccrued, value)
-	//			teamDeadCap = append(teamDeadCap, deadCapYear)
-	//		}
-	//	}
-	//}
-
 	u.Client.
 		Collection(firestore.LeaguesCollection).
 		Doc(leagueID).
