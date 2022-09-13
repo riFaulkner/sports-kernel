@@ -167,6 +167,7 @@ func (u *TeamRepositoryImpl) UpdateTeamContractMetaData(ctx context.Context, lea
 	if teamContracts == nil || len(teamContracts) == 0 {
 		return gqlerror.Errorf("Unable to update contract metadata, no team contracts")
 	}
+
 	teamID := teamContracts[0].TeamID
 	teamRef, err := u.GetTeamById(ctx, leagueID, teamID)
 	if err != nil {
@@ -215,6 +216,7 @@ func (u *TeamRepositoryImpl) UpdateTeamContractMetaData(ctx context.Context, lea
 			capUtilization.NumContracts++
 		}
 	}
+
 	if teamRef.TeamLiabilities != nil {
 		if teamRef.TeamLiabilities.DeadCap != nil {
 			currentYear := contractsMetadata[0].Year
@@ -244,6 +246,8 @@ func (u *TeamRepositoryImpl) UpdateTeamContractMetaData(ctx context.Context, lea
 					log.Printf("Unexpected Dead cap year found %v", deadCapYear.Year)
 				}
 			}
+			contractsMetadata[0].DeadCapUtilizedCap = &currentYearDeadCapUtilization
+			contractsMetadata[1].DeadCapUtilizedCap = &futureYearDeadCapUtilization
 		}
 	}
 

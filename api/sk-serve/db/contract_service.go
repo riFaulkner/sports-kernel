@@ -308,7 +308,7 @@ func (u *ContractImpl) DropContract(ctx context.Context, leagueID string, teamID
 		return false, gqlerror.Errorf("Failed to add dead cap to team")
 	}
 
-	// Move the contract to new status
+	// Move the contract to new status pull this out to interface
 	_, err := u.Client.
 		Collection(firestore.LeaguesCollection).
 		Doc(leagueID).
@@ -432,13 +432,16 @@ func (u *ContractImpl) generateContractDeadCap(ctx context.Context, playerContra
 	})
 
 	deadCapYears := make([]team.DeadCapYear, 0, 2)
+	// TODO: this might cause issues if people drop the first couple weeks of the year. Not sure drops makes sense in that time
+	// but regardless this should be updated to use the current season. Getting that from either the league or the contract
+	currentSeason := time.Now().Year()
 	currentContractYear := playerContract.CurrentYear
 	currentContractDetails := playerContract.ContractDetails[(currentContractYear - 1)]
 	playerName := u.getPlayerName(ctx, playerContract.PlayerID)
 
 	deadCapYears = append(deadCapYears, team.DeadCapYear{
 		Amount: calculateDeadCap(currentContractDetails),
-		Year:   currentContractYear,
+		Year:   currentSeason,
 	})
 
 	futureAccumulatedDeadCap := 0
@@ -450,7 +453,7 @@ func (u *ContractImpl) generateContractDeadCap(ctx context.Context, playerContra
 
 	deadCapYears = append(deadCapYears, team.DeadCapYear{
 		Amount: futureAccumulatedDeadCap,
-		Year:   currentContractYear + 1,
+		Year:   currentSeason + 1,
 	})
 
 	return team.DeadCap{
