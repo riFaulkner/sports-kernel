@@ -31,11 +31,6 @@ func (p *PlayerRepositoryImpl) GetAll(ctx context.Context, numberOfResults *int)
 	var results []*firestore.DocumentSnapshot
 	var err error
 
-	if *numberOfResults < -1 {
-		log.Errorf(ctx, "Invalid number of results passed, less than -1")
-		return nil, false
-	}
-
 	//-1 to return all players, no query limit
 	if *numberOfResults == -1 {
 		results, err = p.Client.

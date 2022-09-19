@@ -6,14 +6,28 @@ import (
 	"encoding/base64"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
 	"github.com/vektah/gqlparser/v2/gqlerror"
+	"google.golang.org/appengine/log"
 )
 
 type PlayerService struct {
-	PlayerRepository PlayerRepository
+	playerRepository PlayerRepository
+}
+
+func NewPlayerService(playerRepository PlayerRepository) *PlayerService {
+	return &PlayerService{playerRepository}
 }
 
 func (p *PlayerService) GetAllPlayers(ctx context.Context, numberOfResults *int) ([]*model.PlayerNfl, error) {
-	players, ok := p.PlayerRepository.GetAll(ctx, numberOfResults)
+	if numberOfResults == nil {
+		p.playerRepository.GetAll(ctx, numberOfResults)
+	}
+
+	if *numberOfResults < 1 {
+		log.Errorf(ctx, "Invalid number of results passed, less than -1")
+		return nil, gqlerror.Errorf("Invalid number of results passed, less than 1")
+	}
+
+	players, ok := p.playerRepository.GetAll(ctx, numberOfResults)
 	if !ok {
 		return nil, gqlerror.Errorf("Failed to fetch players")
 	}
@@ -21,7 +35,7 @@ func (p *PlayerService) GetAllPlayers(ctx context.Context, numberOfResults *int)
 }
 
 func (p *PlayerService) GetPlayerById(ctx context.Context, playerId *string) (*model.PlayerNfl, error) {
-	player, ok := p.PlayerRepository.GetPlayerById(ctx, playerId)
+	player, ok := p.playerRepository.GetPlayerById(ctx, playerId)
 	if !ok {
 		return nil, gqlerror.Errorf("Failed to fetch player with id %v", playerId)
 	}
@@ -29,7 +43,7 @@ func (p *PlayerService) GetPlayerById(ctx context.Context, playerId *string) (*m
 }
 
 func (p *PlayerService) GetPlayersByPosition(ctx context.Context, position model.PlayerPosition) ([]*model.PlayerNfl, error) {
-	players, ok := p.PlayerRepository.GetPlayersByPosition(ctx, position)
+	players, ok := p.playerRepository.GetPlayersByPosition(ctx, position)
 	if !ok {
 		return nil, gqlerror.Errorf("Unable to fetch players by position: %v", position)
 	}
@@ -39,7 +53,7 @@ func (p *PlayerService) GetPlayersByPosition(ctx context.Context, position model
 func (p *PlayerService) CreatePlayer(ctx context.Context, playerInput model.NewPlayerNfl) (*model.PlayerNfl, error) {
 	newPlayer := convertNewPlayerInputToPlayer(playerInput)
 
-	return p.PlayerRepository.Create(ctx, newPlayer)
+	return p.playerRepository.Create(ctx, newPlayer)
 }
 
 func generatePlayerId(name string) string {
