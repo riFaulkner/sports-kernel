@@ -75,8 +75,7 @@ func TestPlayerService_CreatePlayer(t *testing.T) {
 
 func TestPlayerService_GetAllPlayers(t *testing.T) {
 	type fields struct {
-		Mock      mockPlayerRepository
-		MockSetup func(repository mockPlayerRepository) PlayerRepository
+		MockSetup func() *mockPlayerRepository
 	}
 	type args struct {
 		ctx             context.Context
@@ -91,7 +90,8 @@ func TestPlayerService_GetAllPlayers(t *testing.T) {
 		wantErr bool
 	}{
 		{"Successfully gets data",
-			fields{*new(mockPlayerRepository), func(mockRepository mockPlayerRepository) PlayerRepository {
+			fields{func() *mockPlayerRepository {
+				mockRepository := new(mockPlayerRepository)
 				mockRepository.On("GetAll", mock.Anything).Return(make([]*model.PlayerNfl, 0), true)
 				return mockRepository
 			}},
@@ -103,38 +103,39 @@ func TestPlayerService_GetAllPlayers(t *testing.T) {
 			make([]*model.PlayerNfl, 0),
 			false,
 		},
-		//{"Failed to get data",
-		//	fields{*new(mockPlayerRepository),func(repository mockPlayerRepository) PlayerRepository {
-		//		mockRepository := new(mockPlayerRepository)
-		//		mockRepository.On("GetAll", mock.Anything).Return(nil, false)
-		//		return mockRepository
-		//	}},
-		//	args{context.Background(), func() *int {
-		//		expectedResults := 1
-		//		return &expectedResults
-		//	}},
-		//	nil,
-		//	true,
-		//},
-		//{"Invalid value returned, should not call mock",
-		//	fields{func() PlayerRepository {
-		//		mockRepository := new(mockPlayerRepository)
-		//		mockRepository.On("GetAll", mock.Anything).Return(nil, false)
-		//		mockRepository.AssertExpectations()
-		//		return mockRepository
-		//	}},
-		//	args{context.Background(), func() *int {
-		//		expectedResults := 1
-		//		return &expectedResults
-		//	}},
-		//	nil,
-		//	true,
-		//},
+		{"Failed to get data",
+			fields{func() *mockPlayerRepository {
+				mockRepository := new(mockPlayerRepository)
+				mockRepository.On("GetAll", mock.Anything).Return(nil, false)
+				return mockRepository
+			}},
+			args{context.Background(), func() *int {
+				expectedResults := 1
+				return &expectedResults
+			}},
+			nil,
+			true,
+		},
+		{"Invalid value returned, should not call mock",
+			fields{func() *mockPlayerRepository {
+				mockRepository := new(mockPlayerRepository)
+				mockRepository.On("GetAll", mock.Anything).Return(nil, false)
+
+				return mockRepository
+			}},
+			args{context.Background(), func() *int {
+				expectedResults := 1
+				return &expectedResults
+			}},
+			nil,
+			true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mockRepository := tt.fields.MockSetup()
 			p := &PlayerService{
-				playerRepository: tt.fields.MockSetup(tt.fields.Mock),
+				playerRepository: mockRepository,
 			}
 			got, err := p.GetAllPlayers(tt.args.ctx, tt.args.numberOfResults())
 			if (err != nil) != tt.wantErr {
@@ -144,7 +145,7 @@ func TestPlayerService_GetAllPlayers(t *testing.T) {
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetAllPlayers() got = %v, want %v", got, tt.want)
 			}
-			if !tt.fields.Mock.AssertExpectations(t) {
+			if !mockRepository.AssertExpectations(t) {
 				t.Errorf("Failed!")
 			}
 		})
