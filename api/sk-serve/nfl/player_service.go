@@ -6,7 +6,7 @@ import (
 	"encoding/base64"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
 	"github.com/vektah/gqlparser/v2/gqlerror"
-	"google.golang.org/appengine/log"
+	"log"
 )
 
 type PlayerService struct {
@@ -18,16 +18,17 @@ func NewPlayerService(playerRepository PlayerRepository) *PlayerService {
 }
 
 func (p *PlayerService) GetAllPlayers(ctx context.Context, numberOfResults *int) ([]*model.PlayerNfl, error) {
+	var players []*model.PlayerNfl
+	ok := false
 	if numberOfResults == nil {
-		p.playerRepository.GetAll(ctx, numberOfResults)
-	}
-
-	if *numberOfResults < 1 {
-		log.Errorf(ctx, "Invalid number of results passed, less than -1")
+		players, ok = p.playerRepository.GetAll(ctx)
+	} else if *numberOfResults < 1 {
+		log.Printf("Invalid number of results passed, less than -1")
 		return nil, gqlerror.Errorf("Invalid number of results passed, less than 1")
+	} else {
+		players, ok = p.playerRepository.GetPlayersWithLimit(ctx, *numberOfResults)
 	}
 
-	players, ok := p.playerRepository.GetAll(ctx, numberOfResults)
 	if !ok {
 		return nil, gqlerror.Errorf("Failed to fetch players")
 	}

@@ -14,12 +14,17 @@ type mockPlayerRepository struct {
 }
 
 func (m mockPlayerRepository) Create(ctx context.Context, player model.PlayerNfl) (*model.PlayerNfl, error) {
-	//TODO implement me
-	panic("implement me")
+	args := m.Called(player)
+
+	if args.Get(0) != nil {
+		return nil, args.Error(0)
+	}
+
+	return &player, args.Error(0)
 }
 
-func (m mockPlayerRepository) GetAll(ctx context.Context, numberOfResults *int) ([]*model.PlayerNfl, bool) {
-	args := m.Called(numberOfResults)
+func (m mockPlayerRepository) GetAll(ctx context.Context) ([]*model.PlayerNfl, bool) {
+	args := m.Called()
 
 	if args.Get(0) == nil {
 		return nil, args.Bool(1)
@@ -33,6 +38,16 @@ func (m mockPlayerRepository) GetPlayersByPosition(ctx context.Context, position
 	panic("implement me")
 }
 
+func (m mockPlayerRepository) GetPlayersWithLimit(ctx context.Context, numberOfResults int) ([]*model.PlayerNfl, bool) {
+	args := m.Called(numberOfResults)
+
+	if args.Get(0) == nil {
+		return nil, args.Bool(1)
+	}
+
+	return args.Get(0).([]*model.PlayerNfl), args.Bool(1)
+}
+
 func (m mockPlayerRepository) GetPlayerById(ctx context.Context, playerId *string) (*model.PlayerNfl, bool) {
 	//TODO implement me
 	panic("implement me")
@@ -40,7 +55,7 @@ func (m mockPlayerRepository) GetPlayerById(ctx context.Context, playerId *strin
 
 func TestPlayerService_CreatePlayer(t *testing.T) {
 	type fields struct {
-		PlayerRepository PlayerRepository
+		MockSetup func() *mockPlayerRepository
 	}
 	type args struct {
 		ctx         context.Context
@@ -53,13 +68,31 @@ func TestPlayerService_CreatePlayer(t *testing.T) {
 		want    *model.PlayerNfl
 		wantErr bool
 	}{
-
-		// TODO: Add test cases.
+		{"Test Basic defaults met",
+			fields{func() *mockPlayerRepository {
+				mockRepository := new(mockPlayerRepository)
+				mockRepository.
+					On("Create", mock.Anything).
+					Return()
+				return mockRepository
+			}},
+			args{
+				context.Background(),
+				model.NewPlayerNfl{
+					PlayerName: "Test Player",
+					Position:   "RB",
+					Team:       model.NflTeamFa,
+				},
+			},
+			nil,
+			false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mockPlayerRepository := tt.fields.MockSetup()
 			p := &PlayerService{
-				playerRepository: tt.fields.PlayerRepository,
+				playerRepository: mockPlayerRepository,
 			}
 			got, err := p.CreatePlayer(tt.args.ctx, tt.args.playerInput)
 			if (err != nil) != tt.wantErr {
@@ -68,6 +101,9 @@ func TestPlayerService_CreatePlayer(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("CreatePlayer() got = %v, want %v", got, tt.want)
+			}
+			if !mockPlayerRepository.AssertExpectations(t) {
+				t.Errorf("Failed to assert mock expectations")
 			}
 		})
 	}
@@ -89,10 +125,23 @@ func TestPlayerService_GetAllPlayers(t *testing.T) {
 		want    []*model.PlayerNfl
 		wantErr bool
 	}{
-		{"Successfully gets data",
+		{"Successfully gets empty data",
 			fields{func() *mockPlayerRepository {
 				mockRepository := new(mockPlayerRepository)
-				mockRepository.On("GetAll", mock.Anything).Return(make([]*model.PlayerNfl, 0), true)
+				mockRepository.On("GetAll").Return(make([]*model.PlayerNfl, 0), true)
+				return mockRepository
+			}},
+			args{context.Background(), func() *int {
+				return nil
+			},
+			},
+			make([]*model.PlayerNfl, 0),
+			false,
+		},
+		{"Successfully gets empty data, with limited number of players requested",
+			fields{func() *mockPlayerRepository {
+				mockRepository := new(mockPlayerRepository)
+				mockRepository.On("GetPlayersWithLimit", 1).Return(make([]*model.PlayerNfl, 0), true)
 				return mockRepository
 			}},
 			args{context.Background(), func() *int {
@@ -110,21 +159,32 @@ func TestPlayerService_GetAllPlayers(t *testing.T) {
 				return mockRepository
 			}},
 			args{context.Background(), func() *int {
-				expectedResults := 1
-				return &expectedResults
+				return nil
 			}},
 			nil,
 			true,
 		},
-		{"Invalid value returned, should not call mock",
+		{"Failed to get data, from filter",
 			fields{func() *mockPlayerRepository {
 				mockRepository := new(mockPlayerRepository)
-				mockRepository.On("GetAll", mock.Anything).Return(nil, false)
+				mockRepository.On("GetPlayersWithLimit", 1).Return(nil, false)
+				return mockRepository
+			}},
+			args{context.Background(), func() *int {
+				filterResults := 1
+				return &filterResults
+			}},
+			nil,
+			true,
+		},
+		{"Invalid number of results requested, should return error",
+			fields{func() *mockPlayerRepository {
+				mockRepository := new(mockPlayerRepository)
 
 				return mockRepository
 			}},
 			args{context.Background(), func() *int {
-				expectedResults := 1
+				expectedResults := 0
 				return &expectedResults
 			}},
 			nil,
@@ -146,7 +206,7 @@ func TestPlayerService_GetAllPlayers(t *testing.T) {
 				t.Errorf("GetAllPlayers() got = %v, want %v", got, tt.want)
 			}
 			if !mockRepository.AssertExpectations(t) {
-				t.Errorf("Failed!")
+				t.Errorf("Failed to assert expectations!")
 			}
 		})
 	}

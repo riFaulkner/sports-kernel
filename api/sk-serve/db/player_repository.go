@@ -27,25 +27,15 @@ func (p *PlayerRepositoryImpl) Create(ctx context.Context, player model.PlayerNf
 	return &player, nil
 }
 
-func (p *PlayerRepositoryImpl) GetAll(ctx context.Context, numberOfResults *int) ([]*model.PlayerNfl, bool) {
+func (p *PlayerRepositoryImpl) GetAll(ctx context.Context) ([]*model.PlayerNfl, bool) {
 	var results []*firestore.DocumentSnapshot
 	var err error
 
-	//-1 to return all players, no query limit
-	if *numberOfResults == -1 {
-		results, err = p.Client.
-			Collection(appFirestore.PlayerCollection).
-			OrderBy("OverallRank", firestore.Asc).
-			Documents(ctx).
-			GetAll()
-	} else {
-		results, err = p.Client.
-			Collection(appFirestore.PlayerCollection).
-			OrderBy("OverallRank", firestore.Asc).
-			Limit(*numberOfResults).
-			Documents(ctx).
-			GetAll()
-	}
+	results, err = p.Client.
+		Collection(appFirestore.PlayerCollection).
+		OrderBy("OverallRank", firestore.Asc).
+		Documents(ctx).
+		GetAll()
 
 	if err != nil {
 		log.Errorf(ctx, "Error getting documents from firestore")
@@ -55,6 +45,27 @@ func (p *PlayerRepositoryImpl) GetAll(ctx context.Context, numberOfResults *int)
 	players := transformResultsToPlayers(results, ctx)
 	return players, true
 }
+
+func (p *PlayerRepositoryImpl) GetPlayersWithLimit(ctx context.Context, numberOfResults int) ([]*model.PlayerNfl, bool) {
+	var results []*firestore.DocumentSnapshot
+	var err error
+
+	results, err = p.Client.
+		Collection(appFirestore.PlayerCollection).
+		OrderBy("OverallRank", firestore.Asc).
+		Limit(numberOfResults).
+		Documents(ctx).
+		GetAll()
+
+	if err != nil {
+		log.Errorf(ctx, "Error getting documents from firestore")
+		return nil, false
+	}
+
+	players := transformResultsToPlayers(results, ctx)
+	return players, true
+}
+
 func (p *PlayerRepositoryImpl) GetPlayersByPosition(ctx context.Context, position model.PlayerPosition) ([]*model.PlayerNfl, bool) {
 	results, err := p.Client.
 		Collection(appFirestore.PlayerCollection).
