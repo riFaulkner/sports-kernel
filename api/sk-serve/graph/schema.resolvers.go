@@ -18,6 +18,14 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
+func (r *mutationResolver) ContractMutations(ctx context.Context) (*contract.ContractMutations, error) {
+	return &contract.ContractMutations{}, nil
+}
+
+func (r *mutationResolver) TeamMutations(ctx context.Context) (*team.TeamMutations, error) {
+	return &team.TeamMutations{}, nil
+}
+
 func (r *mutationResolver) CreateLeague(ctx context.Context, input league.NewLeagueInput) (*league.League, error) {
 	return r.LeagueResolver.CreateLeague(ctx, input)
 }

@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"log"
-	"sort"
 	"time"
 
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
@@ -26,56 +25,7 @@ type TeamRepositoryImpl struct {
 	Client firestore.Client
 }
 
-func (u *TeamRepositoryImpl) AddDeadCapToTeam(ctx context.Context, leagueID string, teamID string, deadCap []*team.DeadCap) bool {
-	// Validate the dead cap passed in
-	if deadCap == nil {
-		log.Printf("Cannot add dead cap to team, invalid deadcap passed")
-		return false
-	}
-	for _, dc := range deadCap {
-		if dc == nil {
-			log.Printf("Cannot add dead cap to team, invalid deadcap passed")
-			return false
-		}
-	}
-
-	// Get the team
-	teamRef, ok := u.GetTeamByIdOk(ctx, leagueID, teamID)
-	if !ok || teamRef == nil {
-		if teamRef == nil {
-			gqlerror.Errorf("WARN: Team does not exist, failed update contract")
-		}
-		return false
-	}
-	if teamRef.TeamLiabilities == nil || teamRef.TeamLiabilities.DeadCap == nil {
-		teamRef.TeamLiabilities = &team.TeamLiabilities{
-			DeadCap: make([]*team.DeadCapYear, 0, 0),
-		}
-	}
-
-	teamDeadCap := teamRef.TeamLiabilities.DeadCap
-	if len(teamDeadCap) != 0 {
-		sort.Slice(teamDeadCap, func(i, j int) bool {
-			return teamDeadCap[i].Year < teamDeadCap[j].Year
-		})
-	}
-
-	for i, value := range deadCap {
-		if value.Amount != 0 {
-			if len(teamDeadCap) > i {
-				teamDeadCap[i].DeadCapAccrued = append(teamDeadCap[i].DeadCapAccrued, value)
-			} else {
-				deadCapYear := &team.DeadCapYear{
-					Year:           time.Now().Year() + i,
-					DeadCapAccrued: make([]*team.DeadCap, 0, 1),
-				}
-				deadCapYear.DeadCapAccrued = append(deadCapYear.DeadCapAccrued, value)
-				teamDeadCap = append(teamDeadCap, deadCapYear)
-			}
-		}
-	}
-
-	// Save new deadcap to object
+func (u *TeamRepositoryImpl) AddDeadCapToTeam(ctx context.Context, leagueID string, teamID string, deadCap team.DeadCap) bool {
 	u.Client.
 		Collection(firestore.LeaguesCollection).
 		Doc(leagueID).
@@ -84,7 +34,7 @@ func (u *TeamRepositoryImpl) AddDeadCapToTeam(ctx context.Context, leagueID stri
 		Update(ctx, []gFirestore.Update{
 			{
 				Path:  "TeamLiabilities.DeadCap",
-				Value: teamDeadCap,
+				Value: gFirestore.ArrayUnion(deadCap),
 			},
 		})
 
@@ -217,6 +167,7 @@ func (u *TeamRepositoryImpl) UpdateTeamContractMetaData(ctx context.Context, lea
 	if teamContracts == nil || len(teamContracts) == 0 {
 		return gqlerror.Errorf("Unable to update contract metadata, no team contracts")
 	}
+
 	teamID := teamContracts[0].TeamID
 	teamRef, err := u.GetTeamById(ctx, leagueID, teamID)
 	if err != nil {
@@ -265,21 +216,38 @@ func (u *TeamRepositoryImpl) UpdateTeamContractMetaData(ctx context.Context, lea
 			capUtilization.NumContracts++
 		}
 	}
+
 	if teamRef.TeamLiabilities != nil {
 		if teamRef.TeamLiabilities.DeadCap != nil {
+			currentYear := contractsMetadata[0].Year
 			// Process dead cap
-			for i, deadCapYear := range teamRef.TeamLiabilities.DeadCap {
-				deadCapTotal := 0
-				totalContracts := 0
-				for _, deadCap := range deadCapYear.DeadCapAccrued {
-					totalContracts++
-					deadCapTotal += deadCap.Amount
-				}
-				contractsMetadata[i].DeadCap = &team.CapUtilizationSummary{
-					CapUtilization: deadCapTotal,
-					NumContracts:   totalContracts,
+			// Dead cap only ever has two year, so just create both utilization objects here
+			currentYearDeadCapUtilization := team.CapUtilizationSummary{
+				CapUtilization: 0,
+				NumContracts:   0,
+			}
+			futureYearDeadCapUtilization := team.CapUtilizationSummary{
+				CapUtilization: 0,
+				NumContracts:   0,
+			}
+
+			for _, deadCap := range teamRef.TeamLiabilities.DeadCap {
+				for _, deadCapYear := range deadCap.DeadCapYears {
+					if deadCapYear.Year == currentYear {
+						currentYearDeadCapUtilization.CapUtilization += deadCapYear.Amount
+						currentYearDeadCapUtilization.NumContracts++
+						continue
+					}
+					if deadCapYear.Year == (currentYear + 1) {
+						futureYearDeadCapUtilization.CapUtilization += deadCapYear.Amount
+						futureYearDeadCapUtilization.NumContracts++
+						continue
+					}
+					log.Printf("Unexpected Dead cap year found %v", deadCapYear.Year)
 				}
 			}
+			contractsMetadata[0].DeadCapUtilizedCap = &currentYearDeadCapUtilization
+			contractsMetadata[1].DeadCapUtilizedCap = &futureYearDeadCapUtilization
 		}
 	}
 
@@ -373,7 +341,7 @@ func generateDefaultTeamContractsMetadata() *team.ContractsMetadata {
 			CapUtilization: 0,
 			NumContracts:   0,
 		},
-		DeadCap: &team.CapUtilizationSummary{
+		DeadCapUtilizedCap: &team.CapUtilizationSummary{
 			CapUtilization: 0,
 			NumContracts:   0,
 		},

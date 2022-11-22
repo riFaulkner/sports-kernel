@@ -4,6 +4,9 @@ import (
 	"time"
 )
 
+type TeamMutations struct {
+}
+
 type Team struct {
 	ID                       string               `json:"id"`
 	FoundedDate              time.Time            `json:"foundedDate"`
@@ -19,14 +22,14 @@ type Team struct {
 }
 
 type ContractsMetadata struct {
-	Year              int                    `json:"year"`
-	TotalUtilizedCap  int                    `json:"totalUtilizedCap"`
-	TotalAvailableCap int                    `json:"totalAvailableCap"`
-	QbUtilizedCap     *CapUtilizationSummary `json:"qbUtilizedCap"`
-	RbUtilizedCap     *CapUtilizationSummary `json:"rbUtilizedCap"`
-	WrUtilizedCap     *CapUtilizationSummary `json:"wrUtilizedCap"`
-	TeUtilizedCap     *CapUtilizationSummary `json:"teUtilizedCap"`
-	DeadCap           *CapUtilizationSummary `json:"deadCap"`
+	Year               int                    `json:"year"`
+	TotalUtilizedCap   int                    `json:"totalUtilizedCap"`
+	TotalAvailableCap  int                    `json:"totalAvailableCap"`
+	QbUtilizedCap      *CapUtilizationSummary `json:"qbUtilizedCap"`
+	RbUtilizedCap      *CapUtilizationSummary `json:"rbUtilizedCap"`
+	WrUtilizedCap      *CapUtilizationSummary `json:"wrUtilizedCap"`
+	TeUtilizedCap      *CapUtilizationSummary `json:"teUtilizedCap"`
+	DeadCapUtilizedCap *CapUtilizationSummary `json:"deadCapUtilizedCap"`
 }
 
 type TeamAssets struct {
@@ -34,7 +37,7 @@ type TeamAssets struct {
 }
 
 type TeamLiabilities struct {
-	DeadCap []*DeadCapYear `json:"deadCap"`
+	DeadCap []*DeadCap `json:"deadCap"`
 }
 
 type DraftPick struct {
@@ -49,13 +52,26 @@ type DraftYear struct {
 }
 
 type DeadCap struct {
-	AssociatedContractID string `json:"associatedContractId"`
-	Amount               int    `json:"amount"`
+	ID                   string        `json:"id"`
+	AssociatedContractID *string       `json:"associatedContractId"`
+	DeadCapYears         []DeadCapYear `json:"deadCapYears"`
+	DeadCapNote          *string       `json:"deadCapNote"`
+}
+
+type DeadCapInput struct {
+	AssociatedContractID *string            `json:"associatedContractId"`
+	DeadCapYears         []DeadCapYearInput `json:"deadCapYears"`
+	DeadCapNote          string             `json:"deadCapNote"`
+}
+
+type DeadCapYearInput struct {
+	Year   int `json:"year"`
+	Amount int `json:"amount"`
 }
 
 type DeadCapYear struct {
-	Year           int        `json:"year"`
-	DeadCapAccrued []*DeadCap `json:"deadCapAccrued"`
+	Year   int `json:"year"`
+	Amount int `json:"amount"`
 }
 
 type CapUtilizationSummary struct {

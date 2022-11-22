@@ -4,9 +4,6 @@
       :touchless="true"
   >
     <v-tab-item>
-      <h1>Manage leagues</h1>
-    </v-tab-item>
-    <v-tab-item>
       <v-col md="4" offset-md="4">
         <add-player/>
       </v-col>

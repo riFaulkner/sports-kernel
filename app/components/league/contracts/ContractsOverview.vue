@@ -40,8 +40,8 @@
         ({{ item.currentContractsMetadata.teUtilizedCap.numContracts }})
       </template>
       <template v-slot:item.currentContractsMetadata.deadCap="{ item }" >
-        ${{ item.currentContractsMetadata.deadCap.capUtilization.toLocaleString() }}
-        ({{ item.currentContractsMetadata.deadCap.numContracts }})
+        ${{ item.currentContractsMetadata.deadCapUtilizedCap.capUtilization.toLocaleString() }}
+        ({{ item.currentContractsMetadata.deadCapUtilizedCap.numContracts }})
 
       </template>
       <template v-slot:expanded-item="{ headers, item }" v-slot:>
@@ -65,7 +65,6 @@ export default {
       type: Object,
       require: true,
       validator: function (value) {
-        // Object.values(value).includes("divisions")
         return true
       }
     }

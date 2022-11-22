@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/generated"
@@ -15,7 +16,21 @@ func (r *contractResolver) Player(ctx context.Context, obj *contract.Contract) (
 	return r.PlayerService.GetPlayerById(ctx, &obj.PlayerID)
 }
 
+func (r *contractMutationsResolver) Drop(ctx context.Context, obj *contract.ContractMutations, leagueID string, teamID string, contractID string) (bool, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *contractMutationsResolver) Restructure(ctx context.Context, obj *contract.ContractMutations, leagueID string, teamID string, contractID string) (*contract.Contract, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 // Contract returns generated.ContractResolver implementation.
 func (r *Resolver) Contract() generated.ContractResolver { return &contractResolver{r} }
 
+// ContractMutations returns generated.ContractMutationsResolver implementation.
+func (r *Resolver) ContractMutations() generated.ContractMutationsResolver {
+	return &contractMutationsResolver{r}
+}
+
 type contractResolver struct{ *Resolver }
+type contractMutationsResolver struct{ *Resolver }

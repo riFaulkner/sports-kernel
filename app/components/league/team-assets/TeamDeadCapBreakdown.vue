@@ -2,15 +2,16 @@
   <div class="text-center">
     <h2> Dead cap </h2>
     <v-data-table
+        v-if="deadCap"
         :headers="headers"
-        :items="processedDeadCap"
+        :items=deadCap
         hide-default-footer
     >
       <template v-slot:item.year1DeadCap="{item}">
-        {{ getAmount(item.amounts, 0 )}}
+        {{ getAmount(item.deadCapYears, 0 )}}
       </template>
       <template v-slot:item.year2DeadCap="{item}">
-        {{ getAmount(item.amounts, 1 )}}
+        {{ getAmount(item.deadCapYears, 1 )}}
       </template>
 
     </v-data-table>
@@ -28,41 +29,7 @@ export default {
       }
     }
   },
-  data: function () {
-    return {
-
-    }
-  },
   computed: {
-    processedDeadCap() {
-      if (this.deadCap === null || this.deadCap.length === 0) {
-        return []
-      }
-      let tableView = []
-
-      // For each year of dead cap
-      this.deadCap.forEach((year) => {
-        // Search through all the dead cap contracts and add them to the table view
-        year.deadCapAccrued.forEach((contract) => {
-          const filterResult = tableView.filter((item) => {
-            return item.id === contract.associatedContractId
-          })
-          let tableItem = {
-            id: contract.associatedContractId,
-            name: contract.contract.player.playerName,
-            amounts: []
-          }
-          if(filterResult.length === 1) {
-            tableItem = filterResult[0]
-          } else {
-            tableView.push(tableItem)
-          }
-          tableItem.amounts.push(contract.amount)
-        })
-      })
-
-      return tableView
-    },
     headers() {
       const nextDeadCapYear = new Date().getFullYear()
       if (this.deadCap?.length > 0) {
@@ -70,18 +37,18 @@ export default {
       }
 
       return [
-        {text: "Player", value: "name", align: "center"},
+        {text: "Player", value: "deadCapNote", align: "center"},
         {text: nextDeadCapYear, value: "year1DeadCap", align: "center"},
         {text: nextDeadCapYear + 1, value: "year2DeadCap", align: "center"}
       ]
     },
   },
   methods: {
-    getAmount(contractAmounts, index) {
-      if (contractAmounts.length <= index) {
+    getAmount(deadCapMounts, index) {
+      if (deadCapMounts?.length <= index) {
         return ""
       }
-      const yearValue = contractAmounts[index]
+      const yearValue = deadCapMounts[index]?.amount
 
       return "$" + yearValue.toLocaleString()
     }

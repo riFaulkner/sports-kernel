@@ -7,6 +7,7 @@ import (
 )
 
 type TeamRepository interface {
+	AddDeadCapToTeam(ctx context.Context, leagueID string, teamID string, deadCap DeadCap) bool
 	AddUserToTeam(ctx context.Context, leagueID string, teamID string, ownerID string) bool
 	Create(ctx context.Context, leagueId string, team NewTeam) (*Team, error)
 	AddAccessCode(ctx context.Context, leagueId string, teamId string, accessCode string) error

@@ -32,6 +32,9 @@
             :league-id="leagueId"
         />
       </v-col>
+      <v-col v-if="selectedTool === 'deadCap'">
+        <apply-dead-cap :league-id="leagueId"/>
+      </v-col>
     </v-row>
   </v-container>
 
@@ -42,10 +45,11 @@ import RestructureContract from "@/components/league/managementTools/ManageContr
 import ManageContract from "@/components/league/managementTools/ManageContract";
 import ContractCreationTool from "~/components/league/contracts/ContractCreationTool";
 import GenerateAccessCodes from "@/components/league/managementTools/GenerateAccessCodes";
+import ApplyDeadCap from "@/components/league/managementTools/ApplyDeadCap";
 
 export default {
   name: "LeagueManagementTool",
-  components: {ContractCreationTool, ManageContract, RestructureContract, GenerateAccessCodes},
+  components: {ApplyDeadCap, ContractCreationTool, ManageContract, RestructureContract, GenerateAccessCodes},
   props: {
     leagueId: {
       type: String,
@@ -58,6 +62,7 @@ export default {
         {text: "Create Contract", value: "createContract"},
         {text: "Manage Contract", value: "manageContract"},
         {text: "Generate League Access Codes", value: "accessCodes"},
+        {text: "Add Dead Cap", value: "deadCap"}
       ],
       selectedTool: ""
     }

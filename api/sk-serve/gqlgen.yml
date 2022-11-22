@@ -73,12 +73,18 @@ models:
   ContractYearInput:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/contract.ContractYearInput
+  ContractMutations:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/contract.ContractMutations
   Team:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/team.Team
     fields:
       ActiveContracts:
         resolver: true
+  TeamMutations:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/team.TeamMutations
   ContractsMetadata:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/team.ContractsMetadata
@@ -97,7 +103,6 @@ models:
   TeamScoringWeek:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/team.TeamScoringWeek
-
   DraftPick:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/team.DraftPick
@@ -107,12 +112,15 @@ models:
   DeadCap:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/team.DeadCap
-    fields:
-      Contract:
-        resolver: true
+  DeadCapInput:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/team.DeadCapInput
   DeadCapYear:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/team.DeadCapYear
+  DeadCapYearInput:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/team.DeadCapYearInput
   CapUtilizationSummary:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/team.CapUtilizationSummary

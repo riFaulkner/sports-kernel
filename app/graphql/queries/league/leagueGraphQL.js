@@ -21,7 +21,7 @@ export const LEAGUE_TEAMS_BY_LEAGUE_ID = gql`
         currentContractsMetadata {
           totalUtilizedCap
           totalAvailableCap
-          deadCap {
+          deadCapUtilizedCap {
               capUtilization
               numContracts
           }
@@ -110,15 +110,10 @@ export const LEAGUE_FILTER_TEAMS_BY_OWNER_ID = gql`
                 }
                 teamLiabilities {
                     deadCap {
-                        year
-                        deadCapAccrued {
+                        deadCapNote
+                        deadCapYears {
+                            year
                             amount
-                            associatedContractId
-                            contract {
-                                player {
-                                    playerName
-                                }
-                            }
                         }
                     }
                 }

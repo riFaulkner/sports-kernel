@@ -298,39 +298,17 @@ func (u *ContractImpl) DropContract(ctx context.Context, leagueID string, teamID
 		return false, gqlerror.Errorf("TeamId provided did not match the contract's teamID")
 	}
 
-	deadCapYears := make([]*team.DeadCap, 0, 2)
+	contractDeadCap := u.generateContractDeadCap(ctx, playerContract)
 
-	sort.Slice(playerContract.ContractDetails, func(i, j int) bool {
-		return playerContract.ContractDetails[i].Year < playerContract.ContractDetails[j].Year
-	})
-	currentContractYear := playerContract.CurrentYear
-	currentContractDetails := playerContract.ContractDetails[(currentContractYear - 1)]
-
-	deadCapYears = append(deadCapYears, &team.DeadCap{
-		AssociatedContractID: playerContract.ID,
-		Amount:               calculateDeadCap(currentContractDetails),
-	})
-
-	futureAccumulatedDeadCap := 0
-	for _, year := range playerContract.ContractDetails {
-		if year.Year > playerContract.CurrentYear {
-			futureAccumulatedDeadCap += calculateDeadCap(year)
-		}
-	}
-
-	deadCapYears = append(deadCapYears, &team.DeadCap{
-		AssociatedContractID: playerContract.ID,
-		Amount:               futureAccumulatedDeadCap,
-	})
 	// Add dead cap to the team
-	ok = u.TeamImpl.AddDeadCapToTeam(ctx, leagueID, teamID, deadCapYears)
+	ok = u.TeamImpl.AddDeadCapToTeam(ctx, leagueID, teamID, contractDeadCap)
 
 	if !ok {
 		// consider using a transaction here to roll back
 		return false, gqlerror.Errorf("Failed to add dead cap to team")
 	}
 
-	// Move the contract to new status
+	// Move the contract to new status pull this out to interface
 	_, err := u.Client.
 		Collection(firestore.LeaguesCollection).
 		Doc(leagueID).
@@ -349,7 +327,7 @@ func (u *ContractImpl) DropContract(ctx context.Context, leagueID string, teamID
 	// Save the transaction
 	inputData, err := json.Marshal(map[string]interface{}{
 		"contractID":   contractID,
-		"deadCapAdded": deadCapYears,
+		"deadCapAdded": contractDeadCap,
 	})
 
 	if err != nil {
@@ -446,6 +424,60 @@ func getAndValidateContractTotalValue(ctx context.Context, contractYears []*cont
 		graphql.AddError(ctx, gqlerror.Errorf("Invalid contract, contract total value is 0"))
 	}
 	return &totalContractValue
+}
+
+func (u *ContractImpl) generateContractDeadCap(ctx context.Context, playerContract *contract.Contract) team.DeadCap {
+	sort.Slice(playerContract.ContractDetails, func(i, j int) bool {
+		return playerContract.ContractDetails[i].Year < playerContract.ContractDetails[j].Year
+	})
+
+	deadCapYears := make([]team.DeadCapYear, 0, 2)
+	// TODO: this might cause issues if people drop the first couple weeks of the year. Not sure drops makes sense in that time
+	// but regardless this should be updated to use the current season. Getting that from either the league or the contract
+	currentSeason := time.Now().Year()
+	currentContractYear := playerContract.CurrentYear
+	currentContractDetails := playerContract.ContractDetails[(currentContractYear - 1)]
+	playerName := u.getPlayerName(ctx, playerContract.PlayerID)
+
+	deadCapYears = append(deadCapYears, team.DeadCapYear{
+		Amount: calculateDeadCap(currentContractDetails),
+		Year:   currentSeason,
+	})
+
+	futureAccumulatedDeadCap := 0
+	for _, year := range playerContract.ContractDetails {
+		if year.Year > playerContract.CurrentYear {
+			futureAccumulatedDeadCap += calculateDeadCap(year)
+		}
+	}
+
+	deadCapYears = append(deadCapYears, team.DeadCapYear{
+		Amount: futureAccumulatedDeadCap,
+		Year:   currentSeason + 1,
+	})
+
+	return team.DeadCap{
+		AssociatedContractID: &playerContract.ID,
+		DeadCapNote:          &playerName,
+		DeadCapYears:         deadCapYears,
+	}
+}
+
+// TODO: This is terrible, we should be using the player repository but I didn't want to deal with what I knew would give a circular
+// dependency issue and cause a bunch or refactoring. Bad rick.
+func (u *ContractImpl) getPlayerName(ctx context.Context, playerID string) string {
+	playerRef, err := u.Client.
+		Collection(firestore.PlayerCollection).
+		Doc(playerID).
+		Get(ctx)
+
+	if err != nil {
+		log.Printf("Error getting player name from DB")
+		return ""
+	}
+	player := new(model.PlayerNfl)
+	playerRef.DataTo(&player)
+	return player.PlayerName
 }
 
 func calculateDeadCap(contractDetails *contract.ContractYear) int {
