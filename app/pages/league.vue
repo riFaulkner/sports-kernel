@@ -10,6 +10,9 @@
       />
     </v-tab-item>
     <v-tab-item>
+      <week-scoring/>
+    </v-tab-item>
+    <v-tab-item>
       <my-team
         :league-id="league.id"
         :owner-id="ownerId"
@@ -47,10 +50,11 @@ import ContractsOverview from '@/components/league/contracts/ContractsOverview'
 import LeagueManagementTool from '@/components/league/managementTools/LeagueManagementTool'
 import MyTeam from '@/components/league/MyTeam'
 import RuleSummary from '@/components/league/RuleSummary'
+import WeekScoring from "@/components/league/scoring/WeekScoring";
 
 export default {
   name: 'league-home.vue',
-  components: { LeagueManagementTool, ContractsOverview, MyTeam, RuleSummary },
+  components: {WeekScoring, LeagueManagementTool, ContractsOverview, MyTeam, RuleSummary },
   middleware: 'auth',
   data: function () {
     return {

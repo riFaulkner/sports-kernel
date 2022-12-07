@@ -145,3 +145,18 @@ models:
   UserPreferencesLeagueSnippet:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/user.UserPreferencesLeagueSnippet
+  ScoringQueries:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/scoring.ScoringQueries
+  MatchUp:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/scoring.MatchUp
+  PlayerScoring:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/scoring.PlayerScoring
+  MatchUpTeamScoring:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/scoring.MatchUpTeamScoring
+  LineUp:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/scoring.LineUp
