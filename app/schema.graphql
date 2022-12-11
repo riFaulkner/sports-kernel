@@ -96,6 +96,29 @@ type LeaguePost {
     title: String!
 }
 
+type LineUp {
+    flex: [PlayerScoring!]!
+    qb: [PlayerScoring!]!
+    rb: [PlayerScoring!]!
+    superFlex: [PlayerScoring!]!
+    te: [PlayerScoring!]!
+    wr: [PlayerScoring!]!
+}
+
+type MatchUp {
+    awayTeam: String!
+    homeTeam: String!
+    matchUpNumber: Int
+}
+
+type MatchUpTeamScoring {
+    isHomeTeam: Boolean!
+    lineUp: LineUp
+    roster: [PlayerScoring!]
+    teamName: String!
+    totalPoints: Float
+}
+
 type Mutation {
     addComment(input: NewPostComment, leagueId: ID!, postId: ID!): PostComment!
     contractActionDrop(contractId: ID!, leagueId: ID!, teamId: ID!): Boolean!
@@ -126,6 +149,17 @@ type PlayerNFL {
     team: nflTeam!
 }
 
+type PlayerScoring {
+    eligibleSlots: [String!]
+    isInLineUp: Boolean!
+    nflTeam: String!
+    playerName: String!
+    points: Float
+    position: PlayerPosition
+    projectedPoints: Float
+    team: String!
+}
+
 type PostComment {
     author: String!
     commentDate: Time!
@@ -144,12 +178,18 @@ type Query {
     players(numOfResults: Int): [PlayerNFL!]
     playersByPosition(position: PlayerPosition!): [PlayerNFL!]
     posts(leagueId: ID!, numOfResults: Int): [LeaguePost!]
+    scoring: ScoringQueries
     teamById(leagueId: ID!, teamId: ID!): Team
     teamByOwnerId(leagueId: ID!, ownerId: ID!): Team
     teamContracts(leagueId: ID!, teamId: ID!): [Contract!]
     teams(leagueId: ID!): [Team!]
     userPreferences(userId: ID): UserPreferences
     users: [User]
+}
+
+type ScoringQueries {
+    matchUpScoring(matchUpNumber: Int!): [MatchUpTeamScoring]
+    weekMatchUps: [MatchUp]
 }
 
 type Team {

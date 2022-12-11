@@ -174,7 +174,7 @@ export default {
           name: 'league',
           adminOnly: false,
           submenuItems: [
-            'Standings', 'My Team', 'Contracts Overview', 'Rules'
+            'Standings', 'Scoring', 'My Team', 'Contracts Overview', 'Rules'
           ]
         },
         {
@@ -275,7 +275,7 @@ export default {
         this.$store.dispatch('application/updateActiveLeague', response.data.league);
         // this.$store.dispatch('application/alertSuccess', {message: "Successfully switched active league."});
         const leagueSubMenuItems = [
-          'Standings', 'My Team', 'Contracts Overview', 'Rules'
+          'Standings','Scoring', 'My Team', 'Contracts Overview', 'Rules'
         ]
         if (league.roleInLeague === 'LEAGUE_MANAGER') {
           leagueSubMenuItems.push('League Management')
