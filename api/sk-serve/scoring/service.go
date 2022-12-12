@@ -9,44 +9,15 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/idtoken"
-	"io/ioutil"
+	"io"
+	"log"
 	"net/http"
+	"os"
 	"sort"
-	"strconv"
 )
 
 func GetWeekMatchUps() ([]*MatchUp, error) {
-	requestURL := "https://us-central1-sports-kernel.cloudfunctions.net/getMatchups"
-	audience := "https://us-central1-sports-kernel.cloudfunctions.net/getMatchups/"
-
-	reader := bytes.NewReader([]byte(`{}`))
-	request, err := http.NewRequest(http.MethodPost, requestURL, reader)
-	tokenSource, err := IDTokenTokenSource(context.Background(), audience)
-	if err != nil {
-		return nil, fmt.Errorf("Error getting token %v", err)
-	}
-	token, err := tokenSource.Token()
-
-	token.SetAuthHeader(request)
-
-	response, err := http.DefaultClient.Do(request)
-
-	resBody, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, fmt.Errorf("client: could not read response body: %s\n", err)
-	}
-
-	var returnValue []*MatchUp
-	//_ = json.Unmarshal([]byte(dataJson), &arr)
-
-	err = json.Unmarshal(resBody, &returnValue)
-
-	if err != nil {
-		return nil, fmt.Errorf("scoring.service %v", err)
-	}
-
-	fmt.Printf("client: response body: %s\n", resBody)
-	return returnValue, nil
+	return getMatchUpsViaHttp()
 }
 
 func GetMatchUpScoring(matchUpNumber int) ([]*MatchUpTeamScoring, error) {
@@ -54,39 +25,25 @@ func GetMatchUpScoring(matchUpNumber int) ([]*MatchUpTeamScoring, error) {
 	audience := "https://us-central1-sports-kernel.cloudfunctions.net/getScores/"
 
 	reader := bytes.NewReader([]byte(`{}`))
-	request, err := http.NewRequest(http.MethodPost, requestURL, reader)
-	query := request.URL.Query()
-	query.Add("matchup", strconv.Itoa(matchUpNumber))
+	//reader := bytes.NewReader([]byte(`{"matchup": 2}`))
 
-	request.URL.RawQuery = query.Encode()
+	var b bytes.Buffer
 
-	tokenSource, err := IDTokenTokenSource(context.Background(), audience)
-	if err != nil {
-		return nil, fmt.Errorf("Error getting token %v", err)
-	}
-	token, err := tokenSource.Token()
-
-	token.SetAuthHeader(request)
-
-	response, err := http.DefaultClient.Do(request)
-
-	resBody, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, fmt.Errorf("client: could not read response body: %s\n", err)
+	if err := makePostRequest(reader, &b, requestURL, audience); err != nil {
+		log.Printf("makePostRequest: %v", err)
+		return nil, fmt.Errorf("Failied to get scores for matchup %d", matchUpNumber)
 	}
 
 	var returnValue []*MatchUpTeamScoring
 
-	err = json.Unmarshal(resBody, &returnValue)
+	fmt.Printf("Buffer: %v", b)
+
+	err := json.Unmarshal(b.Bytes(), &returnValue)
 
 	if err != nil {
 		return nil, fmt.Errorf("scoring.service %v", err)
 	}
 
-	// Now that we have to objects, add the stuff that actually matters
-	// Set the Player positions so it's easy-to-read
-	// Set the line-up
-	// Remove any player from the line-up to create the bench
 	for idx := range returnValue {
 		for i := range returnValue[idx].Roster {
 			setPlayerPosition(&returnValue[idx].Roster[i])
@@ -95,6 +52,79 @@ func GetMatchUpScoring(matchUpNumber int) ([]*MatchUpTeamScoring, error) {
 	}
 
 	return returnValue, nil
+}
+
+func getMatchUpsViaHttp() ([]*MatchUp, error) {
+	requestURL := "https://us-central1-sports-kernel.cloudfunctions.net/getMatchups"
+	audience := "https://us-central1-sports-kernel.cloudfunctions.net/getMatchups/"
+
+	reader := bytes.NewReader([]byte(`{}`))
+
+	var b bytes.Buffer
+
+	if err := makePostRequest(reader, &b, requestURL, audience); err != nil {
+		log.Printf("makeGetRequest: %v", err)
+		return nil, fmt.Errorf("Failied to get matchups")
+	}
+
+	var returnValue []*MatchUp
+
+	if err := json.Unmarshal(b.Bytes(), &returnValue); err != nil {
+		return nil, fmt.Errorf("scoring.service %v", err)
+	}
+
+	return returnValue, nil
+}
+
+func makePostRequest(r io.Reader, w io.Writer, targetURL string, audience string) error {
+	var resp *http.Response
+	var err error
+	if os.Getenv("ENV") != "PROD" {
+		request, err := http.NewRequest(http.MethodPost, targetURL, r)
+		tokenSource, err := IDTokenTokenSource(context.Background(), audience)
+		if err != nil {
+			return fmt.Errorf("Error getting token %v", err)
+		}
+		token, err := tokenSource.Token()
+
+		token.SetAuthHeader(request)
+		request.Header.Set("Content-Type", "application/json")
+
+		//fmt.Printf("server: content-type: %s\n", request.Header.Get("content-type"))
+		//fmt.Printf("server: headers:\n")
+		//for headerName, headerValue := range request.Header {
+		//	fmt.Printf("\t%s = %s\n", headerName, strings.Join(headerValue, ", "))
+		//}
+
+		//reqBody, err := ioutil.ReadAll(request.Body)
+		//if err != nil {
+		//	fmt.Printf("server: could not read request body: %s\n", err)
+		//}
+		//fmt.Printf("server: request body: %s\n", reqBody)
+
+		resp, err = http.DefaultClient.Do(request)
+	} else {
+		ctx := context.Background()
+		var client *http.Client
+		client, err = idtoken.NewClient(ctx, audience)
+		if err != nil {
+			return fmt.Errorf("idtoken.NewClient: %v", err)
+		}
+
+		resp, err = client.Post(targetURL, "application/json", r)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		log.Printf("scoring.service - Return status %d", resp.StatusCode)
+		return fmt.Errorf("scoring.service - Return status %v", resp.StatusCode)
+	}
+
+	if _, err = io.Copy(w, resp.Body); err != nil {
+		return fmt.Errorf("io.Copy: %v", err)
+	}
+
+	return nil
 }
 
 func generateLineUp(team *MatchUpTeamScoring) {
