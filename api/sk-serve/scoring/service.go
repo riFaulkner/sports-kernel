@@ -24,8 +24,7 @@ func GetMatchUpScoring(matchUpNumber int) ([]*MatchUpTeamScoring, error) {
 	requestURL := "https://us-central1-sports-kernel.cloudfunctions.net/getScores"
 	audience := "https://us-central1-sports-kernel.cloudfunctions.net/getScores/"
 
-	reader := bytes.NewReader([]byte(`{}`))
-	//reader := bytes.NewReader([]byte(`{"matchup": 2}`))
+	reader := bytes.NewReader([]byte(fmt.Sprintf(`{"matchup": %d}`, matchUpNumber)))
 
 	var b bytes.Buffer
 
