@@ -29,13 +29,11 @@ func GetMatchUpScoring(matchUpNumber int) ([]*MatchUpTeamScoring, error) {
 	var b bytes.Buffer
 
 	if err := makePostRequest(reader, &b, requestURL, audience); err != nil {
-		log.Printf("makePostRequest: %v", err)
+		log.Printf("scoring.Service - makePostRequest: %v", err)
 		return nil, fmt.Errorf("Failied to get scores for matchup %d", matchUpNumber)
 	}
 
 	var returnValue []*MatchUpTeamScoring
-
-	fmt.Printf("Buffer: %v", b)
 
 	err := json.Unmarshal(b.Bytes(), &returnValue)
 
@@ -103,6 +101,7 @@ func makePostRequest(r io.Reader, w io.Writer, targetURL string, audience string
 
 		resp, err = http.DefaultClient.Do(request)
 	} else {
+		log.Printf("Using production client version")
 		ctx := context.Background()
 		var client *http.Client
 		client, err = idtoken.NewClient(ctx, audience)
