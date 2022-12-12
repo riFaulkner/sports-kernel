@@ -110,6 +110,8 @@ func makePostRequest(r io.Reader, w io.Writer, targetURL string, audience string
 		}
 
 		resp, err = client.Post(targetURL, "application/json", r)
+		log.Printf("Response: %v", resp)
+		log.Printf("Response error: %v", err)
 	}
 	defer resp.Body.Close()
 
