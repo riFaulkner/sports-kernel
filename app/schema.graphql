@@ -178,7 +178,7 @@ type Query {
     players(numOfResults: Int): [PlayerNFL!]
     playersByPosition(position: PlayerPosition!): [PlayerNFL!]
     posts(leagueId: ID!, numOfResults: Int): [LeaguePost!]
-    scoring: ScoringQueries
+    scoring(leagueId: ID!): ScoringQueries
     teamById(leagueId: ID!, teamId: ID!): Team
     teamByOwnerId(leagueId: ID!, ownerId: ID!): Team
     teamContracts(leagueId: ID!, teamId: ID!): [Contract!]

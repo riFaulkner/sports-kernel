@@ -43,7 +43,7 @@ type Query {
   comments(leagueId: ID!, postId: ID!): [PostComment!] @hasRole(role: LEAGUE_MEMBER)
   userPreferences(userId: ID): UserPreferences
   getUserRoles(userId:ID): [UserRoles]
-  scoring: ScoringQueries @hasRole(role: LEAGUE_MEMBER)
+  scoring(leagueId: ID!): ScoringQueries @hasRole(role: LEAGUE_MEMBER)
 }
 
 input NewPostComment {

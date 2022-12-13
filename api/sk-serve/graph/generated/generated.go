@@ -228,7 +228,7 @@ type ComplexityRoot struct {
 		Players           func(childComplexity int, numOfResults *int) int
 		PlayersByPosition func(childComplexity int, position model.PlayerPosition) int
 		Posts             func(childComplexity int, leagueID string, numOfResults *int) int
-		Scoring           func(childComplexity int) int
+		Scoring           func(childComplexity int, leagueID string) int
 		TeamByID          func(childComplexity int, leagueID string, teamID string) int
 		TeamByOwnerID     func(childComplexity int, leagueID string, ownerID string) int
 		TeamContracts     func(childComplexity int, leagueID string, teamID string) int
@@ -368,7 +368,7 @@ type QueryResolver interface {
 	Comments(ctx context.Context, leagueID string, postID string) ([]*model.PostComment, error)
 	UserPreferences(ctx context.Context, userID *string) (*user.UserPreferences, error)
 	GetUserRoles(ctx context.Context, userID *string) ([]*model.UserRoles, error)
-	Scoring(ctx context.Context) (*scoring.ScoringQueries, error)
+	Scoring(ctx context.Context, leagueID string) (*scoring.ScoringQueries, error)
 }
 type ScoringQueriesResolver interface {
 	WeekMatchUps(ctx context.Context, obj *scoring.ScoringQueries) ([]*scoring.MatchUp, error)
@@ -1317,7 +1317,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.Scoring(childComplexity), true
+		args, err := ec.field_Query_scoring_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Scoring(childComplexity, args["leagueId"].(string)), true
 
 	case "Query.teamById":
 		if e.complexity.Query.TeamByID == nil {
@@ -1953,7 +1958,7 @@ type Query {
   comments(leagueId: ID!, postId: ID!): [PostComment!] @hasRole(role: LEAGUE_MEMBER)
   userPreferences(userId: ID): UserPreferences
   getUserRoles(userId:ID): [UserRoles]
-  scoring: ScoringQueries @hasRole(role: LEAGUE_MEMBER)
+  scoring(leagueId: ID!): ScoringQueries @hasRole(role: LEAGUE_MEMBER)
 }
 
 input NewPostComment {
@@ -2815,6 +2820,21 @@ func (ec *executionContext) field_Query_posts_args(ctx context.Context, rawArgs 
 		}
 	}
 	args["numOfResults"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_scoring_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["leagueId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("leagueId"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["leagueId"] = arg0
 	return args, nil
 }
 
@@ -9845,7 +9865,7 @@ func (ec *executionContext) _Query_scoring(ctx context.Context, field graphql.Co
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().Scoring(rctx)
+			return ec.resolvers.Query().Scoring(rctx, fc.Args["leagueId"].(string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			role, err := ec.unmarshalNRole2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐRole(ctx, "LEAGUE_MEMBER")
@@ -9897,6 +9917,17 @@ func (ec *executionContext) fieldContext_Query_scoring(ctx context.Context, fiel
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ScoringQueries", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_scoring_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
 	}
 	return fc, nil
 }

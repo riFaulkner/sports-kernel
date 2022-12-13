@@ -255,7 +255,7 @@ func (r *queryResolver) GetUserRoles(ctx context.Context, userID *string) ([]*mo
 	return r.UserResolver.GetUserRoles(ctx, userID)
 }
 
-func (r *queryResolver) Scoring(ctx context.Context) (*scoring.ScoringQueries, error) {
+func (r *queryResolver) Scoring(ctx context.Context, leagueID string) (*scoring.ScoringQueries, error) {
 	return &scoring.ScoringQueries{}, nil
 }
 

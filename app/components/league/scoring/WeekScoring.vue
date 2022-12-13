@@ -86,6 +86,12 @@ import {WEEK_SCORING_FOR_MATCH_UP, WEEK_SCORING_MATCH_UPS} from "@/graphql/queri
 
 export default {
   name: "WeekScoring",
+  props: {
+    leagueId: {
+      type: String,
+      required: true
+    },
+  },
   data: function() {
     return {
       matchUps: null,
@@ -101,12 +107,16 @@ export default {
   apollo: {
     matchUps: {
       query: WEEK_SCORING_MATCH_UPS,
+      variables() {
+        return { leagueId: this.leagueId }
+      },
       update: data => data.scoring.weekMatchUps,
     },
     scoringData: {
       query: WEEK_SCORING_FOR_MATCH_UP,
       variables () {
         return {
+          leagueId: this.leagueId,
           matchUpNumber: this.selectedMatchUpNumber
         }
       },

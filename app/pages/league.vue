@@ -10,7 +10,7 @@
       />
     </v-tab-item>
     <v-tab-item>
-      <week-scoring/>
+      <week-scoring :league-id="league.id"/>
     </v-tab-item>
     <v-tab-item>
       <my-team
