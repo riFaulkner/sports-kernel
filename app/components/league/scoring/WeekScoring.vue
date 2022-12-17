@@ -1,84 +1,117 @@
 <template>
-   <v-card>
-     <v-col md="4" offset-md="4">
-       <v-select
-           v-model="selectedMatchUpNumber"
-           :items="matchUps"
-           :item-text="item => `${item.awayTeam} vs ${item.homeTeam}`"
-           item-value="matchUpNumber"
-           label="Select a match up"
-           :loading="$apollo.queries.matchUps.loading"
-       />
-     </v-col>
+  <v-card>
+    <v-container>
+      <v-row align="center" justify="center">
+        <v-col sm="7" lg="8" cols="12" offset-sm="1" offset-md="0">
+          <v-select
+              v-model="selectedMatchUpNumber"
+              :items="matchUps"
+              :item-text="item => `${item.awayTeam} vs ${item.homeTeam}`"
+              item-value="matchUpNumber"
+              label="Select a match up"
+              @change="teamSelected"
+          />
+        </v-col>
+        <v-col md="2" offset-sm="0" offset="6" v-if="selectedMatchUpNumber != null">
+          <v-btn
+              color="primary"
+              @click="refreshView"
+              :disabled="!canRefresh"
+              :loading="isMatchUpRefresh"
+          > Refresh Stats
+          </v-btn>
+        </v-col>
+      </v-row>
+    </v-container>
+    <v-skeleton-loader
+        v-if="selectedMatchUpNumber !== null"
+        :loading="isInitialMatchUpLoading"
+        type="card"
+    >
+      <v-container v-if="selectedMatchUpNumber !== null">
+        <v-row justify="center">
+          <v-col
+              v-for="team in scoringData"
+              cols="12"
+              sm="5"
+          >
+            <v-toolbar
+                color="blue"
+                dark
+                class="rounded-t-lg"
+            >
+              <v-toolbar-title>{{ team.teamName }}</v-toolbar-title>
 
-     <v-skeleton-loader
-         v-if="selectedMatchUpNumber !== null"
-         :loading="$apollo.queries.scoringData.loading"
-         type="card"
-     >
-       <v-container v-if="selectedMatchUpNumber !== null">
-         <v-row>
-           <v-col md="2" cols="0"/>
-           <v-col
-               v-for="team in scoringData"
-               cols="12"
-               md="4"
-           >
-             <v-list outlined>
-               <v-list-item>
-                 {{team.teamName}} <v-spacer/> <b>Total: {{team.totalPoints.toLocaleString()}}</b>
-               </v-list-item>
-               <v-list-item v-for="qb in team.lineUp.qb">
-                 QB <v-spacer/> {{qb.playerName}} -- {{qb.points}}
-               </v-list-item>
-               <v-list-item v-for="rb in team.lineUp.rb">
-                 RB <v-spacer/> {{rb.playerName}} -- {{rb.points}}
-               </v-list-item>
-               <v-list-item v-for="wr in team.lineUp.wr">
-                 WR <v-spacer/> {{wr.playerName}} -- {{wr.points}}
-               </v-list-item>
-               <v-list-item v-for="te in team.lineUp.te">
-                 TE <v-spacer/> {{te.playerName}} -- {{te.points}}
-               </v-list-item>
-               <v-list-item v-for="flex in team.lineUp.flex">
-                 Flex <v-spacer/> {{flex.playerName}} -- {{flex.points}}
-               </v-list-item>
-               <v-list-item v-for="sFlex in team.lineUp.superFlex">
-                 SuperFlex <v-spacer/> {{sFlex.playerName}} -- {{sFlex.points}}
-               </v-list-item>
+              <v-spacer></v-spacer>
+              <b>Pts: {{ team.totalPoints.toLocaleString() }}</b>
 
-             </v-list>
-           </v-col>
-         </v-row>
-         <v-row>
-           <v-col md="2" cols="0"/>
-           <v-col
-               v-for="team in scoringData"
-               cols="12"
-               md="4"
-           >
-             <v-list
-                 outlined
-             >
-               <v-list-item v-if="$vuetify.breakpoint.mobile">
-                  Bench: &nbsp; {{team.teamName}}
-               </v-list-item>
-               <v-list-item v-for="player in benchPlayers(team)">
-                 <v-list-item-content>
-                   <v-list-item-title>
-                     {{player.playerName}} -- Points Scored: {{player.points}}
-                   </v-list-item-title>
-                   <v-list-item-subtitle>
-                     Projected: {{player.projectedPoints}}
-                   </v-list-item-subtitle>
-                 </v-list-item-content>
-               </v-list-item>
-             </v-list>
-           </v-col>
-         </v-row>
-       </v-container>
-     </v-skeleton-loader>
-   </v-card>
+
+            </v-toolbar>
+            <v-list outlined class="rounded-b-lg">
+              <v-list-item v-for="qb in team.lineUp.qb">
+                QB
+                <v-spacer/>
+                {{ qb.playerName }} -- {{ qb.points }}
+              </v-list-item>
+              <v-list-item v-for="rb in team.lineUp.rb">
+                RB
+                <v-spacer/>
+                {{ rb.playerName }} -- {{ rb.points }}
+              </v-list-item>
+              <v-list-item v-for="wr in team.lineUp.wr">
+                WR
+                <v-spacer/>
+                {{ wr.playerName }} -- {{ wr.points }}
+              </v-list-item>
+              <v-list-item v-for="te in team.lineUp.te">
+                TE
+                <v-spacer/>
+                {{ te.playerName }} -- {{ te.points }}
+              </v-list-item>
+              <v-list-item v-for="flex in team.lineUp.flex">
+                Flex
+                <v-spacer/>
+                {{ flex.playerName }} -- {{ flex.points }}
+              </v-list-item>
+              <v-list-item v-for="sFlex in team.lineUp.superFlex">
+                SuperFlex
+                <v-spacer/>
+                {{ sFlex.playerName }} -- {{ sFlex.points }}
+              </v-list-item>
+
+            </v-list>
+          </v-col>
+        </v-row>
+        <v-row justify="center">
+          <v-col
+              v-for="team in scoringData"
+              cols="12"
+              sm="5"
+          >
+            <v-list
+                outlined
+                color="grey darken-3"
+                class="rounded-lg"
+            >
+              <v-list-item v-if="$vuetify.breakpoint.mobile">
+                Bench: &nbsp; {{ team.teamName }}
+              </v-list-item>
+              <v-list-item v-for="player in benchPlayers(team)">
+                <v-list-item-content>
+                  <v-list-item-title>
+                    {{ player.playerName }} -- Points: {{ player.points }}
+                  </v-list-item-title>
+                  <v-list-item-subtitle>
+                    {{ player.position }} | {{ player.nflTeam }} | Projected: {{ player.projectedPoints }}
+                  </v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-skeleton-loader>
+  </v-card>
 </template>
 
 <script>
@@ -92,43 +125,72 @@ export default {
       required: true
     },
   },
-  data: function() {
+  data: function () {
     return {
+      canRefresh: true,
+      isInitialFetch: true,
       matchUps: null,
       selectedMatchUpNumber: null,
-      scoringData: null
+      scoringData: null,
     }
   },
   methods: {
     benchPlayers(team) {
       return team.roster.filter(player => !player.isInLineUp)
+    },
+    refreshView() {
+      this.isInitialFetch = false
+      this.$apollo.queries.scoringData.refetch()
+      this.canRefresh = false
+
+      setTimeout(() => this.canRefresh = true, 60000);
+    },
+    teamSelected() {
+      this.isInitialFetch = true
+      this.canRefresh = true
+    },
+
+  },
+  computed: {
+    isInitialMatchUpLoading() {
+      if (this.isInitialFetch) {
+        return this.$apollo.queries.scoringData.loading
+      }
+      return false
+    },
+    isMatchUpRefresh() {
+      if (!this.isInitialFetch) {
+        return this.$apollo.queries.scoringData.loading
+      }
+      return false
     }
   },
   apollo: {
     matchUps: {
       query: WEEK_SCORING_MATCH_UPS,
       variables() {
-        return { leagueId: this.leagueId }
+        return {leagueId: this.leagueId}
       },
       update: data => data.scoring.weekMatchUps,
     },
     scoringData: {
       query: WEEK_SCORING_FOR_MATCH_UP,
-      variables () {
+      variables() {
         return {
           leagueId: this.leagueId,
           matchUpNumber: this.selectedMatchUpNumber
         }
       },
-      update: data => data.scoring.matchUpScoring,
+      update: data => {
+        return data.scoring.matchUpScoring
+      },
       skip() {
         return this.selectedMatchUpNumber === null
-      }
+      },
     }
   }
 }
 </script>
 
 <style scoped>
-
 </style>
