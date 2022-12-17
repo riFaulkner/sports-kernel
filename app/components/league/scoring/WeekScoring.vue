@@ -24,10 +24,23 @@
                cols="12"
                md="4"
            >
-             <v-list outlined>
-               <v-list-item>
-                 {{team.teamName}} <v-spacer/> <b>Total: {{team.totalPoints.toLocaleString()}}</b>
-               </v-list-item>
+            <v-toolbar
+                color="blue"
+                dark
+                class="rounded-t-lg"
+              >
+                <v-btn icon disabled
+                  @click="refreshView"
+                >
+                  <v-icon>mdi-refresh</v-icon>
+                </v-btn>
+                <v-toolbar-title>{{team.teamName}}</v-toolbar-title>
+
+                <v-spacer></v-spacer> <b>Pts: {{team.totalPoints}}</b>
+
+                
+            </v-toolbar>
+             <v-list outlined class="rounded-b-lg">
                <v-list-item v-for="qb in team.lineUp.qb">
                  QB <v-spacer/> {{qb.playerName}} -- {{qb.points}}
                </v-list-item>
@@ -59,6 +72,8 @@
            >
              <v-list
                  outlined
+                color="grey darken-3"
+                class="rounded-lg"
              >
                <v-list-item v-if="$vuetify.breakpoint.mobile">
                   Bench: &nbsp; {{team.teamName}}
@@ -66,10 +81,10 @@
                <v-list-item v-for="player in benchPlayers(team)">
                  <v-list-item-content>
                    <v-list-item-title>
-                     {{player.playerName}} -- Points Scored: {{player.points}}
+                     {{player.playerName}} -- Points: {{player.points}}
                    </v-list-item-title>
                    <v-list-item-subtitle>
-                     Projected: {{player.projectedPoints}}
+                     {{player.position}} | {{player.nflTeam}} | Projected: {{player.projectedPoints}}
                    </v-list-item-subtitle>
                  </v-list-item-content>
                </v-list-item>
@@ -102,6 +117,9 @@ export default {
   methods: {
     benchPlayers(team) {
       return team.roster.filter(player => !player.isInLineUp)
+    },
+    refreshView() {
+
     }
   },
   apollo: {
@@ -130,5 +148,7 @@ export default {
 </script>
 
 <style scoped>
-
+  .blue-header {
+    color: blue;
+  }
 </style>
