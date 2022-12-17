@@ -16,6 +16,7 @@
           <v-btn
               color="primary"
               @click="refreshView"
+              :disabled="!canRefresh"
               :loading="isMatchUpRefresh"
           > Refresh Stats
           </v-btn>
@@ -126,6 +127,7 @@ export default {
   },
   data: function () {
     return {
+      canRefresh: true,
       isInitialFetch: true,
       matchUps: null,
       selectedMatchUpNumber: null,
@@ -139,9 +141,13 @@ export default {
     refreshView() {
       this.isInitialFetch = false
       this.$apollo.queries.scoringData.refetch()
+      this.canRefresh = false
+
+      setTimeout(() => this.canRefresh = true, 60000);
     },
     teamSelected() {
       this.isInitialFetch = true
+      this.canRefresh = true
     },
 
   },
