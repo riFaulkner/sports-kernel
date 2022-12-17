@@ -187,11 +187,6 @@ export default {
       skip() {
         return this.selectedMatchUpNumber === null
       },
-      // watchLoading(isLoading) {
-      //   if (!isLoading) {
-      //       this.isInitialFetch = false
-      //   }
-      // },
     }
   }
 }
