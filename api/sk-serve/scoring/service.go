@@ -87,18 +87,6 @@ func makePostRequest(r io.Reader, w io.Writer, targetURL string, audience string
 		token.SetAuthHeader(request)
 		request.Header.Set("Content-Type", "application/json")
 
-		//fmt.Printf("server: content-type: %s\n", request.Header.Get("content-type"))
-		//fmt.Printf("server: headers:\n")
-		//for headerName, headerValue := range request.Header {
-		//	fmt.Printf("\t%s = %s\n", headerName, strings.Join(headerValue, ", "))
-		//}
-
-		//reqBody, err := ioutil.ReadAll(request.Body)
-		//if err != nil {
-		//	fmt.Printf("server: could not read request body: %s\n", err)
-		//}
-		//fmt.Printf("server: request body: %s\n", reqBody)
-
 		resp, err = http.DefaultClient.Do(request)
 	} else {
 		log.Printf("Using production client version")
@@ -137,6 +125,15 @@ func generateLineUp(team *MatchUpTeamScoring) {
 		SuperFlex: make([]PlayerScoring, 0, 1),
 	}
 	sort.Slice(team.Roster, func(i, j int) bool {
+		// Check the injury status of the player
+		// Push injured or out players to the bottom of the stack
+		//var injuryStatus = team.Roster[i].InjuryStatus
+		//if getInjuryStatusValue(injuryStatus) >= 4 {
+		//
+		//}
+		if *team.Roster[i].Points == *team.Roster[j].Points {
+			return team.Roster[i].ProjectedPoints > team.Roster[j].ProjectedPoints
+		}
 		return *team.Roster[i].Points > *team.Roster[j].Points
 	})
 
@@ -194,6 +191,22 @@ func checkLineUpSpot(slot *[]PlayerScoring, player PlayerScoring) bool {
 	}
 
 	return false
+}
+
+func getInjuryStatusValue(injuryStatus string) int {
+	switch injuryStatus {
+	case "ACTIVE":
+		return 1
+	case "QUESTIONABLE":
+		return 2
+	case "OUT":
+		return 3
+	case "INJURY_RESERVE":
+		return 4
+	default:
+		log.Printf("Unknown injury status: %v", injuryStatus)
+		return 100
+	}
 }
 
 func sumLineUp(roster []PlayerScoring) *float64 {

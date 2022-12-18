@@ -23,28 +23,34 @@ export const WEEK_SCORING_FOR_MATCH_UP = gql`
                     qb {
                         playerName
                         points
+                        gamePlayed
                     }
                     rb {
                         playerName
                         points
+                        gamePlayed
                     }
                     wr {
                         playerName
                         points
+                        gamePlayed
                     }
                     te {
                         playerName
                         points
+                        gamePlayed
                     }
                     flex {
                         playerName
                         points
                         position
+                        gamePlayed
                     }
                     superFlex {
                         playerName
                         points
                         position
+                        gamePlayed
                     }
                 }
                 roster {
@@ -54,6 +60,8 @@ export const WEEK_SCORING_FOR_MATCH_UP = gql`
                     nflTeam
                     position
                     isInLineUp
+                    injuryStatus
+                    gamePlayed
                 }
             }
         }

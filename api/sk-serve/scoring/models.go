@@ -20,6 +20,9 @@ type PlayerScoring struct {
 	EligibleSlots   []string              `json:"eligible_pos"`
 	Position        *model.PlayerPosition `json:"position"`
 	IsInLineUp      bool                  `json:"is_in_line_up"`
+	InjuryStatus    string                `json:"injury_status"`
+	NflOpponent     string                `json:"nfl_opponent"`
+	GamePlayed      int                   `json:"game_played"`
 }
 
 type MatchUpTeamScoring struct {

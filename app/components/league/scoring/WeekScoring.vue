@@ -44,8 +44,6 @@
 
               <v-spacer></v-spacer>
               <b>Pts: {{ team.totalPoints.toLocaleString() }}</b>
-
-
             </v-toolbar>
             <v-list outlined class="rounded-b-lg">
               <v-list-item v-for="qb in team.lineUp.qb">
@@ -96,7 +94,9 @@
               <v-list-item v-if="$vuetify.breakpoint.mobile">
                 Bench: &nbsp; {{ team.teamName }}
               </v-list-item>
-              <v-list-item v-for="player in benchPlayers(team)">
+              <v-list-item v-for="player in benchPlayers(team)"
+                           :disabled="player.gamePlayed === 100"
+              >
                 <v-list-item-content>
                   <v-list-item-title>
                     {{ player.playerName }} -- Points: {{ player.points }}

@@ -35,4 +35,7 @@ type PlayerScoring {
     eligibleSlots:[String!]
     position: PlayerPosition
     isInLineUp: Boolean!
+    injuryStatus: String!
+    nflOpponent: String!
+    gamePlayed: Int!
 }

@@ -151,7 +151,10 @@ type PlayerNFL {
 
 type PlayerScoring {
     eligibleSlots: [String!]
+    gamePlayed: Int!
+    injuryStatus: String!
     isInLineUp: Boolean!
+    nflOpponent: String!
     nflTeam: String!
     playerName: String!
     points: Float

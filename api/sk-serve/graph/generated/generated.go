@@ -201,7 +201,10 @@ type ComplexityRoot struct {
 
 	PlayerScoring struct {
 		EligibleSlots   func(childComplexity int) int
+		GamePlayed      func(childComplexity int) int
+		InjuryStatus    func(childComplexity int) int
 		IsInLineUp      func(childComplexity int) int
+		NflOpponent     func(childComplexity int) int
 		NflTeam         func(childComplexity int) int
 		PlayerName      func(childComplexity int) int
 		Points          func(childComplexity int) int
@@ -1120,12 +1123,33 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PlayerScoring.EligibleSlots(childComplexity), true
 
+	case "PlayerScoring.gamePlayed":
+		if e.complexity.PlayerScoring.GamePlayed == nil {
+			break
+		}
+
+		return e.complexity.PlayerScoring.GamePlayed(childComplexity), true
+
+	case "PlayerScoring.injuryStatus":
+		if e.complexity.PlayerScoring.InjuryStatus == nil {
+			break
+		}
+
+		return e.complexity.PlayerScoring.InjuryStatus(childComplexity), true
+
 	case "PlayerScoring.isInLineUp":
 		if e.complexity.PlayerScoring.IsInLineUp == nil {
 			break
 		}
 
 		return e.complexity.PlayerScoring.IsInLineUp(childComplexity), true
+
+	case "PlayerScoring.nflOpponent":
+		if e.complexity.PlayerScoring.NflOpponent == nil {
+			break
+		}
+
+		return e.complexity.PlayerScoring.NflOpponent(childComplexity), true
 
 	case "PlayerScoring.nflTeam":
 		if e.complexity.PlayerScoring.NflTeam == nil {
@@ -2027,6 +2051,9 @@ type PlayerScoring {
     eligibleSlots:[String!]
     position: PlayerPosition
     isInLineUp: Boolean!
+    injuryStatus: String!
+    nflOpponent: String!
+    gamePlayed: Int!
 }
 `, BuiltIn: false},
 	{Name: "graph/schema/team/team.graphqls", Input: `# Team types and inputs
@@ -5636,6 +5663,12 @@ func (ec *executionContext) fieldContext_LineUp_qb(ctx context.Context, field gr
 				return ec.fieldContext_PlayerScoring_position(ctx, field)
 			case "isInLineUp":
 				return ec.fieldContext_PlayerScoring_isInLineUp(ctx, field)
+			case "injuryStatus":
+				return ec.fieldContext_PlayerScoring_injuryStatus(ctx, field)
+			case "nflOpponent":
+				return ec.fieldContext_PlayerScoring_nflOpponent(ctx, field)
+			case "gamePlayed":
+				return ec.fieldContext_PlayerScoring_gamePlayed(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PlayerScoring", field.Name)
 		},
@@ -5698,6 +5731,12 @@ func (ec *executionContext) fieldContext_LineUp_rb(ctx context.Context, field gr
 				return ec.fieldContext_PlayerScoring_position(ctx, field)
 			case "isInLineUp":
 				return ec.fieldContext_PlayerScoring_isInLineUp(ctx, field)
+			case "injuryStatus":
+				return ec.fieldContext_PlayerScoring_injuryStatus(ctx, field)
+			case "nflOpponent":
+				return ec.fieldContext_PlayerScoring_nflOpponent(ctx, field)
+			case "gamePlayed":
+				return ec.fieldContext_PlayerScoring_gamePlayed(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PlayerScoring", field.Name)
 		},
@@ -5760,6 +5799,12 @@ func (ec *executionContext) fieldContext_LineUp_flex(ctx context.Context, field 
 				return ec.fieldContext_PlayerScoring_position(ctx, field)
 			case "isInLineUp":
 				return ec.fieldContext_PlayerScoring_isInLineUp(ctx, field)
+			case "injuryStatus":
+				return ec.fieldContext_PlayerScoring_injuryStatus(ctx, field)
+			case "nflOpponent":
+				return ec.fieldContext_PlayerScoring_nflOpponent(ctx, field)
+			case "gamePlayed":
+				return ec.fieldContext_PlayerScoring_gamePlayed(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PlayerScoring", field.Name)
 		},
@@ -5822,6 +5867,12 @@ func (ec *executionContext) fieldContext_LineUp_wr(ctx context.Context, field gr
 				return ec.fieldContext_PlayerScoring_position(ctx, field)
 			case "isInLineUp":
 				return ec.fieldContext_PlayerScoring_isInLineUp(ctx, field)
+			case "injuryStatus":
+				return ec.fieldContext_PlayerScoring_injuryStatus(ctx, field)
+			case "nflOpponent":
+				return ec.fieldContext_PlayerScoring_nflOpponent(ctx, field)
+			case "gamePlayed":
+				return ec.fieldContext_PlayerScoring_gamePlayed(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PlayerScoring", field.Name)
 		},
@@ -5884,6 +5935,12 @@ func (ec *executionContext) fieldContext_LineUp_te(ctx context.Context, field gr
 				return ec.fieldContext_PlayerScoring_position(ctx, field)
 			case "isInLineUp":
 				return ec.fieldContext_PlayerScoring_isInLineUp(ctx, field)
+			case "injuryStatus":
+				return ec.fieldContext_PlayerScoring_injuryStatus(ctx, field)
+			case "nflOpponent":
+				return ec.fieldContext_PlayerScoring_nflOpponent(ctx, field)
+			case "gamePlayed":
+				return ec.fieldContext_PlayerScoring_gamePlayed(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PlayerScoring", field.Name)
 		},
@@ -5946,6 +6003,12 @@ func (ec *executionContext) fieldContext_LineUp_superFlex(ctx context.Context, f
 				return ec.fieldContext_PlayerScoring_position(ctx, field)
 			case "isInLineUp":
 				return ec.fieldContext_PlayerScoring_isInLineUp(ctx, field)
+			case "injuryStatus":
+				return ec.fieldContext_PlayerScoring_injuryStatus(ctx, field)
+			case "nflOpponent":
+				return ec.fieldContext_PlayerScoring_nflOpponent(ctx, field)
+			case "gamePlayed":
+				return ec.fieldContext_PlayerScoring_gamePlayed(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PlayerScoring", field.Name)
 		},
@@ -6178,6 +6241,12 @@ func (ec *executionContext) fieldContext_MatchUpTeamScoring_roster(ctx context.C
 				return ec.fieldContext_PlayerScoring_position(ctx, field)
 			case "isInLineUp":
 				return ec.fieldContext_PlayerScoring_isInLineUp(ctx, field)
+			case "injuryStatus":
+				return ec.fieldContext_PlayerScoring_injuryStatus(ctx, field)
+			case "nflOpponent":
+				return ec.fieldContext_PlayerScoring_nflOpponent(ctx, field)
+			case "gamePlayed":
+				return ec.fieldContext_PlayerScoring_gamePlayed(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PlayerScoring", field.Name)
 		},
@@ -8318,6 +8387,138 @@ func (ec *executionContext) fieldContext_PlayerScoring_isInLineUp(ctx context.Co
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PlayerScoring_injuryStatus(ctx context.Context, field graphql.CollectedField, obj *scoring.PlayerScoring) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PlayerScoring_injuryStatus(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.InjuryStatus, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PlayerScoring_injuryStatus(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PlayerScoring",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PlayerScoring_nflOpponent(ctx context.Context, field graphql.CollectedField, obj *scoring.PlayerScoring) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PlayerScoring_nflOpponent(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.NflOpponent, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PlayerScoring_nflOpponent(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PlayerScoring",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PlayerScoring_gamePlayed(ctx context.Context, field graphql.CollectedField, obj *scoring.PlayerScoring) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PlayerScoring_gamePlayed(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.GamePlayed, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PlayerScoring_gamePlayed(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PlayerScoring",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -15745,6 +15946,27 @@ func (ec *executionContext) _PlayerScoring(ctx context.Context, sel ast.Selectio
 		case "isInLineUp":
 
 			out.Values[i] = ec._PlayerScoring_isInLineUp(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "injuryStatus":
+
+			out.Values[i] = ec._PlayerScoring_injuryStatus(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "nflOpponent":
+
+			out.Values[i] = ec._PlayerScoring_nflOpponent(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "gamePlayed":
+
+			out.Values[i] = ec._PlayerScoring_gamePlayed(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
