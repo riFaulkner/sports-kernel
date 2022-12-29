@@ -13,6 +13,11 @@ export const WEEK_SCORING_MATCH_UPS = gql`
 `
 
 export const WEEK_SCORING_FOR_MATCH_UP = gql`
+    fragment LineUpPlayerData on PlayerScoring {
+        playerName
+        points
+        gamePlayed
+    }
     query scoring($leagueId: ID!, $matchUpNumber: Int!) {
         scoring(leagueId: $leagueId){
             matchUpScoring(matchUpNumber: $matchUpNumber) {
@@ -21,36 +26,24 @@ export const WEEK_SCORING_FOR_MATCH_UP = gql`
                 totalPoints
                 lineUp {
                     qb {
-                        playerName
-                        points
-                        gamePlayed
+                        ...LineUpPlayerData
                     }
                     rb {
-                        playerName
-                        points
-                        gamePlayed
+                        ...LineUpPlayerData
                     }
                     wr {
-                        playerName
-                        points
-                        gamePlayed
+                        ...LineUpPlayerData
                     }
                     te {
-                        playerName
-                        points
-                        gamePlayed
+                        ...LineUpPlayerData
                     }
                     flex {
-                        playerName
-                        points
+                        ...LineUpPlayerData
                         position
-                        gamePlayed
                     }
                     superFlex {
-                        playerName
-                        points
+                        ...LineUpPlayerData
                         position
-                        gamePlayed
                     }
                 }
                 roster {
