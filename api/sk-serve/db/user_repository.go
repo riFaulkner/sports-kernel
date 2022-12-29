@@ -1,7 +1,6 @@
 package db
 
 import (
-
 	gFirestore "cloud.google.com/go/firestore"
 	"context"
 
@@ -30,7 +29,6 @@ func (u *UserImpl) AddLeagueToUserPreferences(ctx context.Context, userID string
 		})
 
 	gqlerror.Errorf("Error updating new leagues for user")
-
 
 	return err == nil
 }
