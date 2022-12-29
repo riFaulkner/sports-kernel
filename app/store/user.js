@@ -4,7 +4,7 @@ export const state = () => ({
   userId: null,
   userPreferences: {
     leagues: null,
-    preferredLeagueId: '',
+    preferredLeagueId: null,
     isAdmin: null
   }
 })
@@ -18,12 +18,14 @@ export const getters = {
   },
   getIsUserAdmin (state) {
     return state.userPreferences.isAdmin
+  },
+  getPreferredLeagueId (state) {
+    return state.userPreferences.preferredLeagueId
   }
 }
 
 export const mutations = {
-  // eslint-disable-next-line require-await
-  async setUserPreferences (state, payload) {
+  setUserPreferences (state, payload) {
     state.userId = payload.id
     state.userPreferences.leagues = payload.leagues
     state.userPreferences.preferredLeagueId = payload.preferredLeagueId

@@ -27,7 +27,6 @@ export const mutations = {
 export const actions = {
   updateActiveLeague (context, payload) {
     context.commit('saveActiveLeague', payload)
-    // localStorage.userPreferences = context.state;
   },
   updateActiveTab (context, payload) {
     context.commit('updateActiveTab', payload)

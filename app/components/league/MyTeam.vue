@@ -50,7 +50,6 @@
       />
     </v-dialog>
   </v-skeleton-loader>
-
 </template>
 
 <script>

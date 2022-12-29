@@ -38,10 +38,10 @@
       <league-management-tool :league-id="league.id" />
     </v-tab-item>
   </v-tabs-items>
-  <div v-else class="text-center">
-    <h1>
-      Please select a league
-    </h1>
+  <div v-else >
+    <v-skeleton-loader :loading="true" type="article, card">
+
+    </v-skeleton-loader>
   </div>
 </template>
 
@@ -67,7 +67,7 @@ export default {
     ownerId() {
       return this.$store.getters['user/getUserId']
     },
-    tab () {
+    tab() {
       return this.$store.state.application.activeTab
     },
   },
