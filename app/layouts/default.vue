@@ -111,6 +111,7 @@
           <v-tab
               v-for="tab in submenu"
               :key="tab"
+              :href="'#'+tab"
           >
             {{ tab }}
           </v-tab>

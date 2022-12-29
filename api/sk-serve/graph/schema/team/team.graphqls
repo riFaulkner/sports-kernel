@@ -4,7 +4,7 @@ type Team {
     foundedDate: Time!
     teamName: String!
     division: String
-    currentContractsMetadata: ContractsMetadata
+    currentContractsMetadata: ContractsMetadata @deprecated
     contractsMetadata: [ContractsMetadata!]
     teamAssets: TeamAssets
     teamLiabilities: TeamLiabilities
