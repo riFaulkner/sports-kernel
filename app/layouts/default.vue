@@ -259,16 +259,6 @@ export default {
         this.$store.dispatch("application/updateActiveTab", newValue);
       }
     },
-    updateSubMenuOptions() {
-      const leagueSubMenuItems = [
-        'Standings','Scoring', 'My Team', 'Contracts Overview', 'Rules'
-      ]
-
-      if (this.leagues.find((league) => league.id === this.activeLeagueId).roleInLeague === 'LEAGUE_MANAGER') {
-        leagueSubMenuItems.push('League Management')
-      }
-      this.menuItems.filter((menuItem) => menuItem.name === "league")[0].submenuItems = leagueSubMenuItems
-    }
   },
   methods: {
     dismissAlert() {
@@ -282,7 +272,18 @@ export default {
     },
     changeLeague(league) {
       this.activeLeagueId = league.id
+      this.updateSubMenuOptions()
     },
+    updateSubMenuOptions() {
+      const leagueSubMenuItems = [
+        'Standings','Scoring', 'My Team', 'Contracts Overview', 'Rules'
+      ]
+
+      if (this.leagues.find((league) => league.id === this.activeLeagueId).roleInLeague === 'LEAGUE_MANAGER') {
+        leagueSubMenuItems.push('League Management')
+      }
+      this.menuItems.filter((menuItem) => menuItem.name === "league")[0].submenuItems = leagueSubMenuItems
+    }
   },
   apollo: {
     leagueFetch: {
@@ -320,6 +321,7 @@ export default {
           this.$store.dispatch("user/setUserPreferences", data.userPreferences).then(() => {
             if (this.isInitialLoad) {
               this.activeLeagueId = this.$store.getters["user/getPreferredLeagueId"]
+              this.updateSubMenuOptions()
               this.isInitialLoad = false
             }
           })
