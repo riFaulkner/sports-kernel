@@ -129,12 +129,13 @@ type ComplexityRoot struct {
 	}
 
 	League struct {
-		Divisions  func(childComplexity int) int
-		ID         func(childComplexity int) int
-		LeagueName func(childComplexity int) int
-		LogoURL    func(childComplexity int) int
-		StartDate  func(childComplexity int) int
-		Teams      func(childComplexity int, search *model.LeagueTeamFiltering) int
+		CurrentSeason func(childComplexity int) int
+		Divisions     func(childComplexity int) int
+		ID            func(childComplexity int) int
+		LeagueName    func(childComplexity int) int
+		LogoURL       func(childComplexity int) int
+		StartDate     func(childComplexity int) int
+		Teams         func(childComplexity int, search *model.LeagueTeamFiltering) int
 	}
 
 	LeaguePost struct {
@@ -695,6 +696,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.DraftYear.Year(childComplexity), true
+
+	case "League.currentSeason":
+		if e.complexity.League.CurrentSeason == nil {
+			break
+		}
+
+		return e.complexity.League.CurrentSeason(childComplexity), true
 
 	case "League.divisions":
 		if e.complexity.League.Divisions == nil {
@@ -1907,6 +1915,7 @@ input ContractRestructureInput {
 }`, BuiltIn: false},
 	{Name: "graph/schema/league/league.graphqls", Input: `type League {
     id: ID!
+    currentSeason: Int!
     leagueName: String!
     logoUrl: String!
     startDate: Time!
@@ -2062,7 +2071,7 @@ type Team {
     foundedDate: Time!
     teamName: String!
     division: String
-    currentContractsMetadata: ContractsMetadata
+    currentContractsMetadata: ContractsMetadata @deprecated
     contractsMetadata: [ContractsMetadata!]
     teamAssets: TeamAssets
     teamLiabilities: TeamLiabilities
@@ -5074,6 +5083,50 @@ func (ec *executionContext) fieldContext_League_id(ctx context.Context, field gr
 	return fc, nil
 }
 
+func (ec *executionContext) _League_currentSeason(ctx context.Context, field graphql.CollectedField, obj *league.League) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_League_currentSeason(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CurrentSeason, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_League_currentSeason(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "League",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _League_leagueName(ctx context.Context, field graphql.CollectedField, obj *league.League) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_League_leagueName(ctx, field)
 	if err != nil {
@@ -6527,6 +6580,8 @@ func (ec *executionContext) fieldContext_Mutation_createLeague(ctx context.Conte
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_League_id(ctx, field)
+			case "currentSeason":
+				return ec.fieldContext_League_currentSeason(ctx, field)
 			case "leagueName":
 				return ec.fieldContext_League_leagueName(ctx, field)
 			case "logoUrl":
@@ -8813,6 +8868,8 @@ func (ec *executionContext) fieldContext_Query_leagues(ctx context.Context, fiel
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_League_id(ctx, field)
+			case "currentSeason":
+				return ec.fieldContext_League_currentSeason(ctx, field)
 			case "leagueName":
 				return ec.fieldContext_League_leagueName(ctx, field)
 			case "logoUrl":
@@ -8892,6 +8949,8 @@ func (ec *executionContext) fieldContext_Query_league(ctx context.Context, field
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_League_id(ctx, field)
+			case "currentSeason":
+				return ec.fieldContext_League_currentSeason(ctx, field)
 			case "leagueName":
 				return ec.fieldContext_League_leagueName(ctx, field)
 			case "logoUrl":
@@ -15384,6 +15443,13 @@ func (ec *executionContext) _League(ctx context.Context, sel ast.SelectionSet, o
 		case "id":
 
 			out.Values[i] = ec._League_id(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "currentSeason":
+
+			out.Values[i] = ec._League_currentSeason(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)

@@ -34,6 +34,7 @@
               v-for="team in scoringData"
               cols="12"
               sm="5"
+              :key="team.teamName"
           >
             <v-toolbar
                 color="blue"
@@ -46,32 +47,32 @@
               <b>Pts: {{ team.totalPoints.toLocaleString() }}</b>
             </v-toolbar>
             <v-list outlined class="rounded-b-lg">
-              <v-list-item v-for="qb in team.lineUp.qb">
+              <v-list-item v-for="qb in team.lineUp.qb" :key="qb.playerName" >
                 QB
                 <v-spacer/>
                 {{ qb.playerName }} -- {{ qb.points }}
               </v-list-item>
-              <v-list-item v-for="rb in team.lineUp.rb">
+              <v-list-item v-for="rb in team.lineUp.rb" :key="rb.playerName">
                 RB
                 <v-spacer/>
                 {{ rb.playerName }} -- {{ rb.points }}
               </v-list-item>
-              <v-list-item v-for="wr in team.lineUp.wr">
+              <v-list-item v-for="wr in team.lineUp.wr" :key="wr.playerName">
                 WR
                 <v-spacer/>
                 {{ wr.playerName }} -- {{ wr.points }}
               </v-list-item>
-              <v-list-item v-for="te in team.lineUp.te">
+              <v-list-item v-for="te in team.lineUp.te" :key="te.playerName">
                 TE
                 <v-spacer/>
                 {{ te.playerName }} -- {{ te.points }}
               </v-list-item>
-              <v-list-item v-for="flex in team.lineUp.flex">
+              <v-list-item v-for="flex in team.lineUp.flex" :key="flex.playerName">
                 Flex
                 <v-spacer/>
                 {{ flex.playerName }} -- {{ flex.points }}
               </v-list-item>
-              <v-list-item v-for="sFlex in team.lineUp.superFlex">
+              <v-list-item v-for="sFlex in team.lineUp.superFlex" :key="sFlex.playerName">
                 SuperFlex
                 <v-spacer/>
                 {{ sFlex.playerName }} -- {{ sFlex.points }}
@@ -85,6 +86,7 @@
               v-for="team in scoringData"
               cols="12"
               sm="5"
+              :key="team.teamName"
           >
             <v-list
                 outlined
@@ -96,6 +98,7 @@
               </v-list-item>
               <v-list-item v-for="player in benchPlayers(team)"
                            :disabled="player.gamePlayed === 100"
+                           :key="player.playerName"
               >
                 <v-list-item-content>
                   <v-list-item-title>

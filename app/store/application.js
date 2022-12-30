@@ -1,3 +1,4 @@
+
 export const state = () => ({
   isInitialized: false,
   activeLeague: null,
@@ -85,5 +86,8 @@ export const getters = {
   },
   getActiveTab (state) {
     return state.activeTab
+  },
+  getActiveLeagueCurrentSeason(state) {
+    return state.activeLeague ? state.activeLeague.currentSeason : 0
   }
 }
