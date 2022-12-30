@@ -79,6 +79,7 @@ type DraftYear {
 }
 
 type League {
+    currentSeason: Int!
     divisions: [Division!]!
     id: ID!
     leagueName: String!
@@ -199,7 +200,7 @@ type Team {
     accessCodes: [String!]
     activeContracts: [Contract!]
     contractsMetadata: [ContractsMetadata!]
-    currentContractsMetadata: ContractsMetadata
+    currentContractsMetadata: ContractsMetadata @deprecated(reason: "No longer supported")
     division: String
     foundedDate: Time!
     id: ID!

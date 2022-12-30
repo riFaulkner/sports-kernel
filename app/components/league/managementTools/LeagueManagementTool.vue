@@ -1,7 +1,7 @@
 <template>
   <v-container fluid>
-    <v-row>
-      <v-col md="4" offset-md="4">
+    <v-row justify="center">
+      <v-col sm="7" lg="8" cols="12" offset-sm="1" offset-md="0">
         <v-card>
           <v-select
               :items="toolTypes"
@@ -12,7 +12,6 @@
           />
         </v-card>
       </v-col>
-
     </v-row>
     <v-row>
       <v-col v-if="selectedTool === 'createContract'">

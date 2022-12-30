@@ -15,10 +15,11 @@ type LeagueImpl struct {
 
 func (u *LeagueImpl) CreateLeague(ctx context.Context, input league.NewLeagueInput) (*league.League, error) {
 	newLeague := league.League{
-		LeagueName: input.LeagueName,
-		LogoURL:    getLogo(input.LogoUrl),
-		StartDate:  getTime(input.StartDate),
-		Divisions:  getDivisions(input.Divisions),
+		LeagueName:    input.LeagueName,
+		CurrentSeason: time.Now().Year(),
+		LogoURL:       getLogo(input.LogoUrl),
+		StartDate:     getTime(input.StartDate),
+		Divisions:     getDivisions(input.Divisions),
 	}
 
 	_, _, err := u.Client.Collection(firestore.LeaguesCollection).Add(ctx, newLeague)

@@ -4,10 +4,11 @@
 
     <v-card-text>
       <contract-search
-          :league-id="leagueId"
-          :contracts="contracts"
-          :loading="this.$apollo.loading"
-          :selected="contractSelectList"
+          :league-id=leagueId
+          :contracts=contracts
+          :currentSeason=currentSeason
+          :loading=this.$apollo.loading
+          :selected=contractSelectList
           @contract-selected="contractSelected"
           @contract-deselected="contractDeselected"
       />
@@ -19,7 +20,8 @@
       >
         <contract-management-card
             :contract=selectedContract
-            :league-id="leagueId"
+            :current-season=currentSeason
+            :league-id=leagueId
             @contract-restructured="contractModified"
             @contract-dropped="contractModified"
             @contract-management-closed="contractDeselected"
@@ -43,13 +45,14 @@ export default {
     leagueId: {
       type: String,
       required: true
-    }
+    },
   },
   data: function () {
     return {
       selectedContract: null,
       contractSelectList:[],
-      contracts: []
+      contracts: [],
+      currentSeason: this.$store.getters["application/getActiveLeagueCurrentSeason"]
     }
   },
   methods: {

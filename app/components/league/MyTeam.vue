@@ -11,6 +11,7 @@
       <v-card-text v-if="myTeam">
         <contract-search
             :contracts="teamContracts"
+            :current-season="currentSeason"
             :league-id="leagueId"
             :loading="this.$apollo.queries.myTeam.loading"
             :selected="selectedContract"
@@ -43,6 +44,7 @@
       <contract-management-card
           v-if="contractIsSelected"
           :contract="selectedContract[0]"
+          :current-season="currentSeason"
           :league-id="leagueId"
           @contract-restructured="contractRestructured"
           @contract-dropped="contractDropped"
@@ -77,6 +79,7 @@ export default {
   data: function () {
     return {
       contractIsSelected: false,
+      currentSeason: this.$store.getters["application/getActiveLeagueCurrentSeason"],
       myTeam: null,
       selectedContract: []
     }
