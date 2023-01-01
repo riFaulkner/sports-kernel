@@ -1,5 +1,6 @@
 type League {
     id: ID!
+    currentSeason: Int!
     leagueName: String!
     logoUrl: String!
     startDate: Time!

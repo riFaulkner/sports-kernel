@@ -5,6 +5,7 @@ export const LEAGUE_BY_ID_QUERY = gql`
         league(leagueId: $leagueId) {
             id
             leagueName
+            currentSeason
             divisions {
                 divisionName
                 leadingWins
@@ -53,6 +54,7 @@ export const LEAGUE_CONTRACTS = gql`
             playerId
             teamId
             player {
+                id
                 playerName
                 team
                 position
@@ -75,6 +77,7 @@ export const LEAGUE_FILTER_TEAMS_BY_OWNER_ID = gql`
     query GetFullLeagueInfo($leagueId:ID!, $filter:LeagueTeamFiltering) {
         league(leagueId: $leagueId) {
             id
+            currentSeason
             teams(search: $filter) {
                 id
                 teamName

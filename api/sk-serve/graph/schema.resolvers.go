@@ -5,7 +5,6 @@ package graph
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/auth"
@@ -13,6 +12,7 @@ import (
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/generated"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/league"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/scoring"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/team"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/user"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -166,7 +166,6 @@ func (r *queryResolver) League(ctx context.Context, leagueID *string) (*league.L
 }
 
 func (r *queryResolver) LeagueContracts(ctx context.Context, leagueID string) ([]*contract.Contract, error) {
-	fmt.Printf("userId from context: %s", auth.GetUserIdFromContext(ctx))
 	return r.ContractResolver.GetAllLeagueContracts(ctx, leagueID)
 }
 
@@ -252,6 +251,10 @@ func (r *queryResolver) UserPreferences(ctx context.Context, userID *string) (*u
 
 func (r *queryResolver) GetUserRoles(ctx context.Context, userID *string) ([]*model.UserRoles, error) {
 	return r.UserResolver.GetUserRoles(ctx, userID)
+}
+
+func (r *queryResolver) Scoring(ctx context.Context, leagueID string) (*scoring.ScoringQueries, error) {
+	return &scoring.ScoringQueries{}, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

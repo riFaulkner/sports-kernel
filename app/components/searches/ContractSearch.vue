@@ -29,36 +29,18 @@
         ${{ totalGuaranteed(item) }}
       </template>
       <template v-slot:item.year1="{item}">
-        <div v-if=getContractYearPaid(item,1) class="success--text">
-          {{ getContractYearDetails(item, 1) }}
-        </div>
-        <div v-else class="warning--text">
-          {{ getContractYearDetails(item, 1) }}
+        <div>
+          {{ getContractYearDetails(item, 0) }}
         </div>
       </template>
       <template v-slot:item.year2="{item}">
-        <div v-if=getContractYearPaid(item,2) class="success--text">
-          {{ getContractYearDetails(item, 2) }}
-        </div>
-        <div v-else class="warning--text">
-          {{ getContractYearDetails(item, 2) }}
-        </div>
+          {{ getContractYearDetails(item, 1) }}
       </template>
       <template v-slot:item.year3="{item}">
-        <div v-if=getContractYearPaid(item,3) class="success--text">
-          {{ getContractYearDetails(item, 3) }}
-        </div>
-        <div v-else class="warning--text">
-          {{ getContractYearDetails(item, 3) }}
-        </div>
+          {{ getContractYearDetails(item, 2) }}
       </template>
       <template v-slot:item.year4="{item}">
-        <div v-if=getContractYearPaid(item,4) class="success--text">
-          {{ getContractYearDetails(item, 4) }}
-        </div>
-        <div v-else class="warning--text">
-          {{ getContractYearDetails(item, 4) }}
-        </div>
+          {{ getContractYearDetails(item, 3) }}
       </template>
     </v-data-table>
   </div>
@@ -72,6 +54,10 @@ export default {
     contracts: {
       type: Array,
       required: true,
+    },
+    currentSeason: {
+      type: Number,
+      required: true
     },
     leagueId: {
       type: String,
@@ -92,27 +78,16 @@ export default {
   data: function () {
     return {
       search: "",
-      headers: [
-        {text: "Player Name:", value: "player.playerName"},
-        {text: "Player Position", value: "player.position"},
-        {text: "NFL Team", value: "player.team"},
-        {text: "Total Contract Value", value: "totalContractValue"},
-        {text: "Total Guaranteed", value: "totalGuaranteedValue"},
-        {text: "Year 1", value: "year1"},
-        {text: "Year 2", value: "year2"},
-        {text: "Year 3", value: "year3"},
-        {text: "Year 4", value: "year4"},
-        {text: "Contract Restructure Status", value: "restructureStatus", align: 'center'},
-      ],
       queriedWith: "",
     }
   },
   methods: {
     getContractYearDetails(contract, year) {
-      if (contract.contractDetails.length < year) {
+      const offset = contract.currentYear + year
+      if (contract.contractDetails.length < offset) {
         return ""
       }
-      return `$${contract.contractDetails[year - 1]?.totalAmount.toLocaleString()}`
+      return `$${contract.contractDetails[offset - 1]?.totalAmount.toLocaleString()}`
     },
     getContractYearPaid(contract, year) {
       const currentYear = contract.currentYear
@@ -139,6 +114,20 @@ export default {
     }
   },
   computed: {
+    headers() {
+      return [
+        {text: "Player Name:", value: "player.playerName"},
+        {text: "Position", value: "player.position"},
+        {text: "NFL Team", value: "player.team"},
+        {text: "Total Contract Value", value: "totalContractValue"},
+        {text: "Total Guaranteed", value: "totalGuaranteedValue"},
+        {text: this.currentSeason, value: "year1"},
+        {text: this.currentSeason+1, value: "year2"},
+        {text: this.currentSeason+2, value: "year3"},
+        {text: this.currentSeason+3, value: "year4"},
+        {text: "Restructure Status", value: "restructureStatus", align: 'center'},
+      ]
+    },
     selectedList: {
       // No set method, instead the event is handled in the contractSelected method above
       get:function () {

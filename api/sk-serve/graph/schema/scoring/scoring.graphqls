@@ -1,0 +1,41 @@
+type ScoringQueries {
+    weekMatchUps: [MatchUp]
+    matchUpScoring(matchUpNumber: Int!): [MatchUpTeamScoring]
+}
+
+type MatchUp {
+    awayTeam: String!
+    homeTeam: String!
+    matchUpNumber: Int
+}
+
+type MatchUpTeamScoring {
+    isHomeTeam: Boolean!
+    roster: [PlayerScoring!]
+    teamName: String!
+    lineUp: LineUp
+    totalPoints: Float
+}
+
+type LineUp {
+    qb: [PlayerScoring!]!
+    rb: [PlayerScoring!]!
+    flex: [PlayerScoring!]!
+    wr: [PlayerScoring!]!
+    te: [PlayerScoring!]!
+    superFlex: [PlayerScoring!]!
+}
+
+type PlayerScoring {
+    team: String!
+    playerName: String!
+    nflTeam: String!
+    projectedPoints: Float
+    points: Float
+    eligibleSlots:[String!]
+    position: PlayerPosition
+    isInLineUp: Boolean!
+    injuryStatus: String!
+    nflOpponent: String!
+    gamePlayed: Int!
+}

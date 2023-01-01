@@ -3,16 +3,17 @@
       :loading="$apollo.loading" type="article, card"
   >
     <v-card>
-      <v-card-title v-if="this.league.teams?.length > 0">
+      <v-card-title v-if="this.myTeam">
         <v-spacer/>
-        <h2> {{ this.league.teams[0].teamName }} </h2>
+        <h2> {{ this.myTeam.teamName }} </h2>
         <v-spacer/>
       </v-card-title>
-      <v-card-text>
+      <v-card-text v-if="myTeam">
         <contract-search
             :contracts="teamContracts"
+            :current-season="currentSeason"
             :league-id="leagueId"
-            :loading="this.$apollo.loading"
+            :loading="this.$apollo.queries.myTeam.loading"
             :selected="selectedContract"
             @contract-selected="contractSelected"
             @contract-deselected="contractDeselected"
@@ -22,15 +23,15 @@
       <v-row>
         <v-col cols="12" md="8">
           <team-draft-picks-breakdown
-              v-if="this.league.teams?.length > 0"
-              :draft-picks="this.league.teams[0].teamAssets?.draftPicks"
+              v-if="this.myTeam"
+              :draft-picks="this.myTeam.teamAssets?.draftPicks"
           />
         </v-col>
         <v-divider vertical/>
         <v-col cols="12" md="4">
           <team-dead-cap-breakdown
-              v-if="this.league.teams?.length > 0"
-              :dead-cap="this.league.teams[0].teamLiabilities?.deadCap"
+              v-if="this.myTeam"
+              :dead-cap="this.myTeam.teamLiabilities?.deadCap"
           />
         </v-col>
       </v-row>
@@ -43,6 +44,7 @@
       <contract-management-card
           v-if="contractIsSelected"
           :contract="selectedContract[0]"
+          :current-season="currentSeason"
           :league-id="leagueId"
           @contract-restructured="contractRestructured"
           @contract-dropped="contractDropped"
@@ -50,7 +52,6 @@
       />
     </v-dialog>
   </v-skeleton-loader>
-
 </template>
 
 <script>
@@ -78,19 +79,14 @@ export default {
   data: function () {
     return {
       contractIsSelected: false,
-      league: {},
+      currentSeason: this.$store.getters["application/getActiveLeagueCurrentSeason"],
+      myTeam: null,
       selectedContract: []
     }
   },
   computed: {
     teamContracts() {
-      if (this.league) {
-        if (this.league.teams && this.league.teams.length > 0) {
-          return this.league.teams[0].activeContracts
-        }
-        return []
-      }
-      return []
+        return this.myTeam.activeContracts
     },
   },
   methods: {
@@ -106,7 +102,7 @@ export default {
       this.contractIsSelected = false
       this.selectedContract = []
 
-      this.league.teams[0].activeContracts = this.league.teams[0]
+      this.myTeam.activeContracts = this.myTeam
           .activeContracts
           .slice()
           .filter(contract => contract.id !== droppedContract.contractId)
@@ -128,7 +124,7 @@ export default {
       })).then((response) => {
         const newContract = response.data.contractById
 
-        const allOtherContracts = this.league.teams[0].activeContracts.slice().filter(contract => contract.id !== contractId)
+        const allOtherContracts = this.myTeam.activeContracts.slice().filter(contract => contract.id !== contractId)
 
         allOtherContracts.push(newContract)
       }).catch((error) => {
@@ -140,10 +136,10 @@ export default {
         query: TEAM_DEAD_CAP,
         variables: {
           leagueId: this.leagueId,
-          teamId: this.league.teams[0].id
+          teamId: this.myTeam.id
         }
       })).then((response) => {
-        this.league.teams[0].teamLiabilities.deadCap = response.data.teamById.teamLiabilities.deadCap
+        this.myTeam.teamLiabilities.deadCap = response.data.teamById.teamLiabilities.deadCap
 
       }).catch((error) => {
         this.$store.dispatch("application/alertError", {message: "Error fetching updated dead cap"})
@@ -152,7 +148,7 @@ export default {
     }
   },
   apollo: {
-    league: {
+    myTeam: {
       query: LEAGUE_FILTER_TEAMS_BY_OWNER_ID,
       variables: function () {
         return {
@@ -161,7 +157,8 @@ export default {
             ownerId: this.ownerId
           }
         }
-      }
+      },
+      update: data => data.league.teams[0]
     }
   }
 }

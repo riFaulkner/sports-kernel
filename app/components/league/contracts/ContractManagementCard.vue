@@ -15,14 +15,14 @@
           >
             <v-icon>mdi-close</v-icon>
           </v-btn>
-
         </v-card-title>
         <v-card-subtitle>
-          Position: {{ contract.player.position }} <br/>
+          Position: {{ contract.player.position }} &nbsp; | &nbsp; Team: {{ contract.player.team }}<br/>
         </v-card-subtitle>
         <v-divider/>
         <v-card-text>
-          Contract Length: {{ contract.contractLength }} years <br/>
+          Current Year: {{ contract.currentYear }} <br/>
+          Contract Duration: {{ contractDuration(contract) }} years <br/>
           Total Value: ${{ contract.totalContractValue.toLocaleString() }} <br/>
           Restructure Status:
           <strong class="success--text text--darken-1" v-if="canRestructure">
@@ -30,10 +30,17 @@
           </strong>
           <strong class="error--text" v-else>
             {{ contract.restructureStatus }}
-          </strong>
+          </strong> <br/>
           <br/>
-          Current Year: {{ contract.currentYear }} <br/>
+            <v-progress-linear
+                background-color="warning"
+                :buffer-value="getContractPercentRemainingGuaranteed(contract) + getContractPercentPaid(contract)"
+                :value=getContractPercentPaid(contract)
+                color="green"
+                stream
+            ></v-progress-linear>
           <br/>
+
           <v-data-table
               :headers=headers
               :items="contract.contractDetails"
@@ -42,6 +49,9 @@
               dense
               hide-default-footer
           >
+            <template v-slot:item.season="{item}">
+              {{calculateSeason(item, contract.currentYear)}}
+            </template>
             <template v-slot:item.totalAmount="{item}">
               ${{ item.totalAmount.toLocaleString() }}
             </template>
@@ -187,6 +197,10 @@ export default {
     leagueId: {
       type: String,
       required: true
+    },
+    currentSeason: {
+      type: Number,
+      required: true
     }
   },
   data: function () {
@@ -196,7 +210,7 @@ export default {
       contractRestructureDialog: false,
       formValidation: false,
       headers: [
-        {text: "Year", value: "year"},
+        {text: "Season", value: "season"},
         {text: "Total", value: "totalAmount"},
         {text: "Guaranteed", value: "guaranteedAmount"},
         {text: "Paid", value: "paidAmount"}
@@ -259,13 +273,28 @@ export default {
     }
   },
   methods: {
+    calculateSeason(item, contractOffset){
+      const offset = contractOffset - item.year
+      return this.currentSeason - offset
+    },
     closeDialog() {
       this.$emit("contract-management-closed")
+    },
+    contractDuration(contract) {
+      return contract.contractDetails ? contract.contractDetails.length : 0
     },
     cancelAction() {
       this.actionToPerform = null
       this.confirmationDialog = false
       this.$store.dispatch("application/alertInfo", {message: "Action canceled"})
+    },
+    getContractPercentPaid(contract) {
+      return ((contract.totalContractValue - contract.totalRemainingValue) / contract.totalContractValue) * 100
+    },
+    getContractPercentRemainingGuaranteed(contract) {
+      const remainingGuaranteed = contract.contractDetails.filter(contractYear => contractYear.year >= contract.currentYear)
+          .reduce((incompleteSum, currentValue) => incompleteSum + currentValue.guaranteedAmount, 0)
+      return (remainingGuaranteed / contract.totalContractValue) * 100
     },
     getRestructureTextFieldLabel(year) {
       return `Year: ${year}`
@@ -350,5 +379,9 @@ export default {
 </script>
 
 <style scoped>
+::v-deep .v-progress-linear--visible .v-progress-linear__stream {
+  -webkit-animation-play-state: paused;
+  animation-play-state: paused;
+}
 
 </style>

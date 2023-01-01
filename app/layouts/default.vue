@@ -39,15 +39,14 @@
       <template v-if="$auth.loggedIn">
         <v-menu>
           <template v-slot:activator="{on, attrs}">
-            <v-toolbar-items
-                v-if="isInitialized"
-            >
+            <v-toolbar-items v-if="hasLeagues">
               <v-btn
                   v-bind="attrs"
                   v-on="on"
+                  :loading="$apollo.queries.userPreferencesFetch.loading"
               >
                 <template v-if="activeLeague">{{ activeLeague.leagueName }}</template>
-                <template v-else>Select a League</template>
+                <template v-else></template>
                 <v-icon>mdi-chevron-down</v-icon>
               </v-btn>
             </v-toolbar-items>
@@ -55,9 +54,8 @@
                 v-else
                 color="primary"
                 medium
-                :loading="!isInitialized"
             >
-              <span v-if="isInitialized">
+              <span>
                 Join League
               </span>
             </v-btn>
@@ -84,7 +82,6 @@
               <v-icon>mdi-dots-vertical</v-icon>
             </v-btn>
           </template>
-
           <v-list>
             <v-list-item
                 v-for="accountAction in userAccountActions"
@@ -114,6 +111,7 @@
           <v-tab
               v-for="tab in submenu"
               :key="tab"
+              :href="'#'+tab"
           >
             {{ tab }}
           </v-tab>
@@ -158,14 +156,17 @@
 <script>
 
 import {LEAGUE_BY_ID_QUERY} from "@/graphql/queries/league/leagueGraphQL";
+import {USER_PREFERENCES_QUERY} from "@/graphql/queries/user/userGraphQl";
 
 export default {
   data() {
     return {
+      activeLeagueId: null,
       alert: false,
       alertPayload: {},
       clipped: true,
       drawer: false,
+      isInitialLoad: true,
       menuItems: [
         {
           icon: 'mdi-account-group',
@@ -174,7 +175,7 @@ export default {
           name: 'league',
           adminOnly: false,
           submenuItems: [
-            'Standings', 'My Team', 'Contracts Overview', 'Rules'
+            'Standings', 'Scoring', 'My Team', 'Contracts Overview', 'Rules'
           ]
         },
         {
@@ -215,7 +216,6 @@ export default {
           }
         }
       ],
-      isInitialized: false
     }
   },
   computed: {
@@ -225,6 +225,10 @@ export default {
     globalAlert() {
       return this.$store.state.application.alert;
     },
+    hasLeagues() {
+      const leagues = this.$store.getters["user/getUserLeagues"]
+      return leagues ? leagues.length > 0 : true
+    },
     isUserAdmin() {
       const isAdmin = this.$store.getters["user/getIsUserAdmin"];
       return isAdmin !== null ? isAdmin : false;
@@ -232,6 +236,12 @@ export default {
     leagues() {
       const leagues = this.$store.getters["user/getUserLeagues"];
       return leagues ? leagues : [];
+    },
+    loggedInUserId() {
+      if (this.$auth.loggedIn) {
+        return this.$auth.user.sub
+      }
+      return null
     },
     submenu() {
       const currentRoute = this.$route.name
@@ -262,43 +272,63 @@ export default {
       this.$auth.loginWith('auth0');
     },
     changeLeague(league) {
-      this.isInitialized = false; // Set so the spinner will run
-      this.$apollo.query(
-          {
-            query: LEAGUE_BY_ID_QUERY,
-            variables: {
-              leagueId: league.id
-            }
-          }
-          // query for the full league info
-      ).then((response) => {
-        this.$store.dispatch('application/updateActiveLeague', response.data.league);
-        // this.$store.dispatch('application/alertSuccess', {message: "Successfully switched active league."});
-        const leagueSubMenuItems = [
-          'Standings', 'My Team', 'Contracts Overview', 'Rules'
-        ]
-        if (league.roleInLeague === 'LEAGUE_MANAGER') {
-          leagueSubMenuItems.push('League Management')
-        }
-        this.menuItems.filter((menuItem) => menuItem.name === "league")[0].submenuItems = leagueSubMenuItems
-      }).catch((error) => {
-            this.$store.dispatch('application/alertError', {message: "Unable to switch active league, try again later."});
-            console.error("Failed to update the users league, server response: ", error);
-          });
-
-      this.isInitialized = true;
+      this.activeLeagueId = league.id
+      this.updateSubMenuOptions()
     },
-  },
-  created() {
-    if (this.$auth.loggedIn) {
-      this.$store.dispatch('user/initializeUserPreferences', {
-        apolloClient: this.$apollo,
-        userId: this.$auth.user.sub
-      }).catch(() => {
-        this.$store.dispatch('application/alertError', {message: 'Error loading user preferences please refresh the page or try again later'})
-      })
+    updateSubMenuOptions() {
+      const leagueSubMenuItems = [
+        'Standings','Scoring', 'My Team', 'Contracts Overview', 'Rules'
+      ]
+
+      if (this.leagues.find((league) => league.id === this.activeLeagueId).roleInLeague === 'LEAGUE_MANAGER') {
+        leagueSubMenuItems.push('League Management')
+      }
+      this.menuItems.filter((menuItem) => menuItem.name === "league")[0].submenuItems = leagueSubMenuItems
     }
-    this.isInitialized = true;
+  },
+  apollo: {
+    leagueFetch: {
+      query: LEAGUE_BY_ID_QUERY,
+      variables() {
+        return {
+          leagueId: this.activeLeagueId
+        }
+      },
+      skip() {
+        return this.activeLeagueId === null
+      },
+      manual: true,
+      result({data, loading}) {
+        if (!loading) {
+          this.$store.dispatch('application/updateActiveLeague', data.league)
+        }
+      }
+    },
+    userPreferencesFetch: {
+      query: USER_PREFERENCES_QUERY,
+      variables() {
+        return {
+        userId: this.loggedInUserId
+      }},
+      skip() {
+        if (this.$auth) {
+          return !(this.$auth.loggedIn && this.$auth.user.sub)
+        }
+        return true
+      },
+      manual: true,
+      result({data, loading}) {
+        if (!loading) {
+          this.$store.dispatch("user/setUserPreferences", data.userPreferences).then(() => {
+            if (this.isInitialLoad) {
+              this.activeLeagueId = this.$store.getters["user/getPreferredLeagueId"]
+              this.updateSubMenuOptions()
+              this.isInitialLoad = false
+            }
+          })
+        }
+      }
+    }
   }
 }
 </script>

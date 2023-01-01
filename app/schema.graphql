@@ -79,6 +79,7 @@ type DraftYear {
 }
 
 type League {
+    currentSeason: Int!
     divisions: [Division!]!
     id: ID!
     leagueName: String!
@@ -94,6 +95,29 @@ type LeaguePost {
     id: ID!
     postDate: Time!
     title: String!
+}
+
+type LineUp {
+    flex: [PlayerScoring!]!
+    qb: [PlayerScoring!]!
+    rb: [PlayerScoring!]!
+    superFlex: [PlayerScoring!]!
+    te: [PlayerScoring!]!
+    wr: [PlayerScoring!]!
+}
+
+type MatchUp {
+    awayTeam: String!
+    homeTeam: String!
+    matchUpNumber: Int
+}
+
+type MatchUpTeamScoring {
+    isHomeTeam: Boolean!
+    lineUp: LineUp
+    roster: [PlayerScoring!]
+    teamName: String!
+    totalPoints: Float
 }
 
 type Mutation {
@@ -126,6 +150,20 @@ type PlayerNFL {
     team: nflTeam!
 }
 
+type PlayerScoring {
+    eligibleSlots: [String!]
+    gamePlayed: Int!
+    injuryStatus: String!
+    isInLineUp: Boolean!
+    nflOpponent: String!
+    nflTeam: String!
+    playerName: String!
+    points: Float
+    position: PlayerPosition
+    projectedPoints: Float
+    team: String!
+}
+
 type PostComment {
     author: String!
     commentDate: Time!
@@ -144,6 +182,7 @@ type Query {
     players(numOfResults: Int): [PlayerNFL!]
     playersByPosition(position: PlayerPosition!): [PlayerNFL!]
     posts(leagueId: ID!, numOfResults: Int): [LeaguePost!]
+    scoring(leagueId: ID!): ScoringQueries
     teamById(leagueId: ID!, teamId: ID!): Team
     teamByOwnerId(leagueId: ID!, ownerId: ID!): Team
     teamContracts(leagueId: ID!, teamId: ID!): [Contract!]
@@ -152,11 +191,16 @@ type Query {
     users: [User]
 }
 
+type ScoringQueries {
+    matchUpScoring(matchUpNumber: Int!): [MatchUpTeamScoring]
+    weekMatchUps: [MatchUp]
+}
+
 type Team {
     accessCodes: [String!]
     activeContracts: [Contract!]
     contractsMetadata: [ContractsMetadata!]
-    currentContractsMetadata: ContractsMetadata
+    currentContractsMetadata: ContractsMetadata @deprecated(reason: "No longer supported")
     division: String
     foundedDate: Time!
     id: ID!
