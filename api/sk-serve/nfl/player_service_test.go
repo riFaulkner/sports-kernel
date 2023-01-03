@@ -2,6 +2,7 @@ package playernfl
 
 import (
 	"context"
+	"errors"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
 	"github.com/stretchr/testify/mock"
 	"reflect"
@@ -49,8 +50,13 @@ func (m mockPlayerRepository) GetPlayersWithLimit(ctx context.Context, numberOfR
 }
 
 func (m mockPlayerRepository) GetPlayerById(ctx context.Context, playerId *string) (*model.PlayerNfl, bool) {
-	//TODO implement me
-	panic("implement me")
+	args := m.Called(playerId)
+
+	if args.Get(0) == nil {
+		return nil, args.Bool(1)
+	}
+
+	return args.Get(0).(*model.PlayerNfl), args.Bool(1)
 }
 
 func TestPlayerService_CreatePlayer(t *testing.T) {
@@ -68,12 +74,73 @@ func TestPlayerService_CreatePlayer(t *testing.T) {
 		want    *model.PlayerNfl
 		wantErr bool
 	}{
-		{"Test Basic defaults met",
+		{"Test minimum input sets all defaults",
 			fields{func() *mockPlayerRepository {
 				mockRepository := new(mockPlayerRepository)
 				mockRepository.
 					On("Create", mock.Anything).
-					Return()
+					Return(nil)
+				return mockRepository
+			}},
+			args{
+				context.Background(),
+				model.NewPlayerNfl{
+					PlayerName: "Test Player",
+					Position:   "RB",
+					Team:       model.NflTeamFa,
+				},
+			},
+			&model.PlayerNfl{
+				ID:           "-x3uBnXWwjgNHYx2MYXdkg",
+				OverallRank:  0,
+				PlayerName:   "Test Player",
+				Position:     "RB",
+				PositionRank: 0,
+				Team:         "FA",
+				Age:          0,
+				Birthday:     "",
+			},
+			false,
+		},
+		{"Test setting all input values",
+			fields{func() *mockPlayerRepository {
+				mockRepository := new(mockPlayerRepository)
+				mockRepository.
+					On("Create", mock.Anything).
+					Return(nil)
+				return mockRepository
+			}},
+			args{
+				context.Background(),
+				model.NewPlayerNfl{
+					PlayerName:   "Test Player",
+					Position:     "RB",
+					Team:         model.NflTeamFa,
+					OverallRank:  pointer(2),
+					PositionRank: pointer(1),
+					Birthday:     pointer("10-06-1993"),
+					Avatar:       pointer("https://www.youtube.com/watch?v=dQw4w9WgXcQ"),
+				},
+			},
+			&model.PlayerNfl{
+				ID:           "-x3uBnXWwjgNHYx2MYXdkg",
+				OverallRank:  2,
+				PlayerName:   "Test Player",
+				Position:     "RB",
+				PositionRank: 1,
+				Team:         "FA",
+				Age:          0,
+				Birthday:     "10-06-1993",
+				Avatar:       "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+			},
+			false,
+		},
+		{"Test error occurred saving",
+			fields{func() *mockPlayerRepository {
+				mockRepository := new(mockPlayerRepository)
+				mockRepository.
+					On("Create", mock.Anything).
+					Return(errors.New("failed to save player"))
 				return mockRepository
 			}},
 			args{
@@ -85,7 +152,7 @@ func TestPlayerService_CreatePlayer(t *testing.T) {
 				},
 			},
 			nil,
-			false,
+			true,
 		},
 	}
 	for _, tt := range tests {
@@ -214,10 +281,9 @@ func TestPlayerService_GetAllPlayers(t *testing.T) {
 
 func TestPlayerService_GetPlayerById(t *testing.T) {
 	type fields struct {
-		PlayerRepository PlayerRepository
+		MockSetup func() *mockPlayerRepository
 	}
 	type args struct {
-		ctx      context.Context
 		playerId *string
 	}
 	tests := []struct {
@@ -227,14 +293,64 @@ func TestPlayerService_GetPlayerById(t *testing.T) {
 		want    *model.PlayerNfl
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{"Successfully gets empty data",
+			fields{func() *mockPlayerRepository {
+				mockRepository := new(mockPlayerRepository)
+				mockRepository.On("GetPlayerById", mock.Anything).
+					Return(nil, true)
+				return mockRepository
+			}},
+			args{pointer("player1")},
+			nil,
+			false,
+		},
+		{"Successfully gets player object",
+			fields{func() *mockPlayerRepository {
+				mockRepository := new(mockPlayerRepository)
+				mockRepository.On("GetPlayerById", mock.Anything).
+					Return(&model.PlayerNfl{
+						ID:           "-x3uBnXWwjgNHYx2MYXdkg",
+						OverallRank:  0,
+						PlayerName:   "Test Player",
+						Position:     "RB",
+						PositionRank: 0,
+						Team:         "FA",
+						Age:          0,
+						Birthday:     "",
+					}, true)
+				return mockRepository
+			}},
+			args{pointer("-x3uBnXWwjgNHYx2MYXdkg")},
+			&model.PlayerNfl{
+				ID:           "-x3uBnXWwjgNHYx2MYXdkg",
+				OverallRank:  0,
+				PlayerName:   "Test Player",
+				Position:     "RB",
+				PositionRank: 0,
+				Team:         "FA",
+				Age:          0,
+				Birthday:     "",
+			},
+			false,
+		},
+		{"Error occurred",
+			fields{func() *mockPlayerRepository {
+				mockRepository := new(mockPlayerRepository)
+				mockRepository.On("GetPlayerById", mock.Anything).
+					Return(nil, false)
+				return mockRepository
+			}},
+			args{pointer("player1")},
+			nil,
+			true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			p := &PlayerService{
-				playerRepository: tt.fields.PlayerRepository,
+				playerRepository: tt.fields.MockSetup(),
 			}
-			got, err := p.GetPlayerById(tt.args.ctx, tt.args.playerId)
+			got, err := p.GetPlayerById(context.Background(), tt.args.playerId)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetPlayerById() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -284,4 +400,8 @@ func Test_generatePlayerId(t *testing.T) {
 			}
 		})
 	}
+}
+
+func pointer[T any](v T) *T {
+	return &v
 }
