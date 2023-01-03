@@ -56,11 +56,9 @@ func Initialize(client firestore.Client) generated.Config {
 }
 
 func initializePlayerService(client firestore.Client) playernfl.PlayerService {
-	return playernfl.PlayerService{
-		PlayerRepository: &db.PlayerRepositoryImpl{
-			Client: client,
-		},
-	}
+	return *playernfl.NewPlayerService(&db.PlayerRepositoryImpl{
+		Client: client,
+	})
 }
 
 func initializeTeamService(client firestore.Client) team.TeamService {

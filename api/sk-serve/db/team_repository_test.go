@@ -6,6 +6,7 @@ import (
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/firestore"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/team"
+	"time"
 
 	"reflect"
 	"testing"
@@ -218,7 +219,7 @@ func Test_generateTeamAssets(t *testing.T) {
 			want: &team.TeamAssets{
 				DraftPicks: []*team.DraftYear{
 					{
-						Year: 2022,
+						Year: time.Now().Year(),
 						Picks: []*team.DraftPick{
 							{Round: 1, Value: nil, OriginalOwnerID: &goodTeamID},
 							{Round: 2, Value: nil, OriginalOwnerID: &goodTeamID},
@@ -228,7 +229,7 @@ func Test_generateTeamAssets(t *testing.T) {
 						},
 					},
 					{
-						Year: 2023,
+						Year: time.Now().Year() + 1,
 						Picks: []*team.DraftPick{
 							{Round: 1, Value: nil, OriginalOwnerID: &goodTeamID},
 							{Round: 2, Value: nil, OriginalOwnerID: &goodTeamID},
@@ -238,7 +239,7 @@ func Test_generateTeamAssets(t *testing.T) {
 						},
 					},
 					{
-						Year: 2024,
+						Year: time.Now().Year() + 2,
 						Picks: []*team.DraftPick{
 							{Round: 1, Value: nil, OriginalOwnerID: &goodTeamID},
 							{Round: 2, Value: nil, OriginalOwnerID: &goodTeamID},
@@ -248,7 +249,7 @@ func Test_generateTeamAssets(t *testing.T) {
 						},
 					},
 					{
-						Year: 2025,
+						Year: time.Now().Year() + 3,
 						Picks: []*team.DraftPick{
 							{Round: 1, Value: nil, OriginalOwnerID: &goodTeamID},
 							{Round: 2, Value: nil, OriginalOwnerID: &goodTeamID},
@@ -258,7 +259,7 @@ func Test_generateTeamAssets(t *testing.T) {
 						},
 					},
 					{
-						Year: 2026,
+						Year: time.Now().Year() + 4,
 						Picks: []*team.DraftPick{
 							{Round: 1, Value: nil, OriginalOwnerID: &goodTeamID},
 							{Round: 2, Value: nil, OriginalOwnerID: &goodTeamID},
