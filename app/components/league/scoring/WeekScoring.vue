@@ -9,6 +9,7 @@
               :item-text="item => `${item.awayTeam} vs ${item.homeTeam}`"
               item-value="matchUpNumber"
               label="Select a match up"
+              :loading="$apollo.queries.matchUps.loading"
               @change="teamSelected"
           />
         </v-col>
