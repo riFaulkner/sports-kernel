@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/patrickmn/go-cache"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -14,13 +15,32 @@ import (
 	"net/http"
 	"os"
 	"sort"
+	"time"
 )
 
-func GetWeekMatchUps() ([]*MatchUp, error) {
-	return getMatchUpsViaHttp()
+type Service struct {
+	cache *cache.Cache
 }
 
-func GetMatchUpScoring(matchUpNumber int) ([]*MatchUpTeamScoring, error) {
+const cacheKey = "weekScoring"
+
+func NewScoringService(cache *cache.Cache) *Service {
+	return &Service{cache: cache}
+}
+
+func (s *Service) GetWeekMatchUps() ([]*MatchUp, error) {
+	if matchUps, found := s.cache.Get(cacheKey); found {
+		return matchUps.([]*MatchUp), nil
+	}
+
+	matchUps, err := getMatchUpsViaHttp()
+	if err == nil && len(matchUps) > 0 {
+		s.cache.Set(cacheKey, matchUps, time.Hour)
+	}
+	return matchUps, err
+}
+
+func (s *Service) GetMatchUpScoring(matchUpNumber int) ([]*MatchUpTeamScoring, error) {
 	requestURL := "https://us-central1-sports-kernel.cloudfunctions.net/getScores"
 	audience := "https://us-central1-sports-kernel.cloudfunctions.net/getScores/"
 

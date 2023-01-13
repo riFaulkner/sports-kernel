@@ -11,11 +11,11 @@ import (
 )
 
 func (r *scoringQueriesResolver) WeekMatchUps(ctx context.Context, obj *scoring.ScoringQueries) ([]*scoring.MatchUp, error) {
-	return scoring.GetWeekMatchUps()
+	return r.ScoringService.GetWeekMatchUps()
 }
 
 func (r *scoringQueriesResolver) MatchUpScoring(ctx context.Context, obj *scoring.ScoringQueries, matchUpNumber int) ([]*scoring.MatchUpTeamScoring, error) {
-	return scoring.GetMatchUpScoring(matchUpNumber)
+	return r.ScoringService.GetMatchUpScoring(matchUpNumber)
 }
 
 // ScoringQueries returns generated.ScoringQueriesResolver implementation.
