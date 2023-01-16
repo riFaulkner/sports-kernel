@@ -138,6 +138,14 @@ func (r *mutationResolver) OnboardUserToTeamWithAccessCode(ctx context.Context, 
 	return r.UserOnBoardingService.OnboardWithAccessCode(ctx, accessCode, ownerID)
 }
 
+func (r *queryResolver) Team(ctx context.Context, leagueID string) (*team.TeamQueries, error) {
+	return &team.TeamQueries{LeagueID: leagueID}, nil
+}
+
+func (r *queryResolver) Scoring(ctx context.Context, leagueID string) (*scoring.ScoringQueries, error) {
+	return &scoring.ScoringQueries{}, nil
+}
+
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	users, err := r.UserResolver.GetAll(ctx)
 	if err != nil {
@@ -251,10 +259,6 @@ func (r *queryResolver) UserPreferences(ctx context.Context, userID *string) (*u
 
 func (r *queryResolver) GetUserRoles(ctx context.Context, userID *string) ([]*model.UserRoles, error) {
 	return r.UserResolver.GetUserRoles(ctx, userID)
-}
-
-func (r *queryResolver) Scoring(ctx context.Context, leagueID string) (*scoring.ScoringQueries, error) {
-	return &scoring.ScoringQueries{}, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.
