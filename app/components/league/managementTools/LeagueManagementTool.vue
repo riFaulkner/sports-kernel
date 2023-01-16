@@ -34,6 +34,9 @@
       <v-col v-if="selectedTool === 'deadCap'">
         <apply-dead-cap :league-id="leagueId"/>
       </v-col>
+      <v-col v-if="selectedTool === 'trades'">
+        <manage-trades :league-id="leagueId"/>
+      </v-col>
     </v-row>
   </v-container>
 
@@ -45,10 +48,15 @@ import ManageContract from "@/components/league/managementTools/ManageContract";
 import ContractCreationTool from "~/components/league/contracts/ContractCreationTool";
 import GenerateAccessCodes from "@/components/league/managementTools/GenerateAccessCodes";
 import ApplyDeadCap from "@/components/league/managementTools/ApplyDeadCap";
+import Trades from "@/components/league/trades/Trades";
+import ManageTrades from "@/components/league/managementTools/ManageTrades";
 
 export default {
   name: "LeagueManagementTool",
-  components: {ApplyDeadCap, ContractCreationTool, ManageContract, RestructureContract, GenerateAccessCodes},
+  components: {
+    ManageTrades,
+    Trades, ApplyDeadCap, ContractCreationTool, ManageContract, RestructureContract, GenerateAccessCodes
+  },
   props: {
     leagueId: {
       type: String,
@@ -58,16 +66,16 @@ export default {
   data: function () {
     return {
       toolTypes: [
+        {text: "Add Dead Cap", value: "deadCap"},
         {text: "Create Contract", value: "createContract"},
-        {text: "Manage Contract", value: "manageContract"},
         {text: "Generate League Access Codes", value: "accessCodes"},
-        {text: "Add Dead Cap", value: "deadCap"}
+        {text: "Manage Contract", value: "manageContract"},
+        {text: "Trades", value: "trades"}
       ],
       selectedTool: ""
     }
   },
-  methods: {
-  }
+  methods: {}
 }
 </script>
 

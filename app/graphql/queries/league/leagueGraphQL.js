@@ -47,6 +47,15 @@ export const LEAGUE_TEAMS_BY_LEAGUE_ID = gql`
 }
 `
 
+export const LEAGUE_TEAMS_BY_LEAGUE_ID_BASE = gql`
+    query Teams($leagueId: ID!) {
+        teams(leagueId: $leagueId) {
+            id
+            teamName
+        }
+    }
+`
+
 export const LEAGUE_CONTRACTS = gql`
     query getLeagueContracts($leagueId:ID!){
         leagueContracts(leagueId:$leagueId) {

@@ -1,5 +1,10 @@
 import gql from 'graphql-tag'
 
+export const ALL_TEAM_ASSETS_AND_LIABILITIES = gql`
+    query allTeamInfo($leagueId: ID!, $teamIds: [ID!]) {
+        
+    }
+`
 export const TEAM_CONTRACTS = gql`
     query teamContracts($leagueId: ID!, $teamId: ID!) {
         teamContracts(leagueId:$leagueId, teamId: $teamId) {

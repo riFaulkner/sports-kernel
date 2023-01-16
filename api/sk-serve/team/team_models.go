@@ -4,6 +4,9 @@ import (
 	"time"
 )
 
+type TeamQueries struct {
+}
+
 type TeamMutations struct {
 }
 

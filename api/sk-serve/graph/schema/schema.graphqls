@@ -27,13 +27,16 @@ enum Role {
 }
 
 type Query {
+  team(leagueId: ID!): TeamQueries @hasRole(role: LEAGUE_MEMBER)
+  scoring(leagueId: ID!): ScoringQueries @hasRole(role: LEAGUE_MEMBER)
+
   users: [User]
   leagues: [League!] @hasRole(role: ADMIN)
   league(leagueId: ID): League @hasRole(role: LEAGUE_MEMBER)
   leagueContracts(leagueId: ID!): [Contract!] @hasRole(role: LEAGUE_MEMBER)
   teams(leagueId: ID!): [Team!] @hasRole(role: LEAGUE_MEMBER)
-  teamById(leagueId: ID!, teamId: ID!): Team @hasRole(role: LEAGUE_MEMBER)
-  teamByOwnerId(leagueId: ID!, ownerId: ID!): Team @hasRole(role: LEAGUE_MEMBER)
+  teamById(leagueId: ID!, teamId: ID!): Team @hasRole(role: LEAGUE_MEMBER) @deprecated
+  teamByOwnerId(leagueId: ID!, ownerId: ID!): Team @hasRole(role: LEAGUE_MEMBER) @deprecated
   teamContracts(leagueId: ID!, teamId: ID!): [Contract!] @hasRole(role: LEAGUE_MEMBER)
   contractById(leagueId: ID!, contractId: ID!): Contract @hasRole(role: LEAGUE_MEMBER)
   player(playerId: ID): PlayerNFL!
@@ -43,7 +46,6 @@ type Query {
   comments(leagueId: ID!, postId: ID!): [PostComment!] @hasRole(role: LEAGUE_MEMBER)
   userPreferences(userId: ID): UserPreferences
   getUserRoles(userId:ID): [UserRoles]
-  scoring(leagueId: ID!): ScoringQueries @hasRole(role: LEAGUE_MEMBER)
 }
 
 input NewPostComment {
