@@ -2023,7 +2023,9 @@ enum Role {
 }
 
 type Query {
+  """ Entry point for all team related queries. """
   team(leagueId: ID!): TeamQueries @hasRole(role: LEAGUE_MEMBER)
+  """ Entry point for all scoring related queries. """
   scoring(leagueId: ID!): ScoringQueries @hasRole(role: LEAGUE_MEMBER)
 
   users: [User]
@@ -2031,8 +2033,8 @@ type Query {
   league(leagueId: ID): League @hasRole(role: LEAGUE_MEMBER)
   leagueContracts(leagueId: ID!): [Contract!] @hasRole(role: LEAGUE_MEMBER)
   teams(leagueId: ID!): [Team!] @hasRole(role: LEAGUE_MEMBER)
-  teamById(leagueId: ID!, teamId: ID!): Team @hasRole(role: LEAGUE_MEMBER) @deprecated
-  teamByOwnerId(leagueId: ID!, ownerId: ID!): Team @hasRole(role: LEAGUE_MEMBER) @deprecated
+  teamById(leagueId: ID!, teamId: ID!): Team @hasRole(role: LEAGUE_MEMBER) @deprecated(reason: "Old entry point, use the team query entry point instead")
+  teamByOwnerId(leagueId: ID!, ownerId: ID!): Team @hasRole(role: LEAGUE_MEMBER) @deprecated(reason: "Old entry point, use the team query entry point instead")
   teamContracts(leagueId: ID!, teamId: ID!): [Contract!] @hasRole(role: LEAGUE_MEMBER)
   contractById(leagueId: ID!, contractId: ID!): Contract @hasRole(role: LEAGUE_MEMBER)
   player(playerId: ID): PlayerNFL!
@@ -2121,7 +2123,7 @@ type Team {
     foundedDate: Time!
     teamName: String!
     division: String
-    currentContractsMetadata: ContractsMetadata @deprecated
+    currentContractsMetadata: ContractsMetadata @deprecated(reason: "Duplicated, use contractsMetadata at [0]")
     contractsMetadata: [ContractsMetadata!]
     teamAssets: TeamAssets
     teamLiabilities: TeamLiabilities

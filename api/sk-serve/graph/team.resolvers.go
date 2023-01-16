@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/generated"
