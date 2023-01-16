@@ -5,7 +5,6 @@ package graph
 
 import (
 	"context"
-
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/generated"
@@ -46,6 +45,10 @@ func (r *teamQueriesResolver) ByTeamID(ctx context.Context, obj *team.TeamQuerie
 
 func (r *teamQueriesResolver) ByOwnerID(ctx context.Context, obj *team.TeamQueries, ownerID string) (*team.Team, error) {
 	return r.TeamService.GetTeamByOwnerID(ctx, obj.LeagueID, ownerID)
+}
+
+func (r *teamQueriesResolver) TeamIds(ctx context.Context, obj *team.TeamQueries, teamIds []string) ([]*team.Team, error) {
+	return r.TeamService.GetTeamsByIds(ctx, obj.LeagueID, teamIds)
 }
 
 // Team returns generated.TeamResolver implementation.

@@ -23,7 +23,11 @@
       </v-col>
     </v-row>
 
-    <trades :initiating-team-id="teamOne" :secondary-team-id="teamTwo"/>
+    <trades
+        :league-id="leagueId"
+        :initiating-team-id="teamOne"
+        :secondary-team-id="teamTwo"
+    />
 
   </div>
 </template>

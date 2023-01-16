@@ -14,6 +14,7 @@ type TeamRepository interface {
 	GetAllLeagueTeams(ctx context.Context, leagueId string) ([]*Team, error)
 	GetTeamById(ctx context.Context, leagueId string, teamId string) (*Team, error)
 	GetTeamByOwnerID(ctx context.Context, leagueID string, ownerID string) (*Team, bool)
+	GetTeamsByIds(ctx context.Context, leagueID string, teamIds []string) ([]*Team, error)
 	RemoveAccessCode(ctx context.Context, leagueID string, teamID string, accessCode string) bool
 	UpdateTeamContractMetaData(ctx context.Context, leagueId string, teamContracts []*contract.Contract) error
 }

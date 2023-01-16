@@ -1,10 +1,29 @@
 import gql from 'graphql-tag'
 
 export const ALL_TEAM_ASSETS_AND_LIABILITIES = gql`
-    query allTeamInfo($leagueId: ID!, $teamIds: [ID!]) {
-        
+    query allTeamInfo($leagueId: ID!, $teamIds: [ID!]!) {
+        team(leagueId: $leagueId) {
+            teamIds(teamIds: $teamIds) {
+                id
+                teamName
+                teamAssets {
+                    draftPicks {
+                        year
+                    }
+                }
+                activeContracts {
+                    player {
+                        playerName
+                    }
+                    contractDetails {
+                        year
+                    }
+                }
+            }
+        }
     }
 `
+
 export const TEAM_CONTRACTS = gql`
     query teamContracts($leagueId: ID!, $teamId: ID!) {
         teamContracts(leagueId:$leagueId, teamId: $teamId) {

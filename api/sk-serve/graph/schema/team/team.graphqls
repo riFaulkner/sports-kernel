@@ -17,6 +17,7 @@ type Team {
 type TeamQueries {
     byTeamId(teamId: ID!): Team @hasRole(role: LEAGUE_MEMBER)
     byOwnerId(ownerId: ID!): Team @hasRole(role: LEAGUE_MEMBER)
+    teamIds(teamIds: [ID!]): [Team!] @hasRole(role: LEAGUE_MEMBER)
 }
 
 type TeamMutations {

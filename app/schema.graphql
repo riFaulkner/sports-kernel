@@ -229,6 +229,7 @@ type TeamMutations {
 type TeamQueries {
     byOwnerId(ownerId: ID!): Team
     byTeamId(teamId: ID!): Team
+    teamIds(teamIds: [ID!]): [Team!]
 }
 
 type TeamScoring {

@@ -278,6 +278,7 @@ type ComplexityRoot struct {
 	TeamQueries struct {
 		ByOwnerID func(childComplexity int, ownerID string) int
 		ByTeamID  func(childComplexity int, teamID string) int
+		TeamIds   func(childComplexity int, teamIds []string) int
 	}
 
 	TeamScoring struct {
@@ -395,6 +396,7 @@ type TeamMutationsResolver interface {
 type TeamQueriesResolver interface {
 	ByTeamID(ctx context.Context, obj *team.TeamQueries, teamID string) (*team.Team, error)
 	ByOwnerID(ctx context.Context, obj *team.TeamQueries, ownerID string) (*team.Team, error)
+	TeamIds(ctx context.Context, obj *team.TeamQueries, teamIds []string) ([]*team.Team, error)
 }
 
 type executableSchema struct {
@@ -1605,6 +1607,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TeamQueries.ByTeamID(childComplexity, args["teamId"].(string)), true
 
+	case "TeamQueries.teamIds":
+		if e.complexity.TeamQueries.TeamIds == nil {
+			break
+		}
+
+		args, err := ec.field_TeamQueries_teamIds_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.TeamQueries.TeamIds(childComplexity, args["teamIds"].([]string)), true
+
 	case "TeamScoring.summary":
 		if e.complexity.TeamScoring.Summary == nil {
 			break
@@ -2136,6 +2150,7 @@ type Team {
 type TeamQueries {
     byTeamId(teamId: ID!): Team @hasRole(role: LEAGUE_MEMBER)
     byOwnerId(ownerId: ID!): Team @hasRole(role: LEAGUE_MEMBER)
+    teamIds(teamIds: [ID!]): [Team!] @hasRole(role: LEAGUE_MEMBER)
 }
 
 type TeamMutations {
@@ -3123,6 +3138,21 @@ func (ec *executionContext) field_TeamQueries_byTeamId_args(ctx context.Context,
 		}
 	}
 	args["teamId"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_TeamQueries_teamIds_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []string
+	if tmp, ok := rawArgs["teamIds"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("teamIds"))
+		arg0, err = ec.unmarshalOID2ᚕstringᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["teamIds"] = arg0
 	return args, nil
 }
 
@@ -8921,6 +8951,8 @@ func (ec *executionContext) fieldContext_Query_team(ctx context.Context, field g
 				return ec.fieldContext_TeamQueries_byTeamId(ctx, field)
 			case "byOwnerId":
 				return ec.fieldContext_TeamQueries_byOwnerId(ctx, field)
+			case "teamIds":
+				return ec.fieldContext_TeamQueries_teamIds(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TeamQueries", field.Name)
 		},
@@ -11565,6 +11597,108 @@ func (ec *executionContext) fieldContext_TeamQueries_byOwnerId(ctx context.Conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_TeamQueries_byOwnerId_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TeamQueries_teamIds(ctx context.Context, field graphql.CollectedField, obj *team.TeamQueries) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TeamQueries_teamIds(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.TeamQueries().TeamIds(rctx, obj, fc.Args["teamIds"].([]string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRole2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐRole(ctx, "LEAGUE_MEMBER")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, obj, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*team.Team); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/rifaulkner/sports-kernel/api/sk-serve/team.Team`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*team.Team)
+	fc.Result = res
+	return ec.marshalOTeam2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋteamᚐTeamᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TeamQueries_teamIds(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TeamQueries",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Team_id(ctx, field)
+			case "foundedDate":
+				return ec.fieldContext_Team_foundedDate(ctx, field)
+			case "teamName":
+				return ec.fieldContext_Team_teamName(ctx, field)
+			case "division":
+				return ec.fieldContext_Team_division(ctx, field)
+			case "currentContractsMetadata":
+				return ec.fieldContext_Team_currentContractsMetadata(ctx, field)
+			case "contractsMetadata":
+				return ec.fieldContext_Team_contractsMetadata(ctx, field)
+			case "teamAssets":
+				return ec.fieldContext_Team_teamAssets(ctx, field)
+			case "teamLiabilities":
+				return ec.fieldContext_Team_teamLiabilities(ctx, field)
+			case "teamOwners":
+				return ec.fieldContext_Team_teamOwners(ctx, field)
+			case "activeContracts":
+				return ec.fieldContext_Team_activeContracts(ctx, field)
+			case "accessCodes":
+				return ec.fieldContext_Team_accessCodes(ctx, field)
+			case "teamScoring":
+				return ec.fieldContext_Team_teamScoring(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Team", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_TeamQueries_teamIds_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -17170,6 +17304,23 @@ func (ec *executionContext) _TeamQueries(ctx context.Context, sel ast.SelectionS
 					}
 				}()
 				res = ec._TeamQueries_byOwnerId(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "teamIds":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._TeamQueries_teamIds(ctx, field, obj)
 				return res
 			}
 
