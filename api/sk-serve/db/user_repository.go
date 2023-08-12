@@ -3,6 +3,8 @@ package db
 import (
 	gFirestore "cloud.google.com/go/firestore"
 	"context"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/vektah/gqlparser/v2/gqlerror"
 
@@ -70,6 +72,9 @@ func (u *UserImpl) Create(ctx context.Context, user user.UserPreferences) error 
 func (u *UserImpl) GetUserPreferences(ctx context.Context, userId string) (*user.UserPreferences, error) {
 	result, err := u.Client.Collection(firestore.UsersCollection).Doc(userId).Get(ctx)
 	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			return nil, nil
+		}
 		return nil, err
 	}
 

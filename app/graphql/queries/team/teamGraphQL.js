@@ -9,9 +9,15 @@ export const ALL_TEAM_ASSETS_AND_LIABILITIES = gql`
                 teamAssets {
                     draftPicks {
                         year
+                        picks {
+                            originalOwnerId
+                            round
+                            value
+                        }
                     }
                 }
                 activeContracts {
+                    id
                     player {
                         playerName
                     }

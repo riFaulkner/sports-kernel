@@ -1,20 +1,20 @@
 <template>
   <div>
     <v-row>
-      <v-col>
+      <v-col cols="12" md="6">
         <v-select
             label="Team 1"
-            :items="teams"
+            :items="mutuallyExclusiveTeams(teamTwo)"
             item-text="teamName"
             item-value="id"
             :loading="$apollo.queries.teams.loading"
             v-model="teamOne"
         />
       </v-col>
-      <v-col>
+      <v-col cols="12" md="6">
         <v-select
             label="Team 2"
-            :items="teams"
+            :items="mutuallyExclusiveTeams(teamOne)"
             item-text="teamName"
             item-value="id"
             :loading="$apollo.queries.teams.loading"
@@ -24,6 +24,7 @@
     </v-row>
 
     <trades
+        v-if="teamOne && teamTwo"
         :league-id="leagueId"
         :initiating-team-id="teamOne"
         :secondary-team-id="teamTwo"
@@ -59,6 +60,13 @@ export default {
           leagueId: this.leagueId
         }
       }
+    }
+  },
+  methods: {
+    mutuallyExclusiveTeams(teamId) {
+        return this.teams ? this.teams.filter(team => {
+          return team.id !== teamId
+        }) : null
     }
   }
 }
