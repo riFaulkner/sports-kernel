@@ -146,6 +146,9 @@ models:
   UserPreferencesLeagueSnippet:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/user.UserPreferencesLeagueSnippet
+  LeagueQueries:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/league.LeagueQueries
   ScoringQueries:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/scoring.ScoringQueries

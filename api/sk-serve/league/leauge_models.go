@@ -1,8 +1,18 @@
 package league
 
 import (
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 	"time"
 )
+
+type LeagueQueries struct {
+	League    *League              `json:"league"`
+	Contracts []*contract.Contract `json:"contracts"`
+}
+
+type LeagueMutations struct {
+	MakeTradeProposal *bool `json:"makeTradeProposal"`
+}
 
 type League struct {
 	ID            string      `json:"id"`

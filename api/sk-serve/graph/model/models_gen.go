@@ -9,6 +9,10 @@ import (
 	"time"
 )
 
+type LeagueMutations struct {
+	MakeTradeProposal *bool `json:"makeTradeProposal"`
+}
+
 type LeaguePost struct {
 	ID       string         `json:"id"`
 	Author   string         `json:"author"`
@@ -72,6 +76,12 @@ type PostComment struct {
 	Author      string    `json:"author"`
 	Content     string    `json:"content"`
 	CommentDate time.Time `json:"commentDate"`
+}
+
+type TradeAssets struct {
+	TeamID      string   `json:"teamId"`
+	DraftPicks  []string `json:"draftPicks"`
+	ContractIds []string `json:"contractIds"`
 }
 
 type Transaction struct {

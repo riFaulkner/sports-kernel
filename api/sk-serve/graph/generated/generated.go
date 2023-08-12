@@ -139,6 +139,10 @@ type ComplexityRoot struct {
 		Teams         func(childComplexity int, search *model.LeagueTeamFiltering) int
 	}
 
+	LeagueMutations struct {
+		MakeTradeProposal func(childComplexity int, tradeAssets *model.TradeAssets) int
+	}
+
 	LeaguePost struct {
 		Author   func(childComplexity int) int
 		Comments func(childComplexity int) int
@@ -146,6 +150,11 @@ type ComplexityRoot struct {
 		ID       func(childComplexity int) int
 		PostDate func(childComplexity int) int
 		Title    func(childComplexity int) int
+	}
+
+	LeagueQueries struct {
+		Contracts func(childComplexity int) int
+		League    func(childComplexity int) int
 	}
 
 	LineUp struct {
@@ -184,6 +193,7 @@ type ComplexityRoot struct {
 		CreateUser                      func(childComplexity int, input model.NewUser) int
 		CreateUserRole                  func(childComplexity int, leagueID *string, newUserRole *model.NewUserRole) int
 		GenerateAccessCode              func(childComplexity int, leagueID string, teamID string, role model.Role) int
+		LeagueMutations                 func(childComplexity int, leagueID string) int
 		OnboardUserToTeamWithAccessCode func(childComplexity int, accessCode string) int
 		TeamMutations                   func(childComplexity int) int
 		UpdateTeamMetaData              func(childComplexity int, leagueID string, teamID string) int
@@ -348,6 +358,7 @@ type LeagueResolver interface {
 }
 type MutationResolver interface {
 	ContractMutations(ctx context.Context) (*contract.ContractMutations, error)
+	LeagueMutations(ctx context.Context, leagueID string) (*model.LeagueMutations, error)
 	TeamMutations(ctx context.Context) (*team.TeamMutations, error)
 	CreateLeague(ctx context.Context, input league.NewLeagueInput) (*league.League, error)
 	CreateUser(ctx context.Context, input model.NewUser) (*user.UserPreferences, error)
@@ -364,9 +375,9 @@ type MutationResolver interface {
 	OnboardUserToTeamWithAccessCode(ctx context.Context, accessCode string) (*user.UserPreferences, error)
 }
 type QueryResolver interface {
+	Users(ctx context.Context) ([]*model.User, error)
 	Team(ctx context.Context, leagueID string) (*team.TeamQueries, error)
 	Scoring(ctx context.Context, leagueID string) (*scoring.ScoringQueries, error)
-	Users(ctx context.Context) ([]*model.User, error)
 	Leagues(ctx context.Context) ([]*league.League, error)
 	League(ctx context.Context, leagueID *string) (*league.League, error)
 	LeagueContracts(ctx context.Context, leagueID string) ([]*contract.Contract, error)
@@ -765,6 +776,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.League.Teams(childComplexity, args["search"].(*model.LeagueTeamFiltering)), true
 
+	case "LeagueMutations.makeTradeProposal":
+		if e.complexity.LeagueMutations.MakeTradeProposal == nil {
+			break
+		}
+
+		args, err := ec.field_LeagueMutations_makeTradeProposal_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.LeagueMutations.MakeTradeProposal(childComplexity, args["tradeAssets"].(*model.TradeAssets)), true
+
 	case "LeaguePost.author":
 		if e.complexity.LeaguePost.Author == nil {
 			break
@@ -806,6 +829,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.LeaguePost.Title(childComplexity), true
+
+	case "LeagueQueries.contracts":
+		if e.complexity.LeagueQueries.Contracts == nil {
+			break
+		}
+
+		return e.complexity.LeagueQueries.Contracts(childComplexity), true
+
+	case "LeagueQueries.league":
+		if e.complexity.LeagueQueries.League == nil {
+			break
+		}
+
+		return e.complexity.LeagueQueries.League(childComplexity), true
 
 	case "LineUp.flex":
 		if e.complexity.LineUp.Flex == nil {
@@ -1043,6 +1080,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.GenerateAccessCode(childComplexity, args["leagueId"].(string), args["teamId"].(string), args["role"].(model.Role)), true
+
+	case "Mutation.leagueMutations":
+		if e.complexity.Mutation.LeagueMutations == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_leagueMutations_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.LeagueMutations(childComplexity, args["leagueId"].(string)), true
 
 	case "Mutation.onboardUserToTeamWithAccessCode":
 		if e.complexity.Mutation.OnboardUserToTeamWithAccessCode == nil {
@@ -1850,6 +1899,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputNewTeam,
 		ec.unmarshalInputNewUser,
 		ec.unmarshalInputNewUserRole,
+		ec.unmarshalInputTradeAssets,
 		ec.unmarshalInputTransactionInput,
 	)
 	first := true
@@ -1975,7 +2025,17 @@ input ContractRestructureInput {
     contractId: ID!
     contractRestructureDetails: [ContractYearInput!]!
 }`, BuiltIn: false},
-	{Name: "graph/schema/league/league.graphqls", Input: `type League {
+	{Name: "graph/schema/league/league.graphqls", Input: `type LeagueQueries {
+    league: League @hasRole(role: LEAGUE_MEMBER)
+    contracts: [Contract!] @hasRole(role: LEAGUE_MEMBER)
+}
+type LeagueMutations {
+    makeTradeProposal(tradeAssets: TradeAssets): Boolean @hasRole(role: LEAGUE_MANAGER)
+}
+
+
+
+type League {
     id: ID!
     currentSeason: Int!
     leagueName: String!
@@ -2007,6 +2067,12 @@ input LeagueTeamFiltering {
     teamId: ID
     ownerId: ID
 }
+
+input TradeAssets {
+    teamId: String!
+    draftPicks: [String!]
+    contractIds: [ID!]
+}
 `, BuiltIn: false},
 	{Name: "graph/schema/schema.graphqls", Input: `#Data types and Queries
 scalar Time
@@ -2037,15 +2103,20 @@ enum Role {
 }
 
 type Query {
+  """ Entry point for league based queries -- league(leagueId: ID!): LeagueQueries @hasRole(role: LEAGUE_MEMBER) """
+  users: [User]
   """ Entry point for all team related queries. """
   team(leagueId: ID!): TeamQueries @hasRole(role: LEAGUE_MEMBER)
   """ Entry point for all scoring related queries. """
   scoring(leagueId: ID!): ScoringQueries @hasRole(role: LEAGUE_MEMBER)
 
-  users: [User]
   leagues: [League!] @hasRole(role: ADMIN)
+
+  @deprecated(reason: "Moved to leagueQueries.league")
   league(leagueId: ID): League @hasRole(role: LEAGUE_MEMBER)
+  @deprecated(reason: "Moved to LeagueQueries.contracts")
   leagueContracts(leagueId: ID!): [Contract!] @hasRole(role: LEAGUE_MEMBER)
+  @deprecated(reason:"Moved to LeagueQueries.teams")
   teams(leagueId: ID!): [Team!] @hasRole(role: LEAGUE_MEMBER)
   teamById(leagueId: ID!, teamId: ID!): Team @hasRole(role: LEAGUE_MEMBER) @deprecated(reason: "Old entry point, use the team query entry point instead")
   teamByOwnerId(leagueId: ID!, ownerId: ID!): Team @hasRole(role: LEAGUE_MEMBER) @deprecated(reason: "Old entry point, use the team query entry point instead")
@@ -2072,8 +2143,16 @@ input NewLeaguePost {
 }
 
 type Mutation {
-  contractMutations: ContractMutations
-  teamMutations: TeamMutations
+  """ Contract mutation entry point """
+  contractMutations: ContractMutations @hasRole(role: LEAGUE_MEMBER)
+
+  """ League mutation entry point """
+  leagueMutations(leagueId: ID!):LeagueMutations @hasRole(role: LEAGUE_MEMBER)
+
+  """ Team mutation entry point """
+  teamMutations: TeamMutations @hasRole(role: LEAGUE_MEMBER)
+
+
 
   createLeague(input: NewLeagueInput!): League!
   createUser(input: NewUser!): UserPreferences! @hasRole(role: LEAGUE_MANAGER)
@@ -2436,6 +2515,21 @@ func (ec *executionContext) field_ContractMutations_restructure_args(ctx context
 	return args, nil
 }
 
+func (ec *executionContext) field_LeagueMutations_makeTradeProposal_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.TradeAssets
+	if tmp, ok := rawArgs["tradeAssets"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tradeAssets"))
+		arg0, err = ec.unmarshalOTradeAssets2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐTradeAssets(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["tradeAssets"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_League_teams_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -2712,6 +2806,21 @@ func (ec *executionContext) field_Mutation_generateAccessCode_args(ctx context.C
 		}
 	}
 	args["role"] = arg2
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_leagueMutations_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["leagueId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("leagueId"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["leagueId"] = arg0
 	return args, nil
 }
 
@@ -5522,6 +5631,82 @@ func (ec *executionContext) fieldContext_League_divisions(ctx context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _LeagueMutations_makeTradeProposal(ctx context.Context, field graphql.CollectedField, obj *model.LeagueMutations) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LeagueMutations_makeTradeProposal(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return obj.MakeTradeProposal, nil
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRole2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐRole(ctx, "LEAGUE_MANAGER")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, obj, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *bool`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LeagueMutations_makeTradeProposal(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LeagueMutations",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_LeagueMutations_makeTradeProposal_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _LeaguePost_id(ctx context.Context, field graphql.CollectedField, obj *model.LeaguePost) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_LeaguePost_id(ctx, field)
 	if err != nil {
@@ -5788,6 +5973,178 @@ func (ec *executionContext) fieldContext_LeaguePost_comments(ctx context.Context
 				return ec.fieldContext_PostComment_commentDate(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PostComment", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LeagueQueries_league(ctx context.Context, field graphql.CollectedField, obj *league.LeagueQueries) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LeagueQueries_league(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return obj.League, nil
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRole2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐRole(ctx, "LEAGUE_MEMBER")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, obj, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*league.League); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/rifaulkner/sports-kernel/api/sk-serve/league.League`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*league.League)
+	fc.Result = res
+	return ec.marshalOLeague2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋleagueᚐLeague(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LeagueQueries_league(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LeagueQueries",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_League_id(ctx, field)
+			case "currentSeason":
+				return ec.fieldContext_League_currentSeason(ctx, field)
+			case "leagueName":
+				return ec.fieldContext_League_leagueName(ctx, field)
+			case "logoUrl":
+				return ec.fieldContext_League_logoUrl(ctx, field)
+			case "startDate":
+				return ec.fieldContext_League_startDate(ctx, field)
+			case "teams":
+				return ec.fieldContext_League_teams(ctx, field)
+			case "divisions":
+				return ec.fieldContext_League_divisions(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type League", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LeagueQueries_contracts(ctx context.Context, field graphql.CollectedField, obj *league.LeagueQueries) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LeagueQueries_contracts(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return obj.Contracts, nil
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRole2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐRole(ctx, "LEAGUE_MEMBER")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, obj, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*contract.Contract); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/rifaulkner/sports-kernel/api/sk-serve/contract.Contract`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*contract.Contract)
+	fc.Result = res
+	return ec.marshalOContract2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋcontractᚐContractᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LeagueQueries_contracts(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LeagueQueries",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Contract_id(ctx, field)
+			case "playerId":
+				return ec.fieldContext_Contract_playerId(ctx, field)
+			case "player":
+				return ec.fieldContext_Contract_player(ctx, field)
+			case "teamId":
+				return ec.fieldContext_Contract_teamId(ctx, field)
+			case "currentYear":
+				return ec.fieldContext_Contract_currentYear(ctx, field)
+			case "contractStatus":
+				return ec.fieldContext_Contract_contractStatus(ctx, field)
+			case "restructureStatus":
+				return ec.fieldContext_Contract_restructureStatus(ctx, field)
+			case "totalContractValue":
+				return ec.fieldContext_Contract_totalContractValue(ctx, field)
+			case "totalRemainingValue":
+				return ec.fieldContext_Contract_totalRemainingValue(ctx, field)
+			case "contractLength":
+				return ec.fieldContext_Contract_contractLength(ctx, field)
+			case "playerPosition":
+				return ec.fieldContext_Contract_playerPosition(ctx, field)
+			case "contractDetails":
+				return ec.fieldContext_Contract_contractDetails(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Contract", field.Name)
 		},
 	}
 	return fc, nil
@@ -6592,8 +6949,32 @@ func (ec *executionContext) _Mutation_contractMutations(ctx context.Context, fie
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().ContractMutations(rctx)
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().ContractMutations(rctx)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRole2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐRole(ctx, "LEAGUE_MEMBER")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*contract.ContractMutations); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/rifaulkner/sports-kernel/api/sk-serve/contract.ContractMutations`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6626,6 +7007,86 @@ func (ec *executionContext) fieldContext_Mutation_contractMutations(ctx context.
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_leagueMutations(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_leagueMutations(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().LeagueMutations(rctx, fc.Args["leagueId"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRole2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐRole(ctx, "LEAGUE_MEMBER")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*model.LeagueMutations); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model.LeagueMutations`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.LeagueMutations)
+	fc.Result = res
+	return ec.marshalOLeagueMutations2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐLeagueMutations(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_leagueMutations(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "makeTradeProposal":
+				return ec.fieldContext_LeagueMutations_makeTradeProposal(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type LeagueMutations", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_leagueMutations_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_teamMutations(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_teamMutations(ctx, field)
 	if err != nil {
@@ -6639,8 +7100,32 @@ func (ec *executionContext) _Mutation_teamMutations(ctx context.Context, field g
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().TeamMutations(rctx)
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().TeamMutations(rctx)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRole2githubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐRole(ctx, "LEAGUE_MEMBER")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*team.TeamMutations); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/rifaulkner/sports-kernel/api/sk-serve/team.TeamMutations`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -8887,6 +9372,57 @@ func (ec *executionContext) fieldContext_PostComment_commentDate(ctx context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_users(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_users(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Users(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.User)
+	fc.Result = res
+	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_users(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "ownerName":
+				return ec.fieldContext_User_ownerName(ctx, field)
+			case "email":
+				return ec.fieldContext_User_email(ctx, field)
+			case "avatar":
+				return ec.fieldContext_User_avatar(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_team(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_team(ctx, field)
 	if err != nil {
@@ -9049,57 +9585,6 @@ func (ec *executionContext) fieldContext_Query_scoring(ctx context.Context, fiel
 	if fc.Args, err = ec.field_Query_scoring_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_users(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_users(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Users(rctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*model.User)
-	fc.Result = res
-	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_users(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_User_id(ctx, field)
-			case "ownerName":
-				return ec.fieldContext_User_ownerName(ctx, field)
-			case "email":
-				return ec.fieldContext_User_email(ctx, field)
-			case "avatar":
-				return ec.fieldContext_User_avatar(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
-		},
 	}
 	return fc, nil
 }
@@ -15389,6 +15874,45 @@ func (ec *executionContext) unmarshalInputNewUserRole(ctx context.Context, obj i
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputTradeAssets(ctx context.Context, obj interface{}) (model.TradeAssets, error) {
+	var it model.TradeAssets
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "teamId":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("teamId"))
+			it.TeamID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "draftPicks":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("draftPicks"))
+			it.DraftPicks, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "contractIds":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contractIds"))
+			it.ContractIds, err = ec.unmarshalOID2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputTransactionInput(ctx context.Context, obj interface{}) (model.TransactionInput, error) {
 	var it model.TransactionInput
 	asMap := map[string]interface{}{}
@@ -16035,6 +16559,31 @@ func (ec *executionContext) _League(ctx context.Context, sel ast.SelectionSet, o
 	return out
 }
 
+var leagueMutationsImplementors = []string{"LeagueMutations"}
+
+func (ec *executionContext) _LeagueMutations(ctx context.Context, sel ast.SelectionSet, obj *model.LeagueMutations) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, leagueMutationsImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("LeagueMutations")
+		case "makeTradeProposal":
+
+			out.Values[i] = ec._LeagueMutations_makeTradeProposal(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var leaguePostImplementors = []string{"LeaguePost"}
 
 func (ec *executionContext) _LeaguePost(ctx context.Context, sel ast.SelectionSet, obj *model.LeaguePost) graphql.Marshaler {
@@ -16083,6 +16632,35 @@ func (ec *executionContext) _LeaguePost(ctx context.Context, sel ast.SelectionSe
 		case "comments":
 
 			out.Values[i] = ec._LeaguePost_comments(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var leagueQueriesImplementors = []string{"LeagueQueries"}
+
+func (ec *executionContext) _LeagueQueries(ctx context.Context, sel ast.SelectionSet, obj *league.LeagueQueries) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, leagueQueriesImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("LeagueQueries")
+		case "league":
+
+			out.Values[i] = ec._LeagueQueries_league(ctx, field, obj)
+
+		case "contracts":
+
+			out.Values[i] = ec._LeagueQueries_contracts(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -16267,6 +16845,12 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_contractMutations(ctx, field)
+			})
+
+		case "leagueMutations":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_leagueMutations(ctx, field)
 			})
 
 		case "teamMutations":
@@ -16638,6 +17222,26 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
+		case "users":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_users(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "team":
 			field := field
 
@@ -16668,26 +17272,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_scoring(ctx, field)
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
-			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return rrm(innerCtx)
-			})
-		case "users":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_users(ctx, field)
 				return res
 			}
 
@@ -19433,6 +20017,13 @@ func (ec *executionContext) marshalOLeague2ᚖgithubᚗcomᚋrifaulknerᚋsports
 	return ec._League(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalOLeagueMutations2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐLeagueMutations(ctx context.Context, sel ast.SelectionSet, v *model.LeagueMutations) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._LeagueMutations(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalOLeaguePost2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐLeaguePostᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.LeaguePost) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -20028,6 +20619,14 @@ func (ec *executionContext) marshalOTime2ᚖtimeᚐTime(ctx context.Context, sel
 	}
 	res := graphql.MarshalTime(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOTradeAssets2ᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐTradeAssets(ctx context.Context, v interface{}) (*model.TradeAssets, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputTradeAssets(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalOUser2ᚕᚖgithubᚗcomᚋrifaulknerᚋsportsᚑkernelᚋapiᚋskᚑserveᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v []*model.User) graphql.Marshaler {
