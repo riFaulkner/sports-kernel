@@ -1,9 +1,9 @@
 import gql from 'graphql-tag'
 
 export const WEEK_SCORING_MATCH_UPS = gql`
-    query weekScoringMatchUps($leagueId: ID!) {
+    query weekScoringMatchUps($leagueId: ID!, $season: Int!) {
         scoring(leagueId: $leagueId){
-             weekMatchUps {
+             weekMatchUps(season: $season ) {
                 awayTeam
                 homeTeam
                 matchUpNumber

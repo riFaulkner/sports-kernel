@@ -4,6 +4,14 @@
       <v-row align="center" justify="center">
         <v-col sm="7" lg="8" cols="12" offset-sm="1" offset-md="0">
           <v-select
+              v-model="selectedSeason"
+              :items="seasons"
+          />
+          <v-select
+            v-model="selectedWeek"
+            :items="weeks"
+          />
+          <v-select
               v-model="selectedMatchUpNumber"
               :items="matchUps"
               :item-text="item => `${item.awayTeam} vs ${item.homeTeam}`"
@@ -135,7 +143,20 @@ export default {
       isInitialFetch: true,
       matchUps: null,
       selectedMatchUpNumber: null,
+      selectedSeason: 2022,
+      selectedWeek: 1,
       scoringData: null,
+      seasons: [
+        {value: 2021, text: "2021"},
+        {value: 2022, text: "2022"},
+      ],
+      weeks: [
+        {value: 1, text: "Week 1"},
+        {value: 2, text: "Week 2"},
+        {value: 3, text: "Week 3"},
+        {value: 4, text: "Week 4"},
+        {value: 5, text: "Week 5"},
+      ]
     }
   },
   methods: {
