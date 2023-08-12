@@ -1,0 +1,3 @@
+schema:
+  - 'api/sk-serve/graph/schema/**/*.graphql'
+  - 'api/sk-serve/graph/schema/**/*.graphqls'
