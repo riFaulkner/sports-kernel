@@ -22,29 +22,37 @@ type Service struct {
 	cache *cache.Cache
 }
 
-const cacheKey = "weekScoring"
-
 func NewScoringService(cache *cache.Cache) *Service {
 	return &Service{cache: cache}
 }
 
-func (s *Service) GetWeekMatchUps() ([]*MatchUp, error) {
+func (s *Service) GetWeekMatchUps(season int, week *int) ([]*MatchUp, error) {
+	weekValue := -1
+	if week != nil {
+		weekValue = *week
+	}
+	cacheKey := generateWeeklyMatchUpCacheKey(season, weekValue)
 	if matchUps, found := s.cache.Get(cacheKey); found {
 		return matchUps.([]*MatchUp), nil
 	}
 
-	matchUps, err := getMatchUpsViaHttp()
+	matchUps, err := getMatchUpsViaHttp(season, weekValue)
 	if err == nil && len(matchUps) > 0 {
 		s.cache.Set(cacheKey, matchUps, time.Hour)
 	}
 	return matchUps, err
 }
 
-func (s *Service) GetMatchUpScoring(matchUpNumber int) ([]*MatchUpTeamScoring, error) {
+func (s *Service) GetMatchUpScoring(season int, week *int, matchUpNumber int) ([]*MatchUpTeamScoring, error) {
+	weekValue := -1
+	if week != nil {
+		weekValue = *week
+	}
+
 	requestURL := "https://us-central1-sports-kernel.cloudfunctions.net/getScores"
 	audience := "https://us-central1-sports-kernel.cloudfunctions.net/getScores/"
 
-	reader := bytes.NewReader([]byte(fmt.Sprintf(`{"matchup": %d}`, matchUpNumber)))
+	reader := bytes.NewReader([]byte(fmt.Sprintf(`{"matchup": %d, "season": %d, "week": %d}`, matchUpNumber, season, weekValue)))
 
 	var b bytes.Buffer
 
@@ -71,17 +79,17 @@ func (s *Service) GetMatchUpScoring(matchUpNumber int) ([]*MatchUpTeamScoring, e
 	return returnValue, nil
 }
 
-func getMatchUpsViaHttp() ([]*MatchUp, error) {
+func getMatchUpsViaHttp(season int, week int) ([]*MatchUp, error) {
 	requestURL := "https://us-central1-sports-kernel.cloudfunctions.net/getMatchups"
 	audience := "https://us-central1-sports-kernel.cloudfunctions.net/getMatchups/"
 
-	reader := bytes.NewReader([]byte(`{}`))
+	reader := bytes.NewReader([]byte(fmt.Sprintf("{\"season\": %d, \"week\":%d}", season, week)))
 
 	var b bytes.Buffer
 
 	if err := makePostRequest(reader, &b, requestURL, audience); err != nil {
 		log.Printf("makeGetRequest: %v", err)
-		return nil, fmt.Errorf("Failied to get matchups")
+		return nil, fmt.Errorf("failied to get matchups")
 	}
 
 	var returnValue []*MatchUp
@@ -287,4 +295,8 @@ func (s *idTokenSource) Token() (*oauth2.Token, error) {
 		TokenType:   "Bearer",
 		Expiry:      token.Expiry,
 	}, nil
+}
+
+func generateWeeklyMatchUpCacheKey(season int, week int) string {
+	return fmt.Sprintf("weeklyMatchUp-%v-%v", season, week)
 }
