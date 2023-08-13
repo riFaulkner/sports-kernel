@@ -1,6 +1,6 @@
 type ScoringQueries {
-    weekMatchUps: [MatchUp]
-    matchUpScoring(matchUpNumber: Int!): [MatchUpTeamScoring]
+    weekMatchUps(season: Int!, week: Int): [MatchUp]
+    matchUpScoring(season: Int!, week: Int, matchUpNumber: Int!): [MatchUpTeamScoring]
 }
 
 type MatchUp {

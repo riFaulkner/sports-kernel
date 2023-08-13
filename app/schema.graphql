@@ -193,7 +193,7 @@ type Query {
 
 type ScoringQueries {
     matchUpScoring(matchUpNumber: Int!): [MatchUpTeamScoring]
-    weekMatchUps: [MatchUp]
+    weekMatchUps(season: Int!): [MatchUp]
 }
 
 type Team {
