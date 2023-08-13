@@ -1,7 +1,20 @@
 <template>
   <v-card>
     <v-container>
-      <v-row align="center" justify="center">
+      <v-row align="center" justify="center" align-sm="left" justify-sm="left">
+        <v-col sm="4" lg="4" cols="4" offset-sm="0">
+          <v-select
+              v-model="selectedSeason"
+              :items="seasons"
+              label="Select a season"
+          />
+        </v-col>
+        <v-col sm="8" lg="6" cols="8">
+          <v-select
+              v-model="selectedWeek"
+              :items="weeks"
+              label="Select a week" />
+        </v-col>
         <v-col sm="7" lg="8" cols="12" offset-sm="1" offset-md="0">
           <v-select
               v-model="selectedMatchUpNumber"
@@ -134,8 +147,34 @@ export default {
       canRefresh: true,
       isInitialFetch: true,
       matchUps: null,
+      seasons: [
+        {text: '2021', value: 2021},
+        {text: '2022', value: 2022},
+        {text: '2023', value: 2023},
+      ],
       selectedMatchUpNumber: null,
+      selectedSeason: new Date().getFullYear(),
+      selectedWeek: -1,
       scoringData: null,
+      weeks: [
+        {text: 'Current Week', value: -1},
+        {text: 'Week 1', value: 1},
+        {text: 'Week 2', value: 2},
+        {text: 'Week 3', value: 3},
+        {text: 'Week 4', value: 4},
+        {text: 'Week 5', value: 5},
+        {text: 'Week 6', value: 6},
+        {text: 'Week 7', value: 7},
+        {text: 'Week 8', value: 8},
+        {text: 'Week 9', value: 9},
+        {text: 'Week 10', value: 10},
+        {text: 'Week 11', value: 11},
+        {text: 'Week 12', value: 12},
+        {text: 'Week 13', value: 13},
+        {text: 'Week 14', value: 14},
+        {text: 'Week 15', value: 15},
+        {text: 'Week 16', value: 16},
+      ]
     }
   },
   methods: {
@@ -173,7 +212,11 @@ export default {
     matchUps: {
       query: WEEK_SCORING_MATCH_UPS,
       variables() {
-        return {leagueId: this.leagueId}
+        return {
+          leagueId: this.leagueId,
+          season: this.selectedSeason,
+          week: this.selectedWeek,
+        }
       },
       update: data => data.scoring.weekMatchUps,
     },
@@ -182,6 +225,8 @@ export default {
       variables() {
         return {
           leagueId: this.leagueId,
+          season: this.selectedSeason,
+          week: this.selectedWeek,
           matchUpNumber: this.selectedMatchUpNumber
         }
       },
