@@ -2,20 +2,20 @@ package scoring
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/patrickmn/go-cache"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
-	"google.golang.org/api/idtoken"
-	"io"
 	"log"
-	"net/http"
-	"os"
 	"sort"
 	"time"
+)
+
+const (
+	weekMatchUpURL      = "https://us-central1-sports-kernel.cloudfunctions.net/getMatchups"
+	weekMatchUpAudience = "https://us-central1-sports-kernel.cloudfunctions.net/getMatchups/"
+	scoresURL           = "https://us-central1-sports-kernel.cloudfunctions.net/getScores"
+	scoresAudience      = "https://us-central1-sports-kernel.cloudfunctions.net/getScores/"
 )
 
 type Service struct {
@@ -26,121 +26,74 @@ func NewScoringService(cache *cache.Cache) *Service {
 	return &Service{cache: cache}
 }
 
-func (s *Service) GetWeekMatchUps(season int, week *int) ([]*MatchUp, error) {
-	weekValue := -1
-	if week != nil {
-		weekValue = *week
-	}
-	cacheKey := generateWeeklyMatchUpCacheKey(season, weekValue)
-	if matchUps, found := s.cache.Get(cacheKey); found {
-		return matchUps.([]*MatchUp), nil
-	}
-
-	matchUps, err := getMatchUpsViaHttp(season, weekValue)
-	if err == nil && len(matchUps) > 0 {
-		s.cache.Set(cacheKey, matchUps, time.Hour)
-	}
-	return matchUps, err
-}
-
 func (s *Service) GetMatchUpScoring(season int, week *int, matchUpNumber int) ([]*MatchUpTeamScoring, error) {
 	weekValue := -1
 	if week != nil {
 		weekValue = *week
 	}
 
-	requestURL := "https://us-central1-sports-kernel.cloudfunctions.net/getScores"
-	audience := "https://us-central1-sports-kernel.cloudfunctions.net/getScores/"
-
-	reader := bytes.NewReader([]byte(fmt.Sprintf(`{"matchup": %d, "season": %d, "week": %d}`, matchUpNumber, season, weekValue)))
-
-	var b bytes.Buffer
-
-	if err := makePostRequest(reader, &b, requestURL, audience); err != nil {
-		log.Printf("scoring.Service - makePostRequest: %v", err)
-		return nil, fmt.Errorf("Failied to get scores for matchup %d", matchUpNumber)
-	}
-
-	var returnValue []*MatchUpTeamScoring
-
-	err := json.Unmarshal(b.Bytes(), &returnValue)
-
-	if err != nil {
+	var scoringArray []*MatchUpTeamScoring
+	if err := fetchMatchUpScore(season, weekValue, matchUpNumber, &scoringArray); err != nil {
 		return nil, fmt.Errorf("scoring.service %v", err)
 	}
 
-	for idx := range returnValue {
-		for i := range returnValue[idx].Roster {
-			setPlayerPosition(&returnValue[idx].Roster[i])
+	for idx := range scoringArray {
+		for i := range scoringArray[idx].Roster {
+			setPlayerPosition(&scoringArray[idx].Roster[i])
 		}
-		generateLineUp(returnValue[idx])
+		generateLineUp(scoringArray[idx])
 	}
 
-	return returnValue, nil
+	return scoringArray, nil
 }
 
-func getMatchUpsViaHttp(season int, week int) ([]*MatchUp, error) {
-	requestURL := "https://us-central1-sports-kernel.cloudfunctions.net/getMatchups"
-	audience := "https://us-central1-sports-kernel.cloudfunctions.net/getMatchups/"
+func (s *Service) GetWeekMatchUps(season int, week *int) ([]*MatchUp, error) {
+	weekValue := -1
+	if week != nil {
+		weekValue = *week
+	}
 
-	reader := bytes.NewReader([]byte(fmt.Sprintf("{\"season\": %d, \"week\":%d}", season, week)))
+	return s.fetchMatchUpsForSeasonWeek(season, weekValue)
+}
 
-	var b bytes.Buffer
+func (s *Service) fetchMatchUpsForSeasonWeek(season int, week int) ([]*MatchUp, error) {
+	cacheKey := generateWeeklyMatchUpCacheKey(season, week)
+	if matchUps, found := s.cache.Get(cacheKey); found {
+		return matchUps.([]*MatchUp), nil
+	}
 
-	if err := makePostRequest(reader, &b, requestURL, audience); err != nil {
+	requestBody := bytes.NewReader([]byte(fmt.Sprintf("{\"season\": %d, \"week\":%d}", season, week)))
+
+	var responseBodyAsBuffer bytes.Buffer
+
+	if err := makePostRequest(requestBody, &responseBodyAsBuffer, weekMatchUpURL, weekMatchUpAudience); err != nil {
 		log.Printf("makeGetRequest: %v", err)
 		return nil, fmt.Errorf("failied to get matchups")
 	}
 
-	var returnValue []*MatchUp
+	var matchUps []*MatchUp
 
-	if err := json.Unmarshal(b.Bytes(), &returnValue); err != nil {
+	if err := json.Unmarshal(responseBodyAsBuffer.Bytes(), &matchUps); err != nil {
 		return nil, fmt.Errorf("scoring.service %v", err)
 	}
 
-	return returnValue, nil
+	if len(matchUps) > 0 {
+		s.cache.Set(cacheKey, matchUps, time.Hour)
+	}
+
+	return matchUps, nil
 }
 
-func makePostRequest(r io.Reader, w io.Writer, targetURL string, audience string) error {
-	var resp *http.Response
-	var err error
-	if os.Getenv("ENV") != "PROD" {
-		request, err := http.NewRequest(http.MethodPost, targetURL, r)
-		tokenSource, err := IDTokenTokenSource(context.Background(), audience)
-		if err != nil {
-			return fmt.Errorf("Error getting token %v", err)
-		}
-		token, err := tokenSource.Token()
+func fetchMatchUpScore(season int, week int, matchUpNumber int, scoringArray *[]*MatchUpTeamScoring) error {
+	reader := bytes.NewReader([]byte(fmt.Sprintf(`{"matchup": %d, "season": %d, "week": %d}`, matchUpNumber, season, week)))
+	var b bytes.Buffer
 
-		token.SetAuthHeader(request)
-		request.Header.Set("Content-Type", "application/json")
-
-		resp, err = http.DefaultClient.Do(request)
-	} else {
-		log.Printf("Using production client version")
-		ctx := context.Background()
-		var client *http.Client
-		client, err = idtoken.NewClient(ctx, audience)
-		if err != nil {
-			return fmt.Errorf("idtoken.NewClient: %v", err)
-		}
-
-		resp, err = client.Post(targetURL, "application/json", r)
-		log.Printf("Response: %v", resp)
-		log.Printf("Response error: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 200 {
-		log.Printf("scoring.service - Return status %d", resp.StatusCode)
-		return fmt.Errorf("scoring.service - Return status %v", resp.StatusCode)
+	if err := makePostRequest(reader, &b, scoresURL, scoresAudience); err != nil {
+		log.Printf("scoring.Service - makePostRequest: %v", err)
+		return fmt.Errorf("Failied to get scores for matchup %d", matchUpNumber)
 	}
 
-	if _, err = io.Copy(w, resp.Body); err != nil {
-		return fmt.Errorf("io.Copy: %v", err)
-	}
-
-	return nil
+	return json.Unmarshal(b.Bytes(), &scoringArray)
 }
 
 func generateLineUp(team *MatchUpTeamScoring) {
@@ -254,47 +207,6 @@ func setPlayerPosition(player *PlayerScoring) {
 			return
 		}
 	}
-}
-
-func IDTokenTokenSource(ctx context.Context, audience string) (oauth2.TokenSource, error) {
-	// First we try the idtoken package, which only works for service accounts
-	ts, err := idtoken.NewTokenSource(ctx, audience)
-	if err != nil {
-		if err.Error() != `idtoken: credential must be service_account, found "authorized_user"` {
-			return nil, err
-		}
-		// If that fails, we use our Application Default Credentials to fetch an id_token on the fly
-		gts, err := google.DefaultTokenSource(ctx)
-		if err != nil {
-			return nil, err
-		}
-		ts = oauth2.ReuseTokenSource(nil, &idTokenSource{TokenSource: gts})
-	}
-	return ts, nil
-}
-
-// idTokenSource is an oauth2.TokenSource that wraps another
-// It takes the id_token from TokenSource and passes that on as a bearer token
-type idTokenSource struct {
-	TokenSource oauth2.TokenSource
-}
-
-func (s *idTokenSource) Token() (*oauth2.Token, error) {
-	token, err := s.TokenSource.Token()
-	if err != nil {
-		return nil, err
-	}
-
-	idToken, ok := token.Extra("id_token").(string)
-	if !ok {
-		return nil, fmt.Errorf("token did not contain an id_token")
-	}
-
-	return &oauth2.Token{
-		AccessToken: idToken,
-		TokenType:   "Bearer",
-		Expiry:      token.Expiry,
-	}, nil
 }
 
 func generateWeeklyMatchUpCacheKey(season int, week int) string {
