@@ -106,12 +106,6 @@ func generateLineUp(team *MatchUpTeamScoring) {
 		SuperFlex: make([]PlayerScoring, 0, 1),
 	}
 	sort.Slice(team.Roster, func(i, j int) bool {
-		// Check the injury status of the player
-		// Push injured or out players to the bottom of the stack
-		//var injuryStatus = team.Roster[i].InjuryStatus
-		//if getInjuryStatusValue(injuryStatus) >= 4 {
-		//
-		//}
 		if *team.Roster[i].Points == *team.Roster[j].Points {
 			return team.Roster[i].ProjectedPoints > team.Roster[j].ProjectedPoints
 		}
