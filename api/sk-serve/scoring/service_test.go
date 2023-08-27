@@ -185,44 +185,59 @@ func Test_generateLineUp(t *testing.T) {
 		{name: "Full Roster", args: args{
 			team: &MatchUpTeamScoring{
 				Roster: []PlayerScoring{
-					{Team: "team 1", PlayerName: "QB1", NflTeam: "CHI", EligibleSlots: []string{"QB"}, Position: &qbPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 3.0, Points: &pointVal1},
-					{Team: "team 1", PlayerName: "QB2", NflTeam: "DAL", EligibleSlots: []string{"QB"}, Position: &qbPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 2.0, Points: &pointVal2},
-					{Team: "team 1", PlayerName: "RB1", NflTeam: "CHI", EligibleSlots: []string{"RB"}, Position: &rbPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 3.0, Points: &pointVal1},
-					{Team: "team 1", PlayerName: "RB2", NflTeam: "DAL", EligibleSlots: []string{"RB"}, Position: &rbPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 2.0, Points: &pointVal2},
-					{Team: "team 1", PlayerName: "WR1", NflTeam: "CHI", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 6.0, Points: &pointVal1},
-					{Team: "team 1", PlayerName: "WR2", NflTeam: "DAL", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 5.0, Points: &pointVal2},
-					{Team: "team 1", PlayerName: "WR3", NflTeam: "DEN", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 4.0, Points: &pointVal3},
-					{Team: "team 1", PlayerName: "WR4", NflTeam: "ATL", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 3.0, Points: &pointVal4},
-					{Team: "team 1", PlayerName: "WR5", NflTeam: "SF", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 2.0, Points: &pointVal5},
-					{Team: "team 1", PlayerName: "WR6", NflTeam: "NYG", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 1.0, Points: &pointVal6},
-					{Team: "team 1", PlayerName: "TE1", NflTeam: "CHI", EligibleSlots: []string{"TE"}, Position: &tePosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 4.0, Points: &pointVal1},
-					{Team: "team 1", PlayerName: "TE2", NflTeam: "DAL", EligibleSlots: []string{"TE"}, Position: &tePosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 3.0, Points: &pointVal2},
+					{Team: "team 1", PlayerName: "QB1", NflTeam: "CHI", EligibleSlots: []string{"QB"}, Position: &qbPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 3.0, Points: pointVal(30)},
+					{Team: "team 1", PlayerName: "QB2", NflTeam: "DAL", EligibleSlots: []string{"QB"}, Position: &qbPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 2.0, Points: pointVal(31)},
+					{Team: "team 1", PlayerName: "RB1", NflTeam: "CHI", EligibleSlots: []string{"RB"}, Position: &rbPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 3.0, Points: pointVal(9)},
+					{Team: "team 1", PlayerName: "RB2", NflTeam: "DAL", EligibleSlots: []string{"RB"}, Position: &rbPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 2.0, Points: pointVal(8)},
+					{Team: "team 1", PlayerName: "WR1", NflTeam: "CHI", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 6.0, Points: pointVal(10)},
+					{Team: "team 1", PlayerName: "WR2", NflTeam: "DAL", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 5.0, Points: pointVal(12)},
+					{Team: "team 1", PlayerName: "WR3", NflTeam: "DEN", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 4.0, Points: pointVal(13)},
+					{Team: "team 1", PlayerName: "WR4", NflTeam: "ATL", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 3.0, Points: pointVal(14)},
+					{Team: "team 1", PlayerName: "WR5", NflTeam: "SF", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 2.0, Points: pointVal(15)},
+					{Team: "team 1", PlayerName: "WR6", NflTeam: "NYG", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 1.0, Points: pointVal(16)},
+					{Team: "team 1", PlayerName: "TE1", NflTeam: "CHI", EligibleSlots: []string{"TE"}, Position: &tePosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 4.0, Points: pointVal(7)},
+					{Team: "team 1", PlayerName: "TE2", NflTeam: "DAL", EligibleSlots: []string{"TE"}, Position: &tePosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 3.0, Points: pointVal(8)},
+					{Team: "team 1", PlayerName: "TE3", NflTeam: "DAL", EligibleSlots: []string{"TE"}, Position: &tePosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 3.0, Points: pointVal(9)},
 				},
 			}},
 			want: &MatchUpTeamScoring{
 				Roster: []PlayerScoring{
-					{Team: "team 1", PlayerName: "WR6", NflTeam: "NYG", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: true, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 1.0, Points: &pointVal6},
-					{Team: "team 1", PlayerName: "WR5", NflTeam: "SF", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: true, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 2.0, Points: &pointVal5},
-					{Team: "team 1", PlayerName: "WR4", NflTeam: "ATL", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: true, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 3.0, Points: &pointVal4},
-					{Team: "team 1", PlayerName: "WR3", NflTeam: "DEN", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: true, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 4.0, Points: &pointVal3},
-					{Team: "team 1", PlayerName: "WR2", NflTeam: "DAL", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: true, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 5.0, Points: &pointVal2},
-					{Team: "team 1", PlayerName: "WR1", NflTeam: "CHI", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 6.0, Points: &pointVal1},
+					{Team: "team 1", PlayerName: "QB2", NflTeam: "DAL", EligibleSlots: []string{"QB"}, Position: &qbPosition, IsInLineUp: true, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 2.0, Points: pointVal(31)},
+					{Team: "team 1", PlayerName: "QB1", NflTeam: "CHI", EligibleSlots: []string{"QB"}, Position: &qbPosition, IsInLineUp: true, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 3.0, Points: pointVal(30)},
+					{Team: "team 1", PlayerName: "WR6", NflTeam: "NYG", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: true, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 1.0, Points: pointVal(16)},
+					{Team: "team 1", PlayerName: "WR5", NflTeam: "SF", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: true, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 2.0, Points: pointVal(15)},
+					{Team: "team 1", PlayerName: "WR4", NflTeam: "ATL", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: true, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 3.0, Points: pointVal(14)},
+					{Team: "team 1", PlayerName: "WR3", NflTeam: "DEN", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: true, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 4.0, Points: pointVal(13)},
+					{Team: "team 1", PlayerName: "WR2", NflTeam: "DAL", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 5.0, Points: pointVal(12)},
+					{Team: "team 1", PlayerName: "WR1", NflTeam: "CHI", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 6.0, Points: pointVal(10)},
+					{Team: "team 1", PlayerName: "RB1", NflTeam: "CHI", EligibleSlots: []string{"RB"}, Position: &rbPosition, IsInLineUp: true, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 3.0, Points: pointVal(9)},
+					{Team: "team 1", PlayerName: "TE3", NflTeam: "DAL", EligibleSlots: []string{"TE"}, Position: &tePosition, IsInLineUp: true, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 3.0, Points: pointVal(9)},
+					{Team: "team 1", PlayerName: "TE2", NflTeam: "DAL", EligibleSlots: []string{"TE"}, Position: &tePosition, IsInLineUp: true, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 3.0, Points: pointVal(8)},
+					{Team: "team 1", PlayerName: "RB2", NflTeam: "DAL", EligibleSlots: []string{"RB"}, Position: &rbPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 2.0, Points: pointVal(8)},
+					{Team: "team 1", PlayerName: "TE1", NflTeam: "CHI", EligibleSlots: []string{"TE"}, Position: &tePosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 4.0, Points: pointVal(7)},
 				},
-				TotalPoints: &pointVal20,
+				TotalPoints: pointVal(145),
 				LineUp: &LineUp{
-					Qb: []PlayerScoring{},
-					Rb: []PlayerScoring{},
-					Wr: []PlayerScoring{
-						{Team: "team 1", PlayerName: "WR6", NflTeam: "NYG", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 1.0, Points: &pointVal6},
-						{Team: "team 1", PlayerName: "WR5", NflTeam: "SF", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 2.0, Points: &pointVal5},
+					Qb: []PlayerScoring{
+						{Team: "team 1", PlayerName: "QB2", NflTeam: "DAL", EligibleSlots: []string{"QB"}, Position: &qbPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 2.0, Points: pointVal(31)},
 					},
-					Te: []PlayerScoring{},
+					Rb: []PlayerScoring{
+						{Team: "team 1", PlayerName: "RB1", NflTeam: "CHI", EligibleSlots: []string{"RB"}, Position: &rbPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 3.0, Points: pointVal(9)},
+					},
+					Wr: []PlayerScoring{
+						{Team: "team 1", PlayerName: "WR6", NflTeam: "NYG", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 1.0, Points: pointVal(16)},
+						{Team: "team 1", PlayerName: "WR5", NflTeam: "SF", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 2.0, Points: pointVal(15)},
+					},
+					Te: []PlayerScoring{
+						{Team: "team 1", PlayerName: "TE3", NflTeam: "DAL", EligibleSlots: []string{"TE"}, Position: &tePosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 3.0, Points: pointVal(9)},
+						{Team: "team 1", PlayerName: "TE2", NflTeam: "DAL", EligibleSlots: []string{"TE"}, Position: &tePosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 3.0, Points: pointVal(8)},
+					},
 					Flex: []PlayerScoring{
-						{Team: "team 1", PlayerName: "WR4", NflTeam: "ATL", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 3.0, Points: &pointVal4},
-						{Team: "team 1", PlayerName: "WR3", NflTeam: "DEN", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 4.0, Points: &pointVal3},
+						{Team: "team 1", PlayerName: "WR4", NflTeam: "ATL", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 3.0, Points: pointVal(14)},
+						{Team: "team 1", PlayerName: "WR3", NflTeam: "DEN", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 4.0, Points: pointVal(13)},
 					},
 					SuperFlex: []PlayerScoring{
-						{Team: "team 1", PlayerName: "WR2", NflTeam: "DAL", EligibleSlots: []string{"WR"}, Position: &wrPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 5.0, Points: &pointVal2},
+						{Team: "team 1", PlayerName: "QB1", NflTeam: "CHI", EligibleSlots: []string{"QB"}, Position: &qbPosition, IsInLineUp: false, InjuryStatus: "ACTIVE", NflOpponent: "GB", GamePlayed: 0, ProjectedPoints: 3.0, Points: pointVal(30)},
 					},
 				},
 			},
@@ -251,4 +266,9 @@ func generateDefaultLineUp() LineUp {
 		Flex:      make([]PlayerScoring, 0, 2),
 		SuperFlex: make([]PlayerScoring, 0, 1),
 	}
+}
+
+func pointVal(val int) *float64 {
+	f := float64(val)
+	return &f
 }
