@@ -254,8 +254,8 @@ type ComplexityRoot struct {
 	}
 
 	ScoringQueries struct {
-		MatchUpScoring func(childComplexity int, matchUpNumber int) int
-		WeekMatchUps   func(childComplexity int) int
+		MatchUpScoring func(childComplexity int, season int, week *int, matchUpNumber int) int
+		WeekMatchUps   func(childComplexity int, season int, week *int) int
 	}
 
 	Team struct {
@@ -395,8 +395,8 @@ type QueryResolver interface {
 	GetUserRoles(ctx context.Context, userID *string) ([]*model.UserRoles, error)
 }
 type ScoringQueriesResolver interface {
-	WeekMatchUps(ctx context.Context, obj *scoring.ScoringQueries) ([]*scoring.MatchUp, error)
-	MatchUpScoring(ctx context.Context, obj *scoring.ScoringQueries, matchUpNumber int) ([]*scoring.MatchUpTeamScoring, error)
+	WeekMatchUps(ctx context.Context, obj *scoring.ScoringQueries, season int, week *int) ([]*scoring.MatchUp, error)
+	MatchUpScoring(ctx context.Context, obj *scoring.ScoringQueries, season int, week *int, matchUpNumber int) ([]*scoring.MatchUpTeamScoring, error)
 }
 type TeamResolver interface {
 	ActiveContracts(ctx context.Context, obj *team.Team) ([]*contract.Contract, error)
@@ -1508,14 +1508,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.ScoringQueries.MatchUpScoring(childComplexity, args["matchUpNumber"].(int)), true
+		return e.complexity.ScoringQueries.MatchUpScoring(childComplexity, args["season"].(int), args["week"].(*int), args["matchUpNumber"].(int)), true
 
 	case "ScoringQueries.weekMatchUps":
 		if e.complexity.ScoringQueries.WeekMatchUps == nil {
 			break
 		}
 
-		return e.complexity.ScoringQueries.WeekMatchUps(childComplexity), true
+		args, err := ec.field_ScoringQueries_weekMatchUps_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.ScoringQueries.WeekMatchUps(childComplexity, args["season"].(int), args["week"].(*int)), true
 
 	case "Team.accessCodes":
 		if e.complexity.Team.AccessCodes == nil {
@@ -2169,8 +2174,8 @@ type Mutation {
   onboardUserToTeamWithAccessCode(accessCode: String!): UserPreferences
 }`, BuiltIn: false},
 	{Name: "graph/schema/scoring/scoring.graphqls", Input: `type ScoringQueries {
-    weekMatchUps: [MatchUp]
-    matchUpScoring(matchUpNumber: Int!): [MatchUpTeamScoring]
+    weekMatchUps(season: Int!, week: Int): [MatchUp]
+    matchUpScoring(season: Int!, week: Int, matchUpNumber: Int!): [MatchUpTeamScoring]
 }
 
 type MatchUp {
@@ -3176,14 +3181,56 @@ func (ec *executionContext) field_ScoringQueries_matchUpScoring_args(ctx context
 	var err error
 	args := map[string]interface{}{}
 	var arg0 int
-	if tmp, ok := rawArgs["matchUpNumber"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("matchUpNumber"))
+	if tmp, ok := rawArgs["season"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("season"))
 		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["matchUpNumber"] = arg0
+	args["season"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["week"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("week"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["week"] = arg1
+	var arg2 int
+	if tmp, ok := rawArgs["matchUpNumber"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("matchUpNumber"))
+		arg2, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["matchUpNumber"] = arg2
+	return args, nil
+}
+
+func (ec *executionContext) field_ScoringQueries_weekMatchUps_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["season"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("season"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["season"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["week"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("week"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["week"] = arg1
 	return args, nil
 }
 
@@ -11036,7 +11083,7 @@ func (ec *executionContext) _ScoringQueries_weekMatchUps(ctx context.Context, fi
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.ScoringQueries().WeekMatchUps(rctx, obj)
+		return ec.resolvers.ScoringQueries().WeekMatchUps(rctx, obj, fc.Args["season"].(int), fc.Args["week"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11068,6 +11115,17 @@ func (ec *executionContext) fieldContext_ScoringQueries_weekMatchUps(ctx context
 			return nil, fmt.Errorf("no field named %q was found under type MatchUp", field.Name)
 		},
 	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_ScoringQueries_weekMatchUps_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
 	return fc, nil
 }
 
@@ -11085,7 +11143,7 @@ func (ec *executionContext) _ScoringQueries_matchUpScoring(ctx context.Context, 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.ScoringQueries().MatchUpScoring(rctx, obj, fc.Args["matchUpNumber"].(int))
+		return ec.resolvers.ScoringQueries().MatchUpScoring(rctx, obj, fc.Args["season"].(int), fc.Args["week"].(*int), fc.Args["matchUpNumber"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
