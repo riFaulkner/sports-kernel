@@ -36,11 +36,31 @@ func (r *teamMutationsResolver) AddDeadCap(ctx context.Context, obj *team.TeamMu
 	return result, err
 }
 
+func (r *teamQueriesResolver) ByTeamID(ctx context.Context, obj *team.TeamQueries, teamID string) (*team.Team, error) {
+	team, err := r.TeamService.GetTeamById(ctx, obj.LeagueID, teamID)
+	if err != nil {
+		return nil, err
+	}
+	return team, nil
+}
+
+func (r *teamQueriesResolver) ByOwnerID(ctx context.Context, obj *team.TeamQueries, ownerID string) (*team.Team, error) {
+	return r.TeamService.GetTeamByOwnerID(ctx, obj.LeagueID, ownerID)
+}
+
+func (r *teamQueriesResolver) TeamIds(ctx context.Context, obj *team.TeamQueries, teamIds []string) ([]*team.Team, error) {
+	return r.TeamService.GetTeamsByIds(ctx, obj.LeagueID, teamIds)
+}
+
 // Team returns generated.TeamResolver implementation.
 func (r *Resolver) Team() generated.TeamResolver { return &teamResolver{r} }
 
 // TeamMutations returns generated.TeamMutationsResolver implementation.
 func (r *Resolver) TeamMutations() generated.TeamMutationsResolver { return &teamMutationsResolver{r} }
 
+// TeamQueries returns generated.TeamQueriesResolver implementation.
+func (r *Resolver) TeamQueries() generated.TeamQueriesResolver { return &teamQueriesResolver{r} }
+
 type teamResolver struct{ *Resolver }
 type teamMutationsResolver struct{ *Resolver }
+type teamQueriesResolver struct{ *Resolver }

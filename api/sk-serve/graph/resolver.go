@@ -34,7 +34,7 @@ type Resolver struct {
 }
 
 func Initialize(client firestore.Client) generated.Config {
-	cache := cache.New(5*time.Minute, 30*time.Minute)
+	cache := cache.New(5*time.Minute, 2*time.Hour)
 
 	transactionImpl := db.TransactionImpl{Client: client}
 	teamImpl := db.TeamRepositoryImpl{Client: client}
@@ -52,7 +52,7 @@ func Initialize(client firestore.Client) generated.Config {
 	r.LeagueResolver = leagueService
 	r.TeamService = teamService
 	r.UserResolver = userService
-	r.PlayerService = initializePlayerService(client)
+	r.PlayerService = initializePlayerService(client, cache)
 	r.PostResolver = &db.PostImpl{Client: client}
 	r.ScoringService = *scoring.NewScoringService(cache)
 	r.UserOnBoardingService = initializeUserOnBoardingService(userService, teamService, leagueService)
@@ -62,10 +62,8 @@ func Initialize(client firestore.Client) generated.Config {
 	}
 }
 
-func initializePlayerService(client firestore.Client) playernfl.PlayerService {
-	return *playernfl.NewPlayerService(&db.PlayerRepositoryImpl{
-		Client: client,
-	})
+func initializePlayerService(client firestore.Client, cache *cache.Cache) playernfl.PlayerService {
+	return *playernfl.NewPlayerService(playernfl.NewCachedImpl(client, cache))
 }
 
 func initializeTeamService(client firestore.Client) team.TeamService {

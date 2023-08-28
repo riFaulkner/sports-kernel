@@ -84,6 +84,31 @@ func (u *TeamRepositoryImpl) GetTeamById(ctx context.Context, leagueId string, t
 	return team, nil
 }
 
+func (u *TeamRepositoryImpl) GetTeamsByIds(ctx context.Context, leagueID string, teamIDs []string) ([]*team.Team, error) {
+	league := u.Client.Collection(firestore.LeaguesCollection).Doc(leagueID)
+
+	results, err := league.
+		Collection(firestore.TeamsCollection).
+		Where("ID", "in", teamIDs).
+		Documents(ctx).
+		GetAll()
+
+	if err != nil {
+		return nil, err
+	}
+
+	teams := make([]*team.Team, 0, len(teamIDs))
+	for _, result := range results {
+		team := new(team.Team)
+		if err := result.DataTo(&team); err != nil {
+			gqlerror.Errorf("Error with serializing team")
+			continue
+		}
+		teams = append(teams, team)
+	}
+	return teams, nil
+}
+
 // Pull out to interface
 func (u *TeamRepositoryImpl) GetTeamByIdOk(ctx context.Context, leagueId string, teamId string) (*team.Team, bool) {
 	teamReference, err := u.Client.

@@ -1,3 +1,13 @@
+type LeagueQueries {
+    league: League @hasRole(role: LEAGUE_MEMBER)
+    contracts: [Contract!] @hasRole(role: LEAGUE_MEMBER)
+}
+type LeagueMutations {
+    makeTradeProposal(tradeAssets: TradeAssets): Boolean @hasRole(role: LEAGUE_MANAGER)
+}
+
+
+
 type League {
     id: ID!
     currentSeason: Int!
@@ -29,4 +39,10 @@ type Division {
 input LeagueTeamFiltering {
     teamId: ID
     ownerId: ID
+}
+
+input TradeAssets {
+    teamId: String!
+    draftPicks: [String!]
+    contractIds: [ID!]
 }

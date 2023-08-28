@@ -37,6 +37,7 @@ resolver:
 # if they match it will use them, otherwise it will generate them.
 autobind:
   - "github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
+  - "github.com/rifaulkner/sports-kernel/api/sk-serve/team"
 
 # This section declares type mapping between the GraphQL and go type systems
 #
@@ -145,6 +146,9 @@ models:
   UserPreferencesLeagueSnippet:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/user.UserPreferencesLeagueSnippet
+  LeagueQueries:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/league.LeagueQueries
   ScoringQueries:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/scoring.ScoringQueries

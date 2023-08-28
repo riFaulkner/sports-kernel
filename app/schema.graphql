@@ -182,9 +182,12 @@ type Query {
     players(numOfResults: Int): [PlayerNFL!]
     playersByPosition(position: PlayerPosition!): [PlayerNFL!]
     posts(leagueId: ID!, numOfResults: Int): [LeaguePost!]
+    " Entry point for all scoring related queries. "
     scoring(leagueId: ID!): ScoringQueries
-    teamById(leagueId: ID!, teamId: ID!): Team
-    teamByOwnerId(leagueId: ID!, ownerId: ID!): Team
+    " Entry point for all team related queries. "
+    team(leagueId: ID!): TeamQueries
+    teamById(leagueId: ID!, teamId: ID!): Team @deprecated(reason: "Old entry point, use the team query entry point instead")
+    teamByOwnerId(leagueId: ID!, ownerId: ID!): Team @deprecated(reason: "Old entry point, use the team query entry point instead")
     teamContracts(leagueId: ID!, teamId: ID!): [Contract!]
     teams(leagueId: ID!): [Team!]
     userPreferences(userId: ID): UserPreferences
@@ -200,7 +203,7 @@ type Team {
     accessCodes: [String!]
     activeContracts: [Contract!]
     contractsMetadata: [ContractsMetadata!]
-    currentContractsMetadata: ContractsMetadata @deprecated(reason: "No longer supported")
+    currentContractsMetadata: ContractsMetadata @deprecated(reason: "Duplicated, use contractsMetadata at [0]")
     division: String
     foundedDate: Time!
     id: ID!
@@ -221,6 +224,12 @@ type TeamLiabilities {
 
 type TeamMutations {
     addDeadCap(deadCap: DeadCapInput!, leagueId: ID!, teamId: ID!): Boolean!
+}
+
+type TeamQueries {
+    byOwnerId(ownerId: ID!): Team
+    byTeamId(teamId: ID!): Team
+    teamIds(teamIds: [ID!]): [Team!]
 }
 
 type TeamScoring {

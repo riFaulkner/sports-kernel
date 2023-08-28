@@ -76,6 +76,9 @@ func (s TeamService) GetAllLeagueTeams(ctx context.Context, leagueId string) ([]
 func (s TeamService) GetTeamById(ctx context.Context, leagueId string, teamId string) (*Team, error) {
 	return s.TeamRepository.GetTeamById(ctx, leagueId, teamId)
 }
+func (s TeamService) GetTeamsByIds(ctx context.Context, leagueID string, teamIds []string) ([]*Team, error) {
+	return s.TeamRepository.GetTeamsByIds(ctx, leagueID, teamIds)
+}
 func (s TeamService) UpdateTeamContractMetaData(ctx context.Context, leagueId string, teamContracts []*contract.Contract) error {
 	return s.TeamRepository.UpdateTeamContractMetaData(ctx, leagueId, teamContracts)
 }

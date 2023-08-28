@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/auth"
@@ -20,6 +21,10 @@ import (
 
 func (r *mutationResolver) ContractMutations(ctx context.Context) (*contract.ContractMutations, error) {
 	return &contract.ContractMutations{}, nil
+}
+
+func (r *mutationResolver) LeagueMutations(ctx context.Context, leagueID string) (*model.LeagueMutations, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *mutationResolver) TeamMutations(ctx context.Context) (*team.TeamMutations, error) {
@@ -147,6 +152,14 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	return users, nil
 }
 
+func (r *queryResolver) Team(ctx context.Context, leagueID string) (*team.TeamQueries, error) {
+	return &team.TeamQueries{LeagueID: leagueID}, nil
+}
+
+func (r *queryResolver) Scoring(ctx context.Context, leagueID string) (*scoring.ScoringQueries, error) {
+	return &scoring.ScoringQueries{}, nil
+}
+
 func (r *queryResolver) Leagues(ctx context.Context) ([]*league.League, error) {
 	leagues, err := r.Resolver.LeagueResolver.GetAll(ctx)
 	if err != nil {
@@ -251,10 +264,6 @@ func (r *queryResolver) UserPreferences(ctx context.Context, userID *string) (*u
 
 func (r *queryResolver) GetUserRoles(ctx context.Context, userID *string) ([]*model.UserRoles, error) {
 	return r.UserResolver.GetUserRoles(ctx, userID)
-}
-
-func (r *queryResolver) Scoring(ctx context.Context, leagueID string) (*scoring.ScoringQueries, error) {
-	return &scoring.ScoringQueries{}, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

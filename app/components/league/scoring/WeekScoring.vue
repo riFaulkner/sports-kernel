@@ -17,6 +17,14 @@
         </v-col>
         <v-col sm="7" lg="8" cols="12" offset-sm="1" offset-md="0">
           <v-select
+              v-model="selectedSeason"
+              :items="seasons"
+          />
+          <v-select
+            v-model="selectedWeek"
+            :items="weeks"
+          />
+          <v-select
               v-model="selectedMatchUpNumber"
               :items="matchUps"
               :item-text="item => `${item.awayTeam} vs ${item.homeTeam}`"

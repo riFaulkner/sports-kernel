@@ -4,6 +4,10 @@ import (
 	"time"
 )
 
+type TeamQueries struct {
+	LeagueID string
+}
+
 type TeamMutations struct {
 }
 

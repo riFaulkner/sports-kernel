@@ -27,13 +27,23 @@ enum Role {
 }
 
 type Query {
+  """ Entry point for league based queries -- league(leagueId: ID!): LeagueQueries @hasRole(role: LEAGUE_MEMBER) """
   users: [User]
+  """ Entry point for all team related queries. """
+  team(leagueId: ID!): TeamQueries @hasRole(role: LEAGUE_MEMBER)
+  """ Entry point for all scoring related queries. """
+  scoring(leagueId: ID!): ScoringQueries @hasRole(role: LEAGUE_MEMBER)
+
   leagues: [League!] @hasRole(role: ADMIN)
+
+  @deprecated(reason: "Moved to leagueQueries.league")
   league(leagueId: ID): League @hasRole(role: LEAGUE_MEMBER)
+  @deprecated(reason: "Moved to LeagueQueries.contracts")
   leagueContracts(leagueId: ID!): [Contract!] @hasRole(role: LEAGUE_MEMBER)
+  @deprecated(reason:"Moved to LeagueQueries.teams")
   teams(leagueId: ID!): [Team!] @hasRole(role: LEAGUE_MEMBER)
-  teamById(leagueId: ID!, teamId: ID!): Team @hasRole(role: LEAGUE_MEMBER)
-  teamByOwnerId(leagueId: ID!, ownerId: ID!): Team @hasRole(role: LEAGUE_MEMBER)
+  teamById(leagueId: ID!, teamId: ID!): Team @hasRole(role: LEAGUE_MEMBER) @deprecated(reason: "Old entry point, use the team query entry point instead")
+  teamByOwnerId(leagueId: ID!, ownerId: ID!): Team @hasRole(role: LEAGUE_MEMBER) @deprecated(reason: "Old entry point, use the team query entry point instead")
   teamContracts(leagueId: ID!, teamId: ID!): [Contract!] @hasRole(role: LEAGUE_MEMBER)
   contractById(leagueId: ID!, contractId: ID!): Contract @hasRole(role: LEAGUE_MEMBER)
   player(playerId: ID): PlayerNFL!
@@ -43,7 +53,6 @@ type Query {
   comments(leagueId: ID!, postId: ID!): [PostComment!] @hasRole(role: LEAGUE_MEMBER)
   userPreferences(userId: ID): UserPreferences
   getUserRoles(userId:ID): [UserRoles]
-  scoring(leagueId: ID!): ScoringQueries @hasRole(role: LEAGUE_MEMBER)
 }
 
 input NewPostComment {
@@ -58,8 +67,16 @@ input NewLeaguePost {
 }
 
 type Mutation {
-  contractMutations: ContractMutations
-  teamMutations: TeamMutations
+  """ Contract mutation entry point """
+  contractMutations: ContractMutations @hasRole(role: LEAGUE_MEMBER)
+
+  """ League mutation entry point """
+  leagueMutations(leagueId: ID!):LeagueMutations @hasRole(role: LEAGUE_MEMBER)
+
+  """ Team mutation entry point """
+  teamMutations: TeamMutations @hasRole(role: LEAGUE_MEMBER)
+
+
 
   createLeague(input: NewLeagueInput!): League!
   createUser(input: NewUser!): UserPreferences! @hasRole(role: LEAGUE_MANAGER)
