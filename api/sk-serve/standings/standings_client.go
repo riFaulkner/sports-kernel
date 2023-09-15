@@ -44,8 +44,8 @@ func makePostRequest(r io.Reader, w io.Writer, targetURL string, audience string
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		log.Printf("scoring.service - Return status %d", resp.StatusCode)
-		return fmt.Errorf("scoring.service - Return status %v", resp.StatusCode)
+		log.Printf("standings.service - Return status %d", resp.StatusCode)
+		return fmt.Errorf("standings.service - Return status %v", resp.StatusCode)
 	}
 
 	if _, err = io.Copy(w, resp.Body); err != nil {

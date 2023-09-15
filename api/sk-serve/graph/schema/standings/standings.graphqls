@@ -10,5 +10,5 @@ type Standings {
     teamLosses: Int!
     teamTies: Int!
     pointsFor: Float!
-    pointsAgaints: Float!
+    pointsAgainst: Float!
 }

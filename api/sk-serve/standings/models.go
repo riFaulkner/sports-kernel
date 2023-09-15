@@ -10,6 +10,6 @@ type Standings struct {
 	TeamWins      int     `json:"team_wins"`
 	TeamLosses    int     `json:"team_losses"`
 	TeamTies      int     `json:"team_ties"`
-	PointsFor     float32 `json:"points_for"`
-	PointsAgaints float32 `json:"points_against"`
+	PointsFor     float64 `json:"points_for"`
+	PointsAgainst float64 `json:"points_against"`
 }

@@ -30,7 +30,7 @@ func (s *Service) GetStandings(season int, week *int) ([]*Standings, error) {
 
 	var standingsArray []*Standings
 	if err := fetchStandings(season, weekValue, &standingsArray); err != nil {
-		return nil, fmt.Errorf("scoring.service %v", err)
+		return nil, fmt.Errorf("standings.service %v", err)
 	}
 
 	return standingsArray, nil

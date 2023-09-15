@@ -49,7 +49,6 @@ type ResolverRoot interface {
 	Mutation() MutationResolver
 	Query() QueryResolver
 	ScoringQueries() ScoringQueriesResolver
-	Standings() StandingsResolver
 	StandingsQueries() StandingsQueriesResolver
 	Team() TeamResolver
 	TeamMutations() TeamMutationsResolver
@@ -253,7 +252,7 @@ type ComplexityRoot struct {
 	Standings struct {
 		DivisionId    func(childComplexity int) int
 		DivisionName  func(childComplexity int) int
-		PointsAgaints func(childComplexity int) int
+		PointsAgainst func(childComplexity int) int
 		PointsFor     func(childComplexity int) int
 		TeamLosses    func(childComplexity int) int
 		TeamName      func(childComplexity int) int
@@ -397,10 +396,6 @@ type QueryResolver interface {
 type ScoringQueriesResolver interface {
 	WeekMatchUps(ctx context.Context, obj *scoring.ScoringQueries, season int, week *int) ([]*scoring.MatchUp, error)
 	MatchUpScoring(ctx context.Context, obj *scoring.ScoringQueries, season int, week *int, matchUpNumber int) ([]*scoring.MatchUpTeamScoring, error)
-}
-type StandingsResolver interface {
-	PointsFor(ctx context.Context, obj *standings.Standings) (float64, error)
-	PointsAgaints(ctx context.Context, obj *standings.Standings) (float64, error)
 }
 type StandingsQueriesResolver interface {
 	WeekStandings(ctx context.Context, obj *standings.StandingsQueries, season int, week *int) ([]*standings.Standings, error)
@@ -1500,12 +1495,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Standings.DivisionName(childComplexity), true
 
-	case "Standings.pointsAgaints":
-		if e.complexity.Standings.PointsAgaints == nil {
+	case "Standings.pointsAgainst":
+		if e.complexity.Standings.PointsAgainst == nil {
 			break
 		}
 
-		return e.complexity.Standings.PointsAgaints(childComplexity), true
+		return e.complexity.Standings.PointsAgainst(childComplexity), true
 
 	case "Standings.pointsFor":
 		if e.complexity.Standings.PointsFor == nil {
@@ -2190,7 +2185,7 @@ type Standings {
     teamLosses: Int!
     teamTies: Int!
     pointsFor: Float!
-    pointsAgaints: Float!
+    pointsAgainst: Float!
 }`, BuiltIn: false},
 	{Name: "graph/schema/team/team.graphqls", Input: `# Team types and inputs
 type Team {
@@ -11011,7 +11006,7 @@ func (ec *executionContext) _Standings_pointsFor(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Standings().PointsFor(rctx, obj)
+		return obj.PointsFor, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11032,8 +11027,8 @@ func (ec *executionContext) fieldContext_Standings_pointsFor(ctx context.Context
 	fc = &graphql.FieldContext{
 		Object:     "Standings",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Float does not have child fields")
 		},
@@ -11041,8 +11036,8 @@ func (ec *executionContext) fieldContext_Standings_pointsFor(ctx context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _Standings_pointsAgaints(ctx context.Context, field graphql.CollectedField, obj *standings.Standings) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Standings_pointsAgaints(ctx, field)
+func (ec *executionContext) _Standings_pointsAgainst(ctx context.Context, field graphql.CollectedField, obj *standings.Standings) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Standings_pointsAgainst(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -11055,7 +11050,7 @@ func (ec *executionContext) _Standings_pointsAgaints(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Standings().PointsAgaints(rctx, obj)
+		return obj.PointsAgainst, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11072,12 +11067,12 @@ func (ec *executionContext) _Standings_pointsAgaints(ctx context.Context, field 
 	return ec.marshalNFloat2float64(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Standings_pointsAgaints(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Standings_pointsAgainst(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Standings",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Float does not have child fields")
 		},
@@ -11135,8 +11130,8 @@ func (ec *executionContext) fieldContext_StandingsQueries_weekStandings(ctx cont
 				return ec.fieldContext_Standings_teamTies(ctx, field)
 			case "pointsFor":
 				return ec.fieldContext_Standings_pointsFor(ctx, field)
-			case "pointsAgaints":
-				return ec.fieldContext_Standings_pointsAgaints(ctx, field)
+			case "pointsAgainst":
+				return ec.fieldContext_Standings_pointsAgainst(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Standings", field.Name)
 		},
@@ -17293,83 +17288,57 @@ func (ec *executionContext) _Standings(ctx context.Context, sel ast.SelectionSet
 			out.Values[i] = ec._Standings_teamName(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "divisionId":
 
 			out.Values[i] = ec._Standings_divisionId(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "divisionName":
 
 			out.Values[i] = ec._Standings_divisionName(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "teamWins":
 
 			out.Values[i] = ec._Standings_teamWins(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "teamLosses":
 
 			out.Values[i] = ec._Standings_teamLosses(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "teamTies":
 
 			out.Values[i] = ec._Standings_teamTies(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "pointsFor":
-			field := field
 
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Standings_pointsFor(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
+			out.Values[i] = ec._Standings_pointsFor(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
 			}
+		case "pointsAgainst":
 
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
+			out.Values[i] = ec._Standings_pointsAgainst(ctx, field, obj)
 
-			})
-		case "pointsAgaints":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Standings_pointsAgaints(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
+			if out.Values[i] == graphql.Null {
+				invalids++
 			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
-
-			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
