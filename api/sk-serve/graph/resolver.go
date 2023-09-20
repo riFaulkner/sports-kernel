@@ -3,6 +3,8 @@ package graph
 //go:generate go run github.com/99designs/gqlgen generate
 
 import (
+	"time"
+
 	cache "github.com/patrickmn/go-cache"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/contract"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/db"
@@ -12,10 +14,10 @@ import (
 	playernfl "github.com/rifaulkner/sports-kernel/api/sk-serve/nfl"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/post"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/scoring"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/standings"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/team"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/user"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/user/onboarding"
-	"time"
 )
 
 // This file will not be regenerated automatically.
@@ -30,6 +32,7 @@ type Resolver struct {
 	PlayerService         playernfl.PlayerService
 	PostResolver          post.LeaguePost
 	ScoringService        scoring.Service
+	StandingsService      standings.Service
 	UserOnBoardingService onboarding.UserOnboardingService
 }
 
@@ -55,6 +58,7 @@ func Initialize(client firestore.Client) generated.Config {
 	r.PlayerService = initializePlayerService(client)
 	r.PostResolver = &db.PostImpl{Client: client}
 	r.ScoringService = *scoring.NewScoringService(cache)
+	r.StandingsService = *standings.NewStandingsService(cache)
 	r.UserOnBoardingService = initializeUserOnBoardingService(userService, teamService, leagueService)
 
 	return generated.Config{

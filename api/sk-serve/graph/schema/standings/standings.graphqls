@@ -1,0 +1,14 @@
+type StandingsQueries {
+    weekStandings(season: Int!, week: Int): [Standings]
+}
+
+type Standings {
+    teamName: String!
+    divisionId: Int!
+    divisionName: String!
+    teamWins: Int!
+    teamLosses: Int!
+    teamTies: Int!
+    pointsFor: Float!
+    pointsAgainst: Float!
+}

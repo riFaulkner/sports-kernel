@@ -160,3 +160,9 @@ models:
   LineUp:
     model:
       - github.com/rifaulkner/sports-kernel/api/sk-serve/scoring.LineUp
+  StandingsQueries:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/standings.StandingsQueries
+  Standings:
+    model:
+      - github.com/rifaulkner/sports-kernel/api/sk-serve/standings.Standings

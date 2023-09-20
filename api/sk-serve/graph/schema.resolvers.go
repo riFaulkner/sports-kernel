@@ -13,6 +13,7 @@ import (
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/graph/model"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/league"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/scoring"
+	"github.com/rifaulkner/sports-kernel/api/sk-serve/standings"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/team"
 	"github.com/rifaulkner/sports-kernel/api/sk-serve/user"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -255,6 +256,10 @@ func (r *queryResolver) GetUserRoles(ctx context.Context, userID *string) ([]*mo
 
 func (r *queryResolver) Scoring(ctx context.Context, leagueID string) (*scoring.ScoringQueries, error) {
 	return &scoring.ScoringQueries{}, nil
+}
+
+func (r *queryResolver) Standings(ctx context.Context, leagueID string) (*standings.StandingsQueries, error) {
+	return &standings.StandingsQueries{}, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.
