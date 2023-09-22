@@ -39,7 +39,7 @@
         {{ getGamesBack(item) }}
       </template>
       <template v-slot:item.streak="{item}">
-        {{ getStreakDisplay(item.seasonSummary) }}
+        {{ }}
       </template>
     </v-data-table>
   </v-card>
@@ -47,6 +47,7 @@
 
 <script>
 import {TEAMS_WITH_SCORING} from "@/graphql/queries/team/teamGraphQL";
+import {GET_STANDINGS} from "@/graphql/queries/standings/standingsGraphQL";
 
 export default {
   name: "LeagueStandings.vue",
@@ -70,11 +71,11 @@ export default {
         {text: 'GB', value: 'gamesBack'},
         {text: 'PF', value: 'seasonSummary.totalPointsFor'},
         {text: 'PA', value: 'seasonSummary.totalPointsAgainst'},
-        {text: 'Streak', value: 'streak', sortable: false},
+        //{text: 'Streak', value: 'streak', sortable: false},
       ],
-      leagueYears: [2022, 2021],
+      leagueYears: [2023, 2022, 2021],
       selectedYear: new Date().getFullYear(),
-      teams: [],
+      standings: [],
       highestWinsPerDivisionByYear: new Map()
     }
   },
@@ -84,7 +85,7 @@ export default {
       if (totalGamesPlayed === 0) {
         return 0
       }
-      return ((teamOutcomes.wins / totalGamesPlayed) * 100).toPrecision(3);
+      return ((teamOutcomes.wins / totalGamesPlayed)).toPrecision(3);
     },
     getTotalGamesPlayed(teamRecord) {
       return (teamRecord.wins + teamRecord.losses + teamRecord.ties);
@@ -97,10 +98,11 @@ export default {
       }
       let highestWins = yearWinsPerDivision.get(teamData.division)
       if (highestWins === undefined) {
-        const divisionTeams = this.teams.filter((team) => team.division === teamData.division)
+        const divisionTeams = this.standings.weekStandings.filter((team) => team.division === teamData.division)
         highestWins = 0
         divisionTeams.forEach((team) => {
-          const teamWinsThatYear = team.teamScoring.filter((year) => year.year === this.selectedYear)[0]?.summary?.wins
+          //const teamWinsThatYear = team.teamScoring.filter((year) => year.year === this.selectedYear)[0]?.summary?.wins
+          const teamWinsThatYear = team.seasonSummary.wins
           if (teamWinsThatYear !== undefined) {
             if (highestWins < teamWinsThatYear) {
               highestWins = teamWinsThatYear
@@ -109,47 +111,46 @@ export default {
         })
         this.highestWinsPerDivisionByYear.get(this.selectedYear).set(teamData.division, highestWins)
       }
-
-      return highestWins - teamData.seasonSummary.wins
+      return highestWins// - teamData.seasonSummary.wins
     },
-    getStreakDisplay(seasonSummary) {
-      const currentStreak = seasonSummary.currentStreak
-      if (currentStreak === 0) {
-        return currentStreak
-      }
-      if (currentStreak > 0) {
-        return currentStreak + "W";
-      }
-      return Math.abs(currentStreak) + "L";
-    }
+  //   getStreakDisplay(seasonSummary) {
+  //     const currentStreak = seasonSummary.currentStreak
+  //     if (currentStreak === 0) {
+  //       return currentStreak
+  //     }
+  //     if (currentStreak > 0) {
+  //       return currentStreak + "W";
+  //     }
+  //     return Math.abs(currentStreak) + "L";
+  //   }
   },
   computed: {
     processedTeamData() {
-      if (this.teams === null || this.teams.length === 0) {
+      if (this.standings === null || this.standings.length === 0) {
         return [];
       }
 
       const tableData = []
 
-      this.teams.forEach((team) => {
-        const fullSummary = team.teamScoring.filter(season => season.year === this.selectedYear)
+      this.standings.weekStandings.forEach((team) => {
+        //const fullSummary = team.teamScoring.filter(season => season.year === this.selectedYear)
 
         let summary = {
           currentStreak: 0,
-          losses: 0,
-          ties: 0,
-          wins: 0,
-          totalPointsFor: 0,
-          totalPointsAgainst: 0
+          losses: team.teamLosses,
+          ties: team.teamTies,
+          wins: team.teamWins,
+          totalPointsFor: team.pointsFor,
+          totalPointsAgainst: team.pointsAgainst
         }
-        if (fullSummary.length === 1) {
-          summary = fullSummary[0].summary
-        }
+        //if (fullSummary.length === 1) {
+        //  summary = fullSummary[0].summary
+        //}
 
         const tempTeam = {
           teamName: team.teamName,
           seasonSummary: summary,
-          division: team?.division
+          division: team?.divisionName
         }
 
         tableData.push(tempTeam)
@@ -159,11 +160,13 @@ export default {
     }
   },
   apollo: {
-    teams: {
-      query: TEAMS_WITH_SCORING,
+    standings: {
+      query: GET_STANDINGS,
       variables: function () {
         return {
-          leagueId: this.leagueInfo.id
+          leagueId: this.leagueInfo.id,
+          season: this.selectedYear,
+          week: 1
         }
       }
     }
