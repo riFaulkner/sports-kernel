@@ -24,7 +24,7 @@
     "@nuxtjs/pwa": "^3.3.5",
     "core-js": "^3.23.3",
     "graphql-tag": "^2.12.5",
-    "nuxt": "^2.15.7",
+    "nuxt": "^3.7.4",
     "vuetify": "^2.6.10"
   },
   "devDependencies": {
